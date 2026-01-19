@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공부자 가이드</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Config: Simple Wood Palette -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Wood Theme Colors
+                        wood: {
+                            50: '#FAF6F1',   // Background (Warm White)
+                            100: '#EBE0D0',  // Light Beige
+                            200: '#DCC8B0',  // Border Beige
+                            300: '#B08D70',  // Soft Brown
+                            500: '#8D6E63',  // Medium Brown
+                            700: '#5D4037',  // Dark Brown (Primary Text)
+                            800: '#4E342E',  // Deep Brown (Headings)
+                            900: '#3E2723',  // Almost Black
+                        },
+                        // Role Colors (Earthy tones)
+                        member: '#C27803',   // Gold/Amber
+                        oesu: '#3B6888',     // Muted Blue
+                        naesu: '#A84545',    // Muted Red
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                        serif: ['Noto Serif KR', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Import Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap');
+        
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            background-color: #FAF6F1; 
+            color: #4E342E;
+        }
+        
+        h1, h2, h3, h4, h5, h6, .font-serif { font-family: 'Noto Serif KR', serif; }
+
+        /* Clean Tab Styling */
+        .tab-btn {
+            position: relative;
+            color: #B08D70;
+            transition: color 0.2s ease;
+        }
+        .tab-active {
+            color: #5D4037;
+            font-weight: 700;
+        }
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #5D4037;
+        }
+        .tab-inactive:hover {
+            color: #8D6E63;
+        }
+
+        /* Timeline Line */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            bottom: 24px;
+            left: 15px;
+            width: 2px;
+            background-color: #EBE0D0;
+            z-index: 0;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Current Item Highlight */
+        .current-item {
+            border-color: #8D6E63 !important;
+            background-color: #FFFFFF !important;
+            box-shadow: 0 4px 12px rgba(93, 64, 55, 0.08);
+        }
+
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-[#FAF6F1] border-b border-wood-200 sticky top-0 z-50">
+        <div class="container mx-auto max-w-3xl px-4 py-4 flex justify-between items-center">
+            <div class="flex flex-col">
+                <h1 class="text-2xl font-bold font-serif text-wood-800 flex items-center gap-2">
+                    <span class="text-wood-500">❖</span> 공부자 가이드
+                </h1>
+                <span class="text-xs text-wood-500 mt-1 tracking-wide">오늘의 마음가짐: 정성</span>
+            </div>
+            
+            <a href="index.html" class="text-sm font-bold text-wood-500 hover:text-wood-800 transition-colors flex items-center gap-1 border border-wood-200 px-3 py-1.5 rounded-lg bg-white">
+                <span>🏠</span> <span class="hidden sm:inline">홈으로</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-[#FAF6F1] border-b border-wood-200 sticky top-[77px] z-40">
+        <div class="container mx-auto max-w-3xl flex">
+            <button onclick="switchTab('schedule')" id="nav-schedule" class="flex-1 py-4 text-center tab-btn tab-active text-base md:text-lg">일과표</button>
+            <button onclick="switchTab('practice')" id="nav-practice" class="flex-1 py-4 text-center tab-btn tab-inactive text-base md:text-lg">개별 공부 및 역할</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto max-w-3xl px-4 py-8 flex-grow">
+
+        <!-- SECTION 1: DAILY SCHEDULE -->
+        <section id="view-schedule" class="space-y-8 animate-fade-in">
+            
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 pb-4 border-b border-wood-200">
+                <div>
+                    <h2 class="text-2xl font-bold text-wood-800 font-serif">하루의 흐름</h2>
+                    <p class="text-wood-500 mt-2">
+                        모든 집합 시간 <span class="font-bold text-naesu">10~20분 전 도착</span> 원칙
+                    </p>
+                </div>
+                
+                <!-- Sasu Toggle -->
+                <label class="flex items-center gap-2 cursor-pointer select-none group bg-white px-3 py-2 rounded-lg border border-wood-200 shadow-sm">
+                    <input type="checkbox" id="sasu-toggle" onchange="renderSchedule()" class="w-4 h-4 text-wood-700 rounded border-wood-300 focus:ring-wood-500 accent-wood-700">
+                    <span class="text-sm font-medium text-wood-700">사수 역할 포함하기</span>
+                </label>
+            </div>
+
+            <!-- Timeline -->
+            <div class="relative timeline-line pl-0 md:pl-2" id="timeline-container">
+                <!-- Javascript will populate this -->
+            </div>
+        </section>
+
+        <!-- SECTION 2: PRACTICE & ROLES -->
+        <section id="view-practice" class="hidden space-y-8 animate-fade-in">
+            
+            <div class="pb-4 border-b border-wood-200 mb-8">
+                <h2 class="text-2xl font-bold text-wood-800 font-serif mb-2">나의 공부 및 역할</h2>
+                <p class="text-wood-500">시간 흐름에 따른 구체적인 임무와 절차를 확인하세요.</p>
+            </div>
+
+            <!-- Inputs Wrapper -->
+            <div class="bg-white rounded-xl border border-wood-200 p-6 md:p-8 flex flex-col items-center gap-8 shadow-sm">
+                
+                <!-- Time Input -->
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 w-full border-b border-wood-100 pb-8">
+                    <span class="text-xl text-wood-700 font-serif font-bold">나는</span>
+                    <div class="relative">
+                        <input type="number" id="practice-hour" min="1" max="12" value="3" onchange="generateRitualTimeline()" 
+                            class="text-5xl font-bold text-center w-24 border-b-2 border-wood-300 focus:border-wood-700 focus:outline-none bg-transparent transition-colors font-serif text-wood-800 p-1">
+                    </div>
+                    <span class="text-xl text-wood-700 font-serif font-bold">시 공부자입니다.</span>
+                </div>
+
+                <!-- Role Filter -->
+                <div class="w-full max-w-xl">
+                    <p class="text-center text-xs text-wood-400 mb-3 tracking-widest font-bold">▼ 직책 선택</p>
+                    <div class="grid grid-cols-4 gap-2 md:gap-4">
+                        <button onclick="setRoleFilter('all')" id="btn-role-all" class="py-2 md:py-3 text-sm md:text-base rounded-lg transition-colors border border-wood-300 bg-wood-700 text-white font-medium shadow-sm">전체</button>
+                        <button onclick="setRoleFilter('member')" id="btn-role-member" class="py-2 md:py-3 text-sm md:text-base rounded-lg transition-colors border border-wood-200 hover:bg-wood-50 text-wood-600">회원</button>
+                        <button onclick="setRoleFilter('oesu')" id="btn-role-oesu" class="py-2 md:py-3 text-sm md:text-base rounded-lg transition-colors border border-wood-200 hover:bg-wood-50 text-wood-600">외수</button>
+                        <button onclick="setRoleFilter('naesu')" id="btn-role-naesu" class="py-2 md:py-3 text-sm md:text-base rounded-lg transition-colors border border-wood-200 hover:bg-wood-50 text-wood-600">내수</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Steps Timeline -->
+            <div id="ritual-steps" class="space-y-6 relative mt-8">
+                <!-- Javascript will populate this -->
+            </div>
+
+            <!-- Core Rules -->
+            <div class="mt-12 pt-8 border-t border-wood-200">
+                <h3 class="font-bold text-xl text-wood-800 mb-6 font-serif">주요 준수 사항</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex gap-4 items-center p-4 rounded-lg bg-white border border-wood-100 shadow-sm">
+                        <span class="text-wood-500 text-xl">✔</span>
+                        <div>
+                            <span class="font-bold text-wood-800 block mb-1">시간 엄수</span>
+                            <span class="text-sm text-wood-500">모든 집합 10~20분 전 도착</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-center p-4 rounded-lg bg-white border border-wood-100 shadow-sm">
+                        <span class="text-wood-500 text-xl">✔</span>
+                        <div>
+                            <span class="font-bold text-wood-800 block mb-1">왼발 먼저</span>
+                            <span class="text-sm text-wood-500">계단, 문턱 넘을 때 항상 왼발부터</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-center p-4 rounded-lg bg-white border border-wood-100 shadow-sm">
+                        <span class="text-wood-500 text-xl">✔</span>
+                        <div>
+                            <span class="font-bold text-wood-800 block mb-1">정숙 (묵언)</span>
+                            <span class="text-sm text-wood-500">대기 중 잡담 금지</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-center p-4 rounded-lg bg-white border border-wood-100 shadow-sm">
+                        <span class="text-wood-500 text-xl">✔</span>
+                        <div>
+                            <span class="font-bold text-wood-800 block mb-1">국궁 유지</span>
+                            <span class="text-sm text-wood-500">이동 완료 시까지 허리 숙인 자세</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-center p-4 rounded-lg bg-[#FFF8E1] border border-[#FFE082] shadow-sm md:col-span-2">
+                        <span class="text-[#F57F17] text-xl">📢</span>
+                        <div>
+                            <span class="font-bold text-[#F57F17] block mb-1">주문 연결</span>
+                            <span class="text-sm text-[#F9A825]">주문이 끊기지 않도록 앞 시간 공부자의 주성에 귀 기울여 주세요.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-wood-200 py-8 mt-8 text-center bg-white text-wood-500">
+        <p class="font-bold font-serif mb-1 text-wood-700">부산 태극도</p>
+        <p class="text-xs">초심자를 위한 수련 가이드</p>
+    </footer>
+
+    <!-- Logic -->
+    <script>
+        // Data
+        const timelineItems = [
+            { time: "01:30", title: "축시 기도", loc: "대강전 1층", note: "01:20까지 도착", role: "all" },
+            { time: "02:00", title: "취침", loc: "숙소", note: "", role: "all" },
+            { time: "07:15", title: "기상", loc: "-", note: "", role: "all" },
+            { time: "07:30", title: "진시 기도", loc: "대강전 1층", note: "07:20까지 도착", role: "all" },
+            { time: "07:50", title: "아침 식사", loc: "식당", note: "", role: "all" },
+            { time: "08:15", title: "방장 회의", loc: "별관", note: "사수 필수 참석", role: "sasu" },
+            { time: "09:00", title: "청소", loc: "지정 구역", note: "", role: "learner_only" }, 
+            { time: "09:00", title: "사수 각오", loc: "별관", note: "", role: "sasu" },
+            { time: "10:05", title: "수련 대기 및 환영", loc: "대강전 2층", note: "공부자 환영 준비", role: "sasu" },
+            { time: "10:20", title: "사수 스피치", loc: "대강전 2층", note: "", role: "sasu" },
+            { time: "10:30", title: "오전 수련", loc: "대강전 2층", note: "10:10까지 대기", role: "all" },
+            { time: "11:30", title: "점심 식사", loc: "식당", note: "", role: "all" },
+            { time: "12:00", title: "토론", loc: "청학관", note: "", role: "all" },
+            { time: "13:30", title: "미시 기도", loc: "대강전 1층", note: "13:20까지 도착", role: "all" },
+            { time: "14:00", title: "일대일 만남", loc: "청학관", note: "", role: "all" },
+            { time: "15:00", title: "일대일 만남", loc: "청학관", note: "", role: "all" },
+            { time: "16:05", title: "수련 대기 및 환영", loc: "대강전 2층", note: "공부자 환영 준비", role: "sasu" },
+            { time: "16:20", title: "사수 스피치", loc: "대강전 2층", note: "", role: "sasu" },
+            { time: "16:30", title: "오후 수련", loc: "대강전 2층", note: "16:10까지 대기", role: "all" },
+            { time: "17:00", title: "사수 보고", loc: "별관", note: "사수 일정 종료 보고", role: "sasu" },
+            { time: "17:30", title: "저녁 식사", loc: "식당", note: "", role: "all" },
+            { time: "19:30", title: "술시 기도", loc: "대강전 1층", note: "19:20까지 도착", role: "all" },
+            { time: "19:50", title: "체조", loc: "대강전 1층", note: "20:00까지", role: "all" },
+            { time: "20:00", title: "사수 교대", loc: "별관", note: "소감 발표", role: "sasu" },
+            { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "learner_only" },
+            { time: "23:30", title: "퇴배 봉심", loc: "대강전 2층 승정문", note: "23:20까지 정렬, 하루 일과 마무리", role: "all" },
+            { time: "23:50", title: "퇴배 종료", loc: "대강전 1층", note: "인사 후 귀가", role: "all" },
+            { time: "24:00", title: "취침", loc: "숙소", note: "", role: "all" },
+        ];
+
+        let currentTab = 'schedule';
+        let currentRoleFilter = 'all';
+
+        function switchTab(tabId) {
+            ['schedule', 'practice'].forEach(id => {
+                const view = document.getElementById(`view-${id}`);
+                const nav = document.getElementById(`nav-${id}`);
+                if(view) view.classList.add('hidden');
+                if(nav) {
+                    nav.classList.remove('tab-active');
+                    nav.classList.add('tab-inactive');
+                }
+            });
+
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            activeNav.classList.add('tab-active');
+            activeNav.classList.remove('tab-inactive');
+            
+            currentTab = tabId;
+
+            if(tabId === 'practice') {
+                setRoleFilter(currentRoleFilter);
+            } else if (tabId === 'schedule') {
+                renderSchedule();
+            }
+        }
+
+        function getCurrentTimeInMinutes() {
+            const now = new Date();
+            return now.getHours() * 60 + now.getMinutes();
+        }
+
+        function timeStringToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        function renderSchedule() {
+            const container = document.getElementById('timeline-container');
+            const isSasuMode = document.getElementById('sasu-toggle').checked;
+            const nowMinutes = getCurrentTimeInMinutes();
+            
+            const sortedItems = [...timelineItems].sort((a, b) => a.time.localeCompare(b.time));
+
+            const filteredData = sortedItems.filter(item => {
+                if (item.role === 'all') return true;
+                if (item.role === 'sasu') return isSasuMode;
+                if (item.role === 'learner_only') return !isSasuMode;
+                return false;
+            });
+            
+            let activeIndex = -1;
+            for (let i = 0; i < filteredData.length; i++) {
+                const itemTime = timeStringToMinutes(filteredData[i].time);
+                if (nowMinutes >= itemTime) {
+                    if (i < filteredData.length - 1) {
+                        const nextItemTime = timeStringToMinutes(filteredData[i+1].time);
+                        if (nowMinutes < nextItemTime) {
+                            activeIndex = i;
+                            break;
+                        }
+                    } else {
+                        activeIndex = i;
+                    }
+                }
+            }
+
+            container.innerHTML = filteredData.map((item, index) => {
+                const isSasuItem = item.role === 'sasu';
+                const isActive = (index === activeIndex);
+                
+                let activeClass = isActive ? 'current-item border-l-4 border-wood-500' : 'bg-white border-l-4 border-transparent';
+                let activeBadge = isActive ? `<div class="mb-2 text-xs font-bold text-wood-700 bg-wood-100 inline-block px-2 py-1 rounded border border-wood-200">⏰ 현재 진행중</div>` : '';
+                
+                // Override for Sasu
+                if (isSasuItem && !isActive) {
+                    activeClass = 'bg-wood-50 border-l-4 border-wood-300';
+                }
+
+                return `
+                <div class="relative pl-10 md:pl-12 py-2 animate-fade-in group" id="schedule-item-${index}">
+                    <!-- Dot -->
+                    <div class="absolute left-[8px] top-6 w-6 h-6 rounded-full ${isActive ? 'bg-wood-700 scale-110' : (isSasuItem ? 'bg-wood-300' : 'bg-wood-200')} border-4 border-[#FAF6F1] shadow-sm z-10 transition-all flex items-center justify-center">
+                        ${isActive ? '<div class="w-2 h-2 bg-white rounded-full"></div>' : ''}
+                    </div>
+                    
+                    <!-- Content Card -->
+                    <div class="${activeClass} p-5 rounded-lg border border-wood-100 transition-all shadow-sm">
+                        ${activeBadge}
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
+                            <div>
+                                <div class="flex items-baseline gap-3 mb-1">
+                                    <span class="font-bold text-2xl ${isActive ? 'text-wood-900' : 'text-wood-700'} font-serif">${item.time}</span>
+                                    ${item.loc !== '-' ? `<span class="text-sm font-bold text-wood-600 bg-wood-100 px-2 py-1 rounded">${item.loc}</span>` : ''}
+                                </div>
+                                <h3 class="text-xl font-bold text-wood-800 ${isSasuItem ? 'text-wood-600' : ''}">
+                                    ${item.title}
+                                    ${isSasuItem ? '<span class="text-xs bg-wood-200 text-wood-700 px-2 py-1 rounded-full ml-2 align-middle border border-wood-300">사수</span>' : ''}
+                                </h3>
+                            </div>
+                        </div>
+                        ${item.note ? `<p class="text-base text-wood-600 mt-3 p-3 bg-[#FAF6F1] rounded border border-wood-200">💡 ${item.note}</p>` : ''}
+                    </div>
+                </div>
+            `}).join('');
+            
+            if (activeIndex !== -1 && !window.hasScrolledToActive) {
+                setTimeout(() => {
+                    const el = document.getElementById(`schedule-item-${activeIndex}`);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        window.hasScrolledToActive = true;
+                    }
+                }, 500);
+            }
+        }
+
+        function setRoleFilter(role) {
+            currentRoleFilter = role;
+            
+            // Minimal button styles
+            const defaultStyle = "bg-white text-wood-500 border border-wood-200 hover:bg-wood-50 hover:text-wood-700 hover:border-wood-300";
+            
+            // Custom role specific active colors
+            const styles = {
+                all: "bg-wood-700 text-white border-wood-700 shadow-md font-bold",
+                member: "bg-member text-white border-member shadow-md font-bold",
+                oesu: "bg-oesu text-white border-oesu shadow-md font-bold",
+                naesu: "bg-naesu text-white border-naesu shadow-md font-bold"
+            };
+
+            ['all', 'member', 'oesu', 'naesu'].forEach(r => {
+                const btn = document.getElementById(`btn-role-${r}`);
+                if (r === role) {
+                    btn.className = `py-3 text-sm md:text-base rounded-lg transition-all ${styles[r]}`;
+                } else {
+                    btn.className = `py-3 text-sm md:text-base rounded-lg transition-all ${defaultStyle}`;
+                }
+            });
+
+            generateRitualTimeline();
+        }
+
+        function generateRitualTimeline() {
+            const inputHour = document.getElementById('practice-hour').value;
+            if (!inputHour) return;
+
+            const hour = parseInt(inputHour);
+            const date = new Date();
+            date.setHours(hour, 0, 0, 0);
+
+            const fmt = (d) => {
+                let h = d.getHours();
+                let m = d.getMinutes();
+                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            };
+            
+            const addMin = (min) => {
+                const newD = new Date(date.getTime());
+                newD.setMinutes(date.getMinutes() + min);
+                return fmt(newD);
+            };
+
+            const rawSteps = [
+                { time: addMin(-15), title: "준비 및 주성 연습", desc: "대강전 1층 도착, 주문 연습 시작.", roleInfo: null },
+                { time: addMin(20), title: "이동 대기 및 출발", desc: "주문 연습 종료 후 3층으로 이동 준비.", highlight: true, roleInfo: { member: "1열 (가장 먼저 출발)", oesu: "2열 (회원 뒤)", naesu: "3열 (마지막, 문단속)" } },
+                { time: addMin(25), title: "공부방 앞 대기 & 입장", desc: "공부방 앞 도착 및 입장.", roleInfo: { member: "신발 벗고 1번 입장", oesu: "신발 정리, 문 열기, 3번 입장", naesu: "2번 입장" } },
+                { time: addMin(27), title: "교대 신호", desc: "27분 30초경 공부 교대 신호.", roleInfo: { member: "★ 크게 헛기침 신호", oesu: "대기", naesu: "대기" } },
+                { time: addMin(30), title: "공부방 입실", desc: "종이 울리면 방으로 들어갑니다.", roleInfo: { member: "1번 입장. 향 불 붙이기. 좌배 주도.", oesu: "3번 입장. 소독/청소.", naesu: "2번 입장. 외곽 이동. 소독/청소." } },
+                { time: addMin(90), title: "퇴실 준비", desc: "다음 타임 교대 및 퇴실.", roleInfo: { member: "좌배 구령. 먼저 뒤로 이동.", oesu: "나중 이동. 손수건 뒷사람 전달.", naesu: "먼저 이동. 손수건 뒷사람 전달." } },
+                { time: addMin(95), title: "종료 및 해산", desc: "문단속 후 1층에서 인사.", roleInfo: { member: "1층 이동.", oesu: "★ 바깥 문 닫기", naesu: "★ 안쪽 문 닫기" } }
+            ];
+
+            const container = document.getElementById('ritual-steps');
+            
+            container.innerHTML = rawSteps.map(step => {
+                let roleHTML = '';
+                
+                if (currentRoleFilter !== 'all' && step.roleInfo) {
+                    const info = step.roleInfo[currentRoleFilter];
+                    if (info) {
+                        let colorClass = 'bg-wood-100 text-wood-800';
+                        if(currentRoleFilter === 'member') colorClass = 'bg-yellow-50 text-member border-l-4 border-member';
+                        if(currentRoleFilter === 'oesu') colorClass = 'bg-blue-50 text-oesu border-l-4 border-oesu';
+                        if(currentRoleFilter === 'naesu') colorClass = 'bg-red-50 text-naesu border-l-4 border-naesu';
+
+                        roleHTML = `<div class="mt-4 p-4 rounded-r-lg text-lg font-bold shadow-sm ${colorClass}">${info}</div>`;
+                    }
+                } else if (currentRoleFilter === 'all' && step.roleInfo) {
+                    roleHTML = `
+                        <div class="mt-4 space-y-3 text-base">
+                            <div class="flex gap-3 items-start"><span class="shrink-0 w-12 text-center bg-member text-white font-bold text-sm px-1 py-0.5 rounded">회원</span> <span class="text-wood-700 font-medium">${step.roleInfo.member}</span></div>
+                            <div class="flex gap-3 items-start"><span class="shrink-0 w-12 text-center bg-oesu text-white font-bold text-sm px-1 py-0.5 rounded">외수</span> <span class="text-wood-700 font-medium">${step.roleInfo.oesu}</span></div>
+                            <div class="flex gap-3 items-start"><span class="shrink-0 w-12 text-center bg-naesu text-white font-bold text-sm px-1 py-0.5 rounded">내수</span> <span class="text-wood-700 font-medium">${step.roleInfo.naesu}</span></div>
+                        </div>
+                    `;
+                }
+
+                return `
+                <div class="flex gap-4 group mb-2">
+                    <div class="w-20 text-right pt-2 hidden md:block">
+                        <span class="font-bold text-wood-700 font-serif text-2xl">${step.time}</span>
+                    </div>
+                    <div class="relative flex-grow border-l-4 border-wood-200 pl-6 pb-10 last:pb-0">
+                        <!-- Dot -->
+                        <div class="absolute -left-[10px] top-3 w-4 h-4 rounded-full bg-wood-200 border-2 border-white group-hover:bg-wood-400 transition-colors"></div>
+                        
+                        <div class="bg-white p-6 rounded-lg border border-wood-100 shadow-sm hover:shadow-md transition-shadow">
+                            <div class="md:hidden font-bold text-wood-700 font-serif text-xl mb-1">${step.time}</div>
+                            <h4 class="font-bold text-wood-800 text-xl font-serif mb-2">${step.title}</h4>
+                            <p class="text-lg text-wood-600 leading-relaxed">${step.desc}</p>
+                            ${roleHTML}
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        window.onload = function() {
+            renderSchedule();
+            setInterval(renderSchedule, 60000);
+        };
+    </script>
+</body>
+</html>
