@@ -5,37 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공부자 가이드</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Chosen Palette: Stone & Amber (Warm, Traditional, Calm) -->
-    <!-- Application Structure Plan: 
-         1. Dashboard Header: Introduction.
-         2. Interactive Timeline: 3-Phase Stepper.
-         3. Dynamic Content Area: Cards for tasks + Dropdowns for Phase 3.
-         4. Formation Simulator: Visual grid for Bongsim alignment (Sinwi on Top & Right).
-         5. Role Filter: REMOVED.
+    <!-- 
+      Concept: Traditional Korean Vibe & Modern Minimalism
+      - Background: Hanji texture (#fdfbf7 base, #e6e2d3 dots)
+      - Typography: Noto Serif KR (Headings), Noto Sans KR (Body)
+      - Color: #2c2c2c (Ink Text), #8b3a3a (Red Bean Point), Stone palette
+      - Layout: Glassmorphism (bg-white/60)
     -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Noto Serif KR"', 'serif'],
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    colors: {
+                        'ink': '#2c2c2c',
+                        'k-red': '#8b3a3a',
+                        'hanji-bg': '#fdfbf7',
+                        'hanji-dot': '#e6e2d3',
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
+        /* 1. Background & Texture */
         body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f5f5f4; /* stone-100 */
+            background-color: #fdfbf7;
+            background-image: radial-gradient(#e6e2d3 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: #2c2c2c;
         }
-        h1, h2, h3, .serif {
-            font-family: 'Noto Serif KR', serif;
+
+        /* Smooth Transitions */
+        .transition-all-custom {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .step-card {
-            transition: all 0.3s ease;
-        }
-        .step-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
+
+        /* Simulator Styles */
         .formation-node {
-            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); /* Slower, Bouncy transition */
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        /* Dropdown/Details styling */
+
+        /* Custom Scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e;
+        }
+
+        /* Dropdown Animation */
         details > summary {
             list-style: none;
         }
@@ -43,120 +79,171 @@
             display: none;
         }
         details[open] summary ~ * {
-            animation: sweep .3s ease-in-out;
+            animation: sweep .4s ease-in-out;
         }
         @keyframes sweep {
             0%    {opacity: 0; transform: translateY(-10px)}
             100%  {opacity: 1; transform: translateY(0)}
         }
-        /* Vertical Text for Sinwi */
+
+        /* Vertical Text */
         .writing-vertical {
             writing-mode: vertical-rl;
             text-orientation: upright;
         }
+        
+        /* Arrow Head for Simulator (Pointing Right for 'ㄴ' shape) */
+        .arrow-path::after {
+            content: '';
+            position: absolute;
+            right: -6px; /* Adjust based on border width to align tip */
+            bottom: -5px; /* Center vertically on the bottom border line */
+            width: 0; 
+            height: 0; 
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 8px solid #a8a29e; /* Arrow pointing right */
+        }
+
+        /* Start Dot for Simulator */
+        .arrow-path::before {
+            content: '';
+            position: absolute;
+            left: -3px; /* Center horizontally on the left border line */
+            top: -3px; /* Top of the line */
+            width: 6px;
+            height: 6px;
+            background-color: #d6d3d1;
+            border-radius: 50%;
+        }
     </style>
 </head>
-<body class="text-stone-800 antialiased selection:bg-amber-200 selection:text-amber-900 text-lg">
+<body class="font-sans text-ink antialiased selection:bg-k-red/20 selection:text-k-red text-lg">
 
-    <!-- Navigation / Header -->
-    <nav class="bg-stone-900 text-stone-100 shadow-lg sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center">
-                    <span class="text-2xl font-bold serif tracking-wider">공부자 가이드</span>
+    <!-- Header / Navigation -->
+    <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-white/70 border-b border-stone-200/50">
+        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <!-- Simple Logo/Icon Area -->
+                <div class="w-8 h-8 rounded-full border border-k-red flex items-center justify-center">
+                    <span class="font-serif text-k-red font-bold text-sm">道</span>
                 </div>
-                <div class="flex items-center space-x-6">
-                    <div class="hidden md:block">
-                        <span id="current-time-display" class="text-amber-400 font-mono text-base">20:00 입소 시작</span>
-                    </div>
-                    <!-- Home Button -->
-                    <a href="index.html" class="flex items-center px-4 py-2 bg-stone-700 hover:bg-stone-600 rounded-md transition-colors duration-200 border border-stone-600">
-                        <span class="mr-2 text-xl">🏠</span>
-                        <span class="text-base font-bold">홈으로</span>
-                    </a>
-                </div>
+                <h1 class="text-2xl font-serif font-bold tracking-tight text-ink">공부자 가이드</h1>
+            </div>
+
+            <!-- 5. Navigation & Home Button -->
+            <div class="flex items-center gap-6">
+                <!-- Home Link: Right Top, Minimalist -->
+                <a href="index.html" class="group flex items-center gap-2 text-stone-600 hover:text-ink transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 group-hover:stroke-2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                    <!-- Text hidden on mobile, serif font -->
+                    <span class="hidden md:block font-serif text-base font-medium group-hover:font-semibold">홈으로</span>
+                </a>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Main Layout Container -->
+    <main class="max-w-6xl mx-auto mt-8 mb-16 px-6 md:px-12 py-10 bg-white/60 backdrop-blur-sm border border-stone-200 rounded-sm shadow-sm min-h-screen">
 
-        <!-- Intro Section (Chart Removed) -->
-        <div class="mb-12">
-            <div class="bg-white rounded-xl shadow-sm p-8 border-l-4 border-amber-600">
-                <h1 class="text-4xl font-bold text-stone-900 mb-6">입소 및 준비 과정 안내</h1>
-                <p class="text-xl text-stone-600 leading-relaxed mb-8">
-                    본 가이드는 본부 도착부터 첫 공식 의식인 <strong>'드는 봉심'</strong>까지의 과정을 안내합니다. 
-                    경건한 마음으로 수련에 임할 수 있도록 시간대별 절차와 핵심 예법을 숙지해 주십시오.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-stone-100 px-6 py-4 rounded-lg border border-stone-200">
-                        <span class="block text-sm text-stone-500 font-bold uppercase mb-2">기본 준비물</span>
-                        <span class="font-medium text-lg">한복, 개인 세면도구</span>
-                    </div>
-                    <div class="bg-stone-100 px-6 py-4 rounded-lg border border-stone-200">
-                        <span class="block text-sm text-stone-500 font-bold uppercase mb-2">추가 준비물</span>
-                        <span class="font-medium text-lg">편한 일상복(청소용), 개인 컵(텀블러), 개인 상비약, 기타 소지품</span>
-                    </div>
+        <!-- Intro Section -->
+        <section class="mb-14 text-center md:text-left">
+            <h2 class="text-4xl md:text-5xl font-serif font-bold text-ink mb-6 leading-tight">
+                입소 및 <br class="md:hidden" />준비 과정 안내
+            </h2>
+            <p class="text-xl text-stone-600 leading-relaxed max-w-3xl mb-10 font-light">
+                본부 도착부터 첫 공식 의식인 <strong class="text-k-red font-medium">'드는 봉심'</strong>까지의 여정을 안내합니다.<br>
+                경건한 마음으로 차분히 절차를 따라주시기 바랍니다.
+            </p>
+
+            <!-- Preparation Items Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white/80 p-6 border border-stone-200 rounded-sm hover:border-stone-300 transition-colors">
+                    <span class="block text-sm text-stone-500 font-bold font-serif mb-2 tracking-wider">기본 준비물</span>
+                    <span class="text-lg text-ink font-medium">한복, 개인 세면도구</span>
+                </div>
+                <div class="bg-white/80 p-6 border border-stone-200 rounded-sm hover:border-stone-300 transition-colors">
+                    <span class="block text-sm text-stone-500 font-bold font-serif mb-2 tracking-wider">추가 준비물</span>
+                    <span class="text-lg text-ink font-medium">편한 일상복(청소용), 개인 컵(텀블러), 개인 상비약, 기타 소지품</span>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Interactive Timeline Controls -->
-        <div class="mb-10">
-            <div class="flex flex-col sm:flex-row justify-between items-center bg-stone-200 p-2 rounded-xl gap-2 sm:gap-0">
-                <button onclick="setPhase(0)" id="btn-phase-0" class="flex-1 w-full text-center py-4 rounded-lg text-base font-bold transition-all duration-200 bg-white shadow-sm text-stone-900">
-                    도착 및 준비
-                    <span class="block text-sm font-normal text-stone-500 mt-1">20:00 ~ 21:20</span>
+        <!-- Phase Navigation (Tab Style) -->
+        <nav class="mb-12 border-b border-stone-200">
+            <div class="flex flex-col sm:flex-row gap-8 sm:gap-12">
+                <button onclick="setPhase(0)" id="btn-phase-0" class="pb-4 text-left transition-all duration-300 group border-b-2 border-transparent">
+                    <span class="block text-sm font-serif text-stone-500 mb-1 group-hover:text-k-red">Step 01</span>
+                    <span class="text-2xl font-serif font-bold text-stone-400 group-hover:text-ink">도착 및 준비</span>
+                    <span class="block text-sm text-stone-400 mt-1 font-sans">20:00 ~ 21:20</span>
                 </button>
-                <button onclick="setPhase(1)" id="btn-phase-1" class="flex-1 w-full text-center py-4 rounded-lg text-base font-bold text-stone-500 hover:bg-stone-100 hover:text-stone-700 transition-all duration-200">
-                    점호
-                    <span class="block text-sm font-normal text-stone-400 mt-1">21:20 ~ 22:20</span>
+                <button onclick="setPhase(1)" id="btn-phase-1" class="pb-4 text-left transition-all duration-300 group border-b-2 border-transparent">
+                    <span class="block text-sm font-serif text-stone-500 mb-1 group-hover:text-k-red">Step 02</span>
+                    <span class="text-2xl font-serif font-bold text-stone-400 group-hover:text-ink">점호</span>
+                    <span class="block text-sm text-stone-400 mt-1 font-sans">21:20 ~ 22:20</span>
                 </button>
-                <button onclick="setPhase(2)" id="btn-phase-2" class="flex-1 w-full text-center py-4 rounded-lg text-base font-bold text-stone-500 hover:bg-stone-100 hover:text-stone-700 transition-all duration-200">
-                    드는 봉심
-                    <span class="block text-sm font-normal text-stone-400 mt-1">22:20 ~ 종료</span>
+                <button onclick="setPhase(2)" id="btn-phase-2" class="pb-4 text-left transition-all duration-300 group border-b-2 border-transparent">
+                    <span class="block text-sm font-serif text-stone-500 mb-1 group-hover:text-k-red">Step 03</span>
+                    <span class="text-2xl font-serif font-bold text-stone-400 group-hover:text-ink">드는 봉심</span>
+                    <span class="block text-sm text-stone-400 mt-1 font-sans">22:20 ~ 종료</span>
                 </button>
             </div>
-        </div>
+        </nav>
 
         <!-- Dynamic Phase Content -->
-        <div id="phase-content" class="min-h-[400px]">
+        <div id="phase-content" class="min-h-[400px] fade-in-section">
             <!-- Content injected via JS -->
         </div>
 
     </main>
 
     <!-- Footer / Checklist -->
-    <footer class="bg-stone-800 text-stone-300 py-12 mt-12">
-        <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8">
+    <footer class="border-t border-stone-200 bg-white/40 backdrop-blur-sm mt-auto">
+        <div class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
-                <h3 class="serif text-2xl text-white mb-6">핵심 준수 사항 (Checklist)</h3>
-                <ul class="space-y-4 text-base">
-                    <li class="flex items-start">
-                        <span class="text-amber-500 mr-3 text-xl">✓</span>
-                        <span><strong>왼발 원칙:</strong> 대강전 드나들 때 항상 <strong>왼발</strong> 먼저 내딛습니다.</span>
+                <h3 class="font-serif text-2xl text-ink font-bold mb-6 flex items-center gap-2">
+                    <span class="w-1.5 h-6 bg-k-red inline-block rounded-full"></span>
+                    핵심 준수 사항
+                </h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start gap-4 p-4 bg-white/60 rounded-sm border border-stone-100 hover:border-stone-300 transition-colors">
+                        <span class="text-k-red font-serif text-lg font-bold">01</span>
+                        <div>
+                            <strong class="block text-ink font-medium mb-1">왼발 원칙</strong>
+                            <span class="text-stone-600 text-base">대강전 드나들 때 항상 <strong>왼발</strong> 먼저 내딛습니다.</span>
+                        </div>
                     </li>
-                    <li class="flex items-start">
-                        <span class="text-amber-500 mr-3 text-xl">✓</span>
-                        <span><strong>국궁 자세:</strong> 이동 구령 시 허리를 숙인 자세를 끝까지 유지합니다.</span>
+                    <li class="flex items-start gap-4 p-4 bg-white/60 rounded-sm border border-stone-100 hover:border-stone-300 transition-colors">
+                        <span class="text-k-red font-serif text-lg font-bold">02</span>
+                        <div>
+                            <strong class="block text-ink font-medium mb-1">국궁 자세</strong>
+                            <span class="text-stone-600 text-base">이동 구령 시 허리를 숙인 자세를 끝까지 유지합니다.</span>
+                        </div>
                     </li>
-                    <li class="flex items-start">
-                        <span class="text-amber-500 mr-3 text-xl">✓</span>
-                        <span><strong>정숙 유지:</strong> 대기 중에는 잡담을 금하고 마음을 모읍니다.</span>
+                    <li class="flex items-start gap-4 p-4 bg-white/60 rounded-sm border border-stone-100 hover:border-stone-300 transition-colors">
+                        <span class="text-k-red font-serif text-lg font-bold">03</span>
+                        <div>
+                            <strong class="block text-ink font-medium mb-1">정숙 유지</strong>
+                            <span class="text-stone-600 text-base">대기 중에는 잡담을 금하고 마음을 모읍니다.</span>
+                        </div>
                     </li>
                 </ul>
             </div>
-            <div>
-                <div class="bg-stone-700 rounded-lg p-6">
-                    <p class="text-sm text-stone-400 mb-3">도움말</p>
-                    <p class="text-lg leading-relaxed">
-                        3단계 '드는 봉심' 탭에서는 <strong>총 36명</strong>의 대형 변화 시뮬레이션을 볼 수 있습니다. 
-                        오른쪽과 상단의 '신위' 위치를 기준으로 정렬을 확인하세요.
+            
+            <div class="flex flex-col justify-center">
+                <div class="bg-stone-100/50 p-8 rounded-sm border border-stone-200">
+                    <p class="font-serif text-stone-500 mb-4 text-sm tracking-wider">도움말</p>
+                    <p class="text-lg text-stone-700 leading-relaxed font-light">
+                        3단계 <strong class="text-ink font-medium">'드는 봉심'</strong> 탭에서는 총 36명의 대형 변화 시뮬레이션을 확인하실 수 있습니다.<br><br>
+                        오른쪽과 상단의 <span class="text-k-red font-serif">신위(神位)</span> 위치를 기준으로 본인의 정렬 위치를 미리 파악해 보세요.
                     </p>
                 </div>
             </div>
+        </div>
+        <div class="text-center py-6 text-stone-400 text-sm font-serif border-t border-stone-200">
+            &copy; Gongbu Guide. All rights reserved.
         </div>
     </footer>
 
@@ -167,122 +254,114 @@
             {
                 id: 0,
                 title: "도착 및 준비",
-                timeRange: "20:00 ~ 21:20",
                 description: "공부 시작 전날 저녁, 본부에 도착하여 행정 절차를 마치고 몸과 마음을 정돈하는 단계입니다.",
                 steps: [
-                    { time: "20:00 이전", title: "본부 도착 및 국궁", desc: "도착 즉시 대강전에 들러 인사를 드리고, 정급실에서 숙소를 배정받습니다.", role: "all" },
-                    { time: "20:10", title: "환복", desc: "숙소에 짐을 풀고 정갈한 한복으로 갈아입습니다.", role: "all" },
-                    { time: "20:30", title: "공지사항 청취", desc: "사무실에서 전달하는 중요 공지사항을 듣습니다.", role: "all" },
-                    { time: "21:20 전", title: "혈압 체크", desc: "점호 전까지 <strong>'청학관'</strong>에서 반드시 혈압을 측정하고 완료합니다.", role: "all" }
+                    { time: "20:00 이전", title: "본부 도착 및 국궁", desc: "도착 즉시 대강전에 들러 인사를 드리고, 정급실에서 숙소를 배정받습니다." },
+                    { time: "20:10", title: "환복", desc: "숙소에 짐을 풀고 정갈한 한복으로 갈아입습니다." },
+                    { time: "20:30", title: "공지사항 청취", desc: "사무실에서 전달하는 중요 공지사항을 듣습니다." },
+                    { time: "21:20 전", title: "혈압 체크", desc: "점호 전까지 <strong class='text-k-red'>'청학관'</strong>에서 반드시 혈압을 측정하고 완료합니다." }
                 ]
             },
             {
                 id: 1,
                 title: "점호",
-                timeRange: "21:20 ~ 22:20",
                 description: "인원 점검을 마치고, 입소 의식인 '드는 봉심'을 위해 경건하게 준비하는 단계입니다.",
                 steps: [
-                    { time: "21:20 까지", title: "대기 완료", desc: "늦어도 21:20까지는 대강전 1층에 도착하여 점호를 기다립니다. <strong>각자 공부 시간에 맞게 줄을 서면 됩니다.</strong>", role: "all" },
-                    { time: "21:30", title: "점호 시작", desc: "대강전 1층에서 전체 점호를 실시합니다. <br><span class='text-red-600 font-bold'>주의: 시학원께서 호명하실 때는 고개를 숙이거나 허리를 굽히지 않고, 바른 자세 그대로 간결하게 '네'하고 답합니다.</span>", role: "all" }
+                    { time: "21:20 까지", title: "대기 완료", desc: "늦어도 21:20까지는 대강전 1층에 도착하여 점호를 기다립니다. <strong>각자 공부 시간에 맞게 줄을 서면 됩니다.</strong>" },
+                    { time: "21:30", title: "점호 시작", desc: "대강전 1층에서 전체 점호를 실시합니다. <br><span class='text-k-red font-bold'>주의: 시학원께서 호명하실 때는 고개를 숙이거나 허리를 굽히지 않고, 바른 자세 그대로 간결하게 '네'하고 답합니다.</span>" }
                 ]
             },
             {
                 id: 2,
                 title: "드는 봉심",
-                timeRange: "22:20 ~ 종료",
                 description: "공부의 시작을 알리는 가장 중요한 의식입니다. 복잡한 이동과 예법이 있으니 주의 깊게 확인하세요.",
                 hasSimulation: true,
                 steps: [
-                    { time: "22:20 까지", title: "시립 (대기)", desc: "1열(회원), 2열(외수), 3열(내수) 순으로 정렬하여 대기합니다. 잡담을 금합니다.", role: "all" },
-                    { time: "22:27", title: "소종 및 이동 시작", desc: "소종이 울리면 구령에 따라 이동합니다.", role: "all" }
+                    { time: "22:20 까지", title: "시립 (대기)", desc: "1열(회원), 2열(외수), 3열(내수) 순으로 정렬하여 대기합니다. 잡담을 금합니다." },
+                    { time: "22:27", title: "소종 및 이동 시작", desc: "소종이 울리면 구령에 따라 이동합니다." }
                 ],
                 dropdowns: [
-                    { title: "입장", content: "<p class='text-stone-500 italic p-2'>내용 추후 업데이트 예정</p>" },
-                    { title: "봉심", content: "<p class='text-stone-500 italic p-2'>내용 추후 업데이트 예정</p>" },
-                    { title: "퇴장", content: "<p class='text-stone-500 italic p-2'>내용 추후 업데이트 예정</p>" }
+                    { title: "입장 절차", content: "<p class='text-stone-600 italic'>3층 대동문 앞에서 국궁 자세로 왼발부터 입장합니다.</p>" },
+                    { title: "봉심 절차", content: "<p class='text-stone-600 italic'>구천상제님과 옥황상제님 신위에 각 4배씩 총 8배를 올립니다.</p>" },
+                    { title: "퇴장 절차", content: "<p class='text-stone-600 italic'>국궁 자세를 유지하며 뒷걸음으로 퇴장합니다. 4, 5시 공부자가 먼저 나갑니다.</p>" }
                 ]
             }
         ];
 
-        // --- State Management ---
         let currentPhaseIdx = 0;
-        // Role filter removed, default is 'all'
 
-        // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             renderPhase(0);
         });
 
-        // --- Phase Navigation Logic ---
         function setPhase(index) {
             currentPhaseIdx = index;
-            
-            // Update Buttons
-            [0, 1, 2].forEach(i => {
-                const btn = document.getElementById(`btn-phase-${i}`);
-                if (i === index) {
-                    btn.className = "flex-1 w-full text-center py-4 rounded-lg text-base font-bold transition-all duration-200 bg-white shadow-md border-b-4 border-amber-600 text-stone-900 transform scale-[1.02]";
-                } else {
-                    btn.className = "flex-1 w-full text-center py-4 rounded-lg text-base font-bold text-stone-500 hover:bg-stone-100 hover:text-stone-700 transition-all duration-200";
-                }
-            });
-
             renderPhase(index);
         }
 
-        // --- Main Rendering Logic ---
         function renderPhase(index) {
             const phase = phases[index];
             const container = document.getElementById('phase-content');
             
-            // Build Base HTML
+            // Highlight Active Tab Style
+            [0, 1, 2].forEach(i => {
+                const btn = document.getElementById(`btn-phase-${i}`);
+                const title = btn.querySelector('.text-2xl');
+                const border = btn;
+                
+                if (i === index) {
+                    title.classList.remove('text-stone-400');
+                    title.classList.add('text-k-red');
+                    border.classList.remove('border-transparent');
+                    border.classList.add('border-k-red');
+                } else {
+                    title.classList.add('text-stone-400');
+                    title.classList.remove('text-k-red');
+                    border.classList.add('border-transparent');
+                    border.classList.remove('border-k-red');
+                }
+            });
+
+            // Build HTML
             let html = `
-                <div class="bg-white rounded-xl shadow-lg p-8 border border-stone-100 fade-in">
-                    <div class="border-b border-stone-200 pb-4 mb-8">
-                        <div class="flex flex-col md:flex-row justify-between md:items-end gap-2">
-                            <h2 class="text-3xl font-bold text-stone-800 serif">${phase.title}</h2>
-                            <span class="text-amber-600 font-mono font-bold text-xl">${phase.timeRange}</span>
-                        </div>
-                        <p class="text-stone-600 mt-4 text-xl">${phase.description}</p>
+                <div class="fade-in-section">
+                    <div class="mb-10">
+                        <p class="text-xl text-stone-600 leading-relaxed font-light">${phase.description}</p>
                     </div>
 
                     <div class="space-y-6">
             `;
 
-            // Render Steps
             phase.steps.forEach(step => {
-                const highlightClass = 'border-l-4 border-stone-400'; 
-                
                 html += `
-                    <div class="step-card bg-stone-50 p-6 rounded-lg flex flex-col md:flex-row gap-6 ${highlightClass}">
-                        <div class="md:w-36 flex-shrink-0">
-                            <span class="inline-block bg-stone-200 text-stone-700 px-4 py-2 rounded-full text-sm font-bold font-mono">
+                    <div class="step-card bg-white p-6 md:p-8 border border-stone-200 rounded-sm flex flex-col md:flex-row gap-6 md:items-start hover:border-stone-300 transition-colors shadow-sm">
+                        <div class="md:w-32 flex-shrink-0 pt-1">
+                            <span class="inline-block text-stone-500 font-serif font-bold text-lg border-b-2 border-stone-200 pb-1">
                                 ${step.time}
                             </span>
                         </div>
                         <div class="flex-grow">
-                            <h4 class="font-bold text-stone-800 text-xl flex items-center">
+                            <h4 class="font-serif text-xl font-bold text-ink mb-2">
                                 ${step.title}
                             </h4>
-                            <p class="text-stone-600 mt-2 text-lg">${step.desc}</p>
+                            <p class="text-stone-600 text-lg leading-relaxed font-light">${step.desc}</p>
                         </div>
                     </div>
                 `;
             });
 
-            html += `</div>`; // Close space-y-6 for steps
+            html += `</div>`;
 
-            // Dropdowns for Phase 3
             if (phase.dropdowns) {
-                html += `<div class="mt-10 space-y-4">`;
+                html += `<div class="mt-8 space-y-4">`;
                 phase.dropdowns.forEach(drop => {
                     html += `
-                        <details class="bg-stone-50 rounded-lg border border-stone-200 overflow-hidden group">
-                            <summary class="cursor-pointer p-6 font-bold text-stone-800 text-lg hover:bg-stone-100 flex justify-between items-center select-none">
-                                <span>${drop.title}</span>
-                                <span class="text-amber-500 transition-transform duration-300 group-open:rotate-180 text-xl">▼</span>
+                        <details class="bg-white border border-stone-200 rounded-sm group">
+                            <summary class="cursor-pointer p-6 flex justify-between items-center select-none hover:bg-stone-50 transition-colors">
+                                <span class="font-serif font-bold text-lg text-ink">${drop.title}</span>
+                                <span class="text-k-red transition-transform duration-300 group-open:rotate-180 text-xl font-serif">▼</span>
                             </summary>
-                            <div class="p-6 border-t border-stone-100 bg-white text-stone-700 leading-relaxed text-lg">
+                            <div class="p-6 pt-0 text-lg text-stone-600 leading-relaxed font-light border-t border-transparent group-open:border-stone-100 group-open:pt-6">
                                 ${drop.content}
                             </div>
                         </details>
@@ -291,44 +370,45 @@
                 html += `</div>`;
             }
 
-            // Add Simulation if Phase 3
             if (phase.hasSimulation) {
                 html += renderSimulationUI();
             }
 
-            html += `</div>`; // Close main card
+            html += `</div>`;
             container.innerHTML = html;
         }
 
-        // --- Simulation UI Logic (Phase 3 Special Feature) ---
         function renderSimulationUI() {
             return `
-                <div class="mt-12 pt-10 border-t border-stone-200">
-                    <h3 class="text-2xl font-bold text-stone-800 serif mb-6">대형 변화 시뮬레이터 (총 36명)</h3>
-                    <p class="text-base text-stone-500 mb-8">
-                        <span class="block mb-2"><strong>구성:</strong> 
-                            <span class="inline-block w-4 h-4 bg-yellow-300 rounded-full mr-1 align-middle"></span>회원 (1~12), 
-                            <span class="inline-block w-4 h-4 bg-blue-300 rounded-full mr-1 align-middle"></span>외수 (1~12), 
-                            <span class="inline-block w-4 h-4 bg-red-300 rounded-full mr-1 align-middle"></span>내수 (1~12)
-                        </span>
-                        <span class="block mb-2"><strong>초기 상태:</strong> 각 줄 12명 횡대 (가장 먼저 입장한 사람이 오른쪽 끝)</span>
-                    </p>
-                    
-                    <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
-                        <button onclick="updateSim('initial')" class="px-6 py-3 bg-stone-200 hover:bg-stone-300 rounded text-base font-bold text-stone-700 w-full sm:w-auto">1. 초기 정렬</button>
-                        <button onclick="updateSim('final')" class="px-6 py-3 bg-amber-100 hover:bg-amber-200 rounded text-base font-bold text-amber-800 border border-amber-300 w-full sm:w-auto">2. 재정렬 후</button>
+                <div class="mt-16 pt-12 border-t border-stone-200">
+                    <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+                        <div>
+                            <h3 class="font-serif text-2xl font-bold text-ink mb-2">대형 변화 시뮬레이터 (36명)</h3>
+                            <p class="text-stone-500 font-light">
+                                <span class="inline-block w-3 h-3 bg-[#eec366] rounded-full mr-1 align-middle border border-stone-300"></span>회원
+                                <span class="inline-block w-3 h-3 bg-[#6b8eac] rounded-full mr-1 align-middle border border-stone-300 ml-3"></span>외수
+                                <span class="inline-block w-3 h-3 bg-[#d68c8c] rounded-full mr-1 align-middle border border-stone-300 ml-3"></span>내수
+                            </p>
+                        </div>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <button onclick="updateSim('initial')" class="flex-1 md:flex-none px-6 py-3 bg-stone-100 hover:bg-stone-200 text-stone-600 font-serif font-bold rounded-sm border border-stone-200 transition-colors">초기 정렬</button>
+                            <button onclick="updateSim('final')" class="flex-1 md:flex-none px-6 py-3 bg-k-red text-white hover:bg-[#7a3030] font-serif font-bold rounded-sm transition-colors shadow-sm">재정렬 후</button>
+                        </div>
                     </div>
 
-                    <div id="sim-container" class="bg-stone-800 p-4 sm:p-8 pr-12 pt-12 rounded-xl mx-auto max-w-3xl relative h-[500px] border-4 border-double border-stone-600 overflow-hidden">
+                    <div id="sim-container" class="bg-white border border-stone-200 rounded-sm p-4 sm:p-8 pr-12 pt-12 mx-auto max-w-4xl relative h-[500px] overflow-hidden shadow-inner">
                         
+                        <!-- Grid Background Line (Optional Visual) -->
+                        <div class="absolute inset-0 pointer-events-none opacity-5" style="background-image: linear-gradient(#2c2c2c 1px, transparent 1px), linear-gradient(90deg, #2c2c2c 1px, transparent 1px); background-size: 40px 40px;"></div>
+
                         <!-- Sinwi (Right Side) -->
-                        <div class="absolute right-0 top-0 h-full w-10 bg-stone-700 border-l border-stone-600 flex flex-col items-center justify-center z-20 shadow-lg">
-                            <span class="writing-vertical text-amber-400 font-serif font-bold text-lg tracking-[0.5em] drop-shadow-md">신위</span>
+                        <div class="absolute right-0 top-0 h-full w-12 bg-stone-100 border-l border-stone-200 flex flex-col items-center justify-center z-20 shadow-sm">
+                            <span class="writing-vertical text-k-red font-serif font-bold text-xl tracking-[0.4em]">신위</span>
                         </div>
 
                         <!-- Sinwi (Top Side) -->
-                        <div class="absolute top-0 left-0 w-full h-10 bg-stone-700 border-b border-stone-600 flex items-center justify-center z-20 shadow-lg">
-                            <span class="text-amber-400 font-serif font-bold text-lg tracking-[0.5em] drop-shadow-md">신위</span>
+                        <div class="absolute top-0 left-0 w-full h-12 bg-stone-100 border-b border-stone-200 flex items-center justify-center z-20 shadow-sm">
+                            <span class="text-k-red font-serif font-bold text-xl tracking-[0.4em]">신위</span>
                         </div>
                         
                         <!-- Nodes generated by JS -->
@@ -338,65 +418,73 @@
             `;
         }
 
-        // --- Simulation Animation Logic (Updated for 36 People + Rotation) ---
-        // 36 people in total. 3 Rows of 12.
-        // Row 1: Member (Yellow) 1-12
-        // Row 2: Oesu (Blue) 1-12
-        // Row 3: Naesu (Red) 1-12
-        
         function updateSim(state) {
             const area = document.getElementById('nodes-area');
-            if (!area) return; // Guard clause
+            if (!area) return;
             
             area.innerHTML = '';
             
-            // Define Roles
+            // Colors: Muted Gold, Muted Blue, Muted Red
             const roles = [
-                { name: 'member', colorClass: 'bg-yellow-200 text-yellow-900 border-yellow-400' },
-                { name: 'oesu', colorClass: 'bg-blue-200 text-blue-900 border-blue-400' },
-                { name: 'naesu', colorClass: 'bg-red-200 text-red-900 border-red-400' }
+                { name: 'member', colorClass: 'bg-[#eec366] text-white border-[#d4a040]' },
+                { name: 'oesu', colorClass: 'bg-[#6b8eac] text-white border-[#4a6b8a]' },
+                { name: 'naesu', colorClass: 'bg-[#d68c8c] text-white border-[#b06060]' }
             ];
 
-            // Loop for 3 roles/rows
             roles.forEach((role, rIndex) => {
-                // Loop for 12 people per role
                 for (let i = 1; i <= 12; i++) {
-                    const node = document.createElement('div');
-                    // Increased size to w-7 h-7 for better visibility on mobile
-                    node.className = `formation-node absolute w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shadow-md z-10 border-2 ${role.colorClass}`;
-                    node.innerText = i;
-
-                    // Positioning Logic
-                    // rIndex 0 (Member), 1 (Oesu), 2 (Naesu)
-                    // i 1..12 (1 is Rightmost)
-
-                    // Horizontal: 1 is Right (0 index), 12 is Left (11 index)
                     const colIndexFromRight = i - 1; 
-                    const horizontalSpacing = 7.5; // %
+                    const horizontalSpacing = 7.5; 
                     
-                    // Initial/Final Horizontal Logic
-                    // If Final & Even: Align with Odd (i-1)
                     let effectiveColIndex = colIndexFromRight;
                     if (state === 'final' && i % 2 === 0) {
                         effectiveColIndex = colIndexFromRight - 1; 
                     }
                     
-                    // Left % calculation - adjusted to allow space for Sinwi on right and top
-                    // Container layout adjusted via padding
-                    let left = (90 - (effectiveColIndex * horizontalSpacing)) + '%';
+                    let leftVal = (90 - (colIndexFromRight * horizontalSpacing)); // Initial left position
+                    let finalLeftVal = (90 - (effectiveColIndex * horizontalSpacing)); // Final left position
+                    
+                    let left = (state === 'final') ? finalLeftVal + '%' : leftVal + '%';
 
-                    // Vertical Logic
-                    const rowBaseTop = 10 + (rIndex * 28); // Spacing rows
+                    const rowBaseTop = 10 + (rIndex * 28); 
                     let top = rowBaseTop + '%';
 
-                    if (state === 'final') {
-                        // Rotation: Rotate 90deg clockwise so number faces right
-                        node.style.transform = 'rotate(90deg)'; 
+                    // Draw Movement Path (Dotted Line) if Final and Even
+                    if (state === 'final' && i % 2 === 0) {
+                        // Arrow Logic: 'ㄴ' Shape (Down then Right)
+                        // Start: (leftVal, rowBaseTop) - Center of even node
+                        // End: (finalLeftVal, rowBaseTop + 12) - Center of destination (below odd node)
+                        
+                        const pathContainer = document.createElement('div');
+                        pathContainer.className = 'absolute z-0 arrow-path';
+                        
+                        // Center offset calculation (~1.5% to align with node center)
+                        const offset = 1.5;
 
-                        // Even moves down
-                        if (i % 2 === 0) {
-                            top = (rowBaseTop + 12) + '%';
-                        }
+                        pathContainer.style.left = (leftVal + offset) + '%';
+                        pathContainer.style.top = (rowBaseTop + offset) + '%';
+                        pathContainer.style.width = ((finalLeftVal - leftVal)) + '%';
+                        pathContainer.style.height = '12%'; 
+                        
+                        // Shape: Left Border (Down), Bottom Border (Right) -> 'L' (or 'ㄴ') shape
+                        pathContainer.style.borderLeft = '2px dotted #a8a29e';
+                        pathContainer.style.borderBottom = '2px dotted #a8a29e';
+                        pathContainer.style.borderBottomLeftRadius = '10px'; // Rounded corner
+
+                        area.appendChild(pathContainer);
+
+                        // Adjust top for final position of the node
+                        top = (rowBaseTop + 12) + '%';
+                    }
+
+                    const node = document.createElement('div');
+                    // Mobile: w-7 h-7, Larger text
+                    node.className = `formation-node absolute w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md z-10 border ${role.colorClass}`;
+                    node.innerText = i;
+
+                    if (state === 'final') {
+                        node.style.transform = 'rotate(90deg)'; 
+                        // top adjusted above if even
                     } else {
                         node.style.transform = 'rotate(0deg)';
                     }
@@ -404,9 +492,8 @@
                     node.style.left = left;
                     node.style.top = top;
 
-                    // Visual distinction for movers (Evens)
                     if (i % 2 === 0) {
-                        node.style.borderStyle = 'dashed';
+                        node.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.4)'; // Subtle dashed effect replacement
                     }
 
                     area.appendChild(node);
@@ -417,11 +504,10 @@
         // Add CSS Animation class
         const styleSheet = document.createElement("style");
         styleSheet.innerText = `
-            .fade-in { animation: fadeIn 0.5s ease-in; }
-            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+            .fade-in-section { animation: fadeIn 0.6s ease-out forwards; opacity: 0; transform: translateY(10px); }
+            @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
         `;
         document.head.appendChild(styleSheet);
-
     </script>
 </body>
 </html>
