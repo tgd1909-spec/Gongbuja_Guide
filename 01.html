@@ -89,7 +89,13 @@
         /* Vertical Text */
         .writing-vertical {
             writing-mode: vertical-rl;
-            text-orientation: upright;
+            text-orientation: mixed; /* Changed from upright to mixed to rotate brackets */
+            text-orientation: upright; /* Fallback */
+            text-orientation: mixed; 
+        }
+        /* CSS Specificity override for mixed orientation */
+        .writing-vertical {
+             text-orientation: mixed;
         }
         
         /* Arrow Head for Simulator (Pointing Right for 'ㄴ' shape) */
@@ -167,7 +173,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-white/80 p-6 border border-stone-200 rounded-sm hover:border-stone-300 transition-colors">
                     <span class="block text-sm text-stone-500 font-bold font-serif mb-2 tracking-wider">기본 준비물</span>
-                    <span class="text-lg text-ink font-medium">한복, 개인 세면도구</span>
+                    <span class="text-lg text-ink font-medium">한복, 세면도구, 흰신발</span>
                 </div>
                 <div class="bg-white/80 p-6 border border-stone-200 rounded-sm hover:border-stone-300 transition-colors">
                     <span class="block text-sm text-stone-500 font-bold font-serif mb-2 tracking-wider">추가 준비물</span>
@@ -231,7 +237,7 @@
                         <span class="text-k-red font-serif text-lg font-bold">03</span>
                         <div>
                             <strong class="block text-ink font-medium mb-1">국궁(鞠躬)</strong>
-                            <span class="text-stone-600 text-base">이동 구령 시 허리를 숙인 자세를 끝까지 유지합니다.</span>
+                            <span class="text-stone-600 text-base">국궁 자세를 다음 구령이 있을 때까지, 끝까지 유지합니다.</span>
                         </div>
                     </li>
                     <li class="flex items-start gap-4 p-4 bg-white/60 rounded-sm border border-stone-100 hover:border-stone-300 transition-colors">
@@ -268,7 +274,7 @@
                 title: "도착 및 준비",
                 description: "공부 시작 전날 저녁, 본부에 도착하여 행정 절차를 마치고 몸과 마음을 정돈하는 단계입니다.",
                 steps: [
-                    { time: "20:00 이전", title: "본부 도착 및 국궁", desc: "도착 즉시 <strong>대강전 앞마당</strong>에서 국궁(인사)을 드리고, 정급실에서 숙소를 배정받습니다." },
+                    { time: "20:00 이전", title: "본부 도착 및 국궁", desc: "도착 즉시 <strong>대강전 앞마당</strong>에서 국궁(인사)을 드리고, 정급실에서 숙소를 배정받은 후 휴대폰을 제출합니다. <strong class='text-k-red'>반드시 알람을 끄고 제출해 주세요.</strong>" },
                     { time: "20:10", title: "환복", desc: "숙소에 짐을 풀고 정갈한 한복으로 갈아입습니다." },
                     { time: "20:30", title: "공지사항 청취", desc: "사무실에서 전달하는 중요 공지사항을 듣습니다." },
                     { time: "21:20 전", title: "혈압 체크", desc: "점호 전까지 <strong class='text-k-red'>'청학관'</strong>에서 반드시 혈압을 측정하고 기재를 완료합니다." }
@@ -279,7 +285,7 @@
                 title: "점호",
                 description: "인원 점검을 마치고, 입소 의식인 '드는 봉심'을 위해 경건하게 준비하는 단계입니다.",
                 steps: [
-                    { time: "21:20 까지", title: "대기 완료", desc: "늦어도 21:20까지는 대강전 1층에 도착하여 대기합니다. <strong>점호시 다다미 2칸에 3명 시립합니다.</strong><br><br><strong>• 회원은 직급과 입도 순서에 맞게 줄을 섭니다.<br>• 외수와 내수는 공부 시간에 맞게 줄을 섭니다.</strong>" },
+                    { time: "21:20 까지", title: "대기 완료", desc: "늦어도 21:20까지는 대강전 1층에 도착하여 대기합니다. <strong>점호시 다다미 2칸에 3명 시립합니다.</strong><br><br><strong>• 회원은 시간표에 적힌 자신의 번호를 확인하고 번호에 맞게 줄을 섭니다.<br>• 외수와 내수는 공부 시간에 맞게 줄을 섭니다.</strong>" },
                     { time: "21:30", title: "점호 시작", desc: "대강전 1층에서 전체 점호를 실시합니다. <strong>점호 시에는 다다미 2칸에 3명씩 섭니다.</strong><br><br><span class='text-k-red font-bold'>주의: 시학원께서 호명하실 때는 고개를 숙이거나 허리를 굽히지 않고, 바른 자세 그대로 간결하게 '네'하고 답합니다.</span>" }
                 ]
             },
@@ -289,7 +295,7 @@
                 description: "공부의 시작을 알리는 가장 중요한 의식입니다. 복잡한 이동과 예법이 있으니 주의 깊게 확인하세요.",
                 hasSimulation: true,
                 steps: [
-                    { time: "22:20 까지", title: "시립 (대기)", desc: "1열(회원), 2열(외수), 3열(내수) 순으로 정렬하여 대기합니다. 잡담을 금합니다." },
+                    { time: "22:20 까지", title: "시립 (대기)", desc: "<strong>대강전 2층 승정문 앞</strong>에서 1열(회원), 2열(외수), 3열(내수) 순으로 정렬하여 대기합니다. 잡담을 금합니다." },
                     { time: "22:27", title: "소종 및 이동 시작", desc: "소종이 울리면 구령에 따라 이동합니다." }
                 ],
                 dropdowns: [
@@ -397,6 +403,11 @@
 
             html += `</div>`;
             container.innerHTML = html;
+            
+            // Auto-initialize simulator if present (Added fix)
+            if (phase.hasSimulation) {
+                setTimeout(() => updateSim('initial'), 0);
+            }
         }
 
         function renderSimulationUI() {
@@ -424,12 +435,12 @@
 
                         <!-- Beopdan (Right Side) -->
                         <div class="absolute right-0 top-0 h-full w-12 bg-stone-100 border-l border-stone-200 flex flex-col items-center justify-center z-20 shadow-sm">
-                            <span class="writing-vertical text-k-red font-serif font-bold text-xl tracking-[0.4em]">법단</span>
+                            <span class="writing-vertical text-k-red font-serif font-bold text-xl tracking-[0.4em]">법단(法壇)</span>
                         </div>
 
-                        <!-- Sinwi (Top Side) -->
+                        <!-- Yeongdae (Top Side) -->
                         <div class="absolute top-0 left-0 w-full h-12 bg-stone-100 border-b border-stone-200 flex items-center justify-center z-20 shadow-sm">
-                            <span class="text-k-red font-serif font-bold text-xl tracking-[0.4em]">신위</span>
+                            <span class="text-k-red font-serif font-bold text-xl tracking-[0.4em]">영대(靈臺)</span>
                         </div>
                         
                         <!-- Nodes generated by JS -->
