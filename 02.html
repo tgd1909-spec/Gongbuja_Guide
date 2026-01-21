@@ -130,7 +130,7 @@
             </div>
             
             <!-- Home Button -->
-            <a href="index.html" class="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors duration-300 group">
+            <a href="#" onclick="window.location.reload()" class="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors duration-300 group">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-105 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
@@ -144,6 +144,7 @@
         <div class="container mx-auto max-w-3xl flex">
             <button onclick="switchTab('schedule')" id="nav-schedule" class="flex-1 py-4 text-center tab-btn tab-active text-base md:text-lg">일과표</button>
             <button onclick="switchTab('practice')" id="nav-practice" class="flex-1 py-4 text-center tab-btn tab-inactive text-base md:text-lg">개별 공부 및 역할</button>
+            <button onclick="switchTab('simulator')" id="nav-simulator" class="flex-1 py-4 text-center tab-btn tab-inactive text-base md:text-lg">입실 시뮬레이터</button>
         </div>
     </nav>
 
@@ -164,7 +165,7 @@
                 </div>
                 
                 <div class="flex flex-wrap gap-4 mt-2 pt-4 border-t border-stone-200">
-                    <!-- Sunday Toggle -->
+                    <!-- Sunday Toggle (Auto-checked via JS) -->
                     <label class="flex items-center gap-3 cursor-pointer select-none group bg-white px-4 py-3 rounded border border-stone-300 shadow-sm hover:border-point transition-colors">
                         <input type="checkbox" id="sunday-toggle" onchange="toggleSundayMode(this.checked)" class="w-5 h-5 text-point rounded border-stone-400 focus:ring-point accent-point">
                         <span class="text-base font-medium text-stone-700 group-hover:text-point">주일 일정 보기</span>
@@ -189,7 +190,7 @@
             
             <div class="bg-white/60 backdrop-blur-sm border-b border-stone-200 pb-6 mb-8 rounded-lg p-6 shadow-sm">
                 <h2 class="text-2xl font-bold text-ink font-serif mb-3">나의 공부 및 역할</h2>
-                <p class="text-stone-600 leading-relaxed">시간 흐름에 따른 구체적인 임무와 절차를 확인하세요.</p>
+                <p class="text-stone-600 leading-relaxed">시간 흐름에 따른 구체적인 임무와 절차를 확인하세요.<br><strong>모든 행동은 회원을 중심으로 맞추는 것이 중요합니다.</strong></p>
             </div>
 
             <!-- Inputs Wrapper -->
@@ -275,6 +276,38 @@
             </div>
         </section>
 
+        <!-- SECTION 3: SIMULATOR -->
+        <section id="view-simulator" class="hidden space-y-8 animate-fade-in">
+            <div class="bg-white/60 backdrop-blur-sm border-b border-stone-200 pb-6 mb-8 rounded-lg p-6 shadow-sm">
+                <h2 class="text-2xl font-bold text-ink font-serif mb-3">공부방 입실 시뮬레이터</h2>
+                <p class="text-stone-600 leading-relaxed">복잡한 입실 동선을 시각적으로 익혀보세요. <br><strong>회원과 내수는 뒤로 물러나고, 들어오는 사람은 기존 사람들의 뒤로 돌아갑니다.</strong></p>
+            </div>
+
+            <div class="bg-white border border-stone-200 rounded-lg p-4 shadow-sm flex flex-col items-center">
+                <div class="relative w-full max-w-[500px] aspect-square bg-[#F5F5DC] border-4 border-[#8D6E63] rounded-sm mb-6 overflow-hidden">
+                    <!-- Adjusted Table Position to Right Room Center (60%) -->
+                    <div class="absolute top-0 left-[60%] -translate-x-1/2 w-1/3 h-2 bg-[#5D4037]"></div>
+                    <div class="absolute top-2 left-[60%] -translate-x-1/2 text-[#5D4037] text-xs font-bold">향 탁자 (앞)</div>
+                    <div class="absolute top-1/2 left-0 -translate-y-1/2 w-2 h-16 bg-[#3E2723] rounded-r"></div>
+                    <div class="absolute top-1/2 left-4 -translate-y-1/2 text-[#3E2723] text-xs font-bold -rotate-90">출입문</div>
+                    <canvas id="simCanvas" width="500" height="500" class="w-full h-full"></canvas>
+                </div>
+
+                <div class="w-full max-w-[500px] flex flex-col gap-4">
+                    <div class="bg-stone-50 p-4 rounded border border-stone-200 min-h-[80px] flex items-center justify-center text-center">
+                        <p id="step-description" class="text-lg font-bold text-ink transition-all">시뮬레이션을 시작하려면 아래 버튼을 누르세요.</p>
+                    </div>
+
+                    <div class="flex justify-between gap-2">
+                        <button onclick="simController.prev()" class="flex-1 py-3 bg-white border border-stone-300 text-stone-700 rounded hover:bg-stone-50 font-bold">◀ 이전</button>
+                        <button onclick="simController.play()" class="flex-1 py-3 bg-point text-white rounded hover:bg-red-800 font-bold shadow-sm">▶ 재생/정지</button>
+                        <button onclick="simController.next()" class="flex-1 py-3 bg-white border border-stone-300 text-stone-700 rounded hover:bg-stone-50 font-bold">다음 ▶</button>
+                    </div>
+                    <button onclick="simController.reset()" class="w-full py-2 text-stone-500 hover:text-stone-800 text-sm">↺ 처음으로 리셋</button>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <footer class="border-t border-stone-200 py-10 mt-12 text-center bg-white/60 backdrop-blur-sm">
@@ -291,11 +324,14 @@
         const weekdayItems = [
             { time: "01:30", title: "축시 기도", loc: "대강전 1층", note: "01:20까지 도착", role: "all" },
             { time: "02:00", title: "취침", loc: "숙소", note: "", role: "all" },
-            { time: "07:15", title: "기상", loc: "-", note: "", role: "all" },
+            // Removed 07:15 기상
+            { time: "07:10", title: "체조", loc: "대강전 1층", note: "", role: "all" },
             { time: "07:30", title: "진시 기도", loc: "대강전 1층", note: "07:20까지 도착", role: "all" },
             { time: "07:50", title: "아침 식사", loc: "식당", note: "", role: "all" },
             { time: "08:15", title: "방장 회의", loc: "별관", note: "사수 필수 참석", role: "sasu" },
-            { time: "09:00", title: "청소", loc: "지정 구역", note: "", role: "learner_only" }, 
+            { time: "08:27", title: "체조", loc: "청학관", note: "", role: "all" },
+            { time: "08:35", title: "공지사항", loc: "청학관", note: "08:40까지", role: "all" },
+            { time: "08:40", title: "청소", loc: "지정 구역", note: "09:20까지 진행", role: "learner_only" }, 
             { time: "09:00", title: "사수 각오", loc: "별관", note: "", role: "sasu" },
             { time: "10:05", title: "수련 대기 및 환영", loc: "대강전 2층", note: "공부자 환영 준비", role: "sasu" },
             { time: "10:20", title: "사수 스피치", loc: "대강전 2층", note: "", role: "sasu" },
@@ -358,7 +394,7 @@
         let currentRoleFilter = 'all';
 
         function switchTab(tabId) {
-            ['schedule', 'practice'].forEach(id => {
+            ['schedule', 'practice', 'simulator'].forEach(id => {
                 const view = document.getElementById(`view-${id}`);
                 const nav = document.getElementById(`nav-${id}`);
                 if(view) view.classList.add('hidden');
@@ -373,12 +409,17 @@
             activeNav.classList.add('tab-active');
             activeNav.classList.remove('tab-inactive');
             
+            // Auto scroll to top on tab switch
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
             currentTab = tabId;
 
             if(tabId === 'practice') {
                 setRoleFilter(currentRoleFilter);
             } else if (tabId === 'schedule') {
                 renderSchedule();
+            } else if (tabId === 'simulator') {
+                if(ctx) simController.init();
             }
         }
 
@@ -392,11 +433,11 @@
             return hours * 60 + minutes;
         }
 
-        // --- Auto Sunday Detection Logic ---
+        // --- Auto Sunday Detection Logic (Today is 1/21 -> Not Sunday) ---
+        // 1/20 was Sunday cycle. 1/21 is weekday.
         function isSundayCycle() {
-            // Base date (known Sunday or cycle start)
-            // Assuming today is Sunday as per user request to set logic
-            return true; 
+            // For demo purpose, hardcoded to false since 1/21 is not cycle day (1/20 was)
+            return false;
         }
 
         // --- Toggle Sunday Mode Globally ---
@@ -500,6 +541,7 @@
             }
         }
 
+        // --- Role Filter Logic (Defined globally) ---
         function setRoleFilter(role) {
             currentRoleFilter = role;
             
@@ -549,11 +591,11 @@
 
             const rawSteps = [
                 { time: addMin(-15), title: "준비 및 주성 연습", desc: "대강전 1층 도착, 주문 연습 시작.", roleInfo: null },
-                { time: addMin(20), title: "이동 대기 및 출발", desc: "주문 연습 종료 후 3층으로 이동 준비.", highlight: true, roleInfo: { member: "1열 (가장 먼저 출발)", oesu: "2열 (회원 뒤)", naesu: "3열 (마지막, 문단속)" } },
-                { time: addMin(25), title: "공부방 앞 대기 & 입장", desc: "공부방 앞 도착 및 입장.", roleInfo: { member: "신발 벗고 1번 입장", oesu: "신발 정리, 문 열기, 3번 입장", naesu: "2번 입장" } },
-                { time: addMin(27), title: "교대 신호", desc: "27분 30초경 공부 교대 신호.", roleInfo: { member: "★ 크게 헛기침 신호", oesu: "대기", naesu: "대기" } },
-                { time: addMin(30), title: "공부방 입실", desc: "종이 울리면 방으로 들어갑니다.", roleInfo: { member: "1번 입장. 향 불 붙이기. 좌배 주도.", oesu: "3번 입장. 소독/청소. 손수건 뒷사람 전달.", naesu: "2번 입장. 외곽 이동. 소독/청소. 손수건 뒷사람 전달." } },
-                { time: addMin(88), title: "퇴실 준비", desc: "다음 타임 교대 및 퇴실 (28분경).", roleInfo: { member: "좌배 구령. 먼저 뒤로 이동.", oesu: "나중 이동.", naesu: "먼저 이동." } },
+                { time: addMin(20), title: "이동 대기 및 출발", desc: "주문 연습 종료 후 3층으로 이동 준비.", highlight: true, roleInfo: { member: "1열 (가장 먼저 출발)", oesu: "2열 (회원 뒤)", naesu: "3열 (마지막)" } },
+                { time: addMin(25), title: "공부방 앞 대기 & 입장", desc: "공부방 앞 도착 및 입장. (회원과 함께)", roleInfo: { member: "1번 입장", oesu: "앞 시간 공부자 신발 정리, 문 열기, 3번 입장", naesu: "2번 입장" } },
+                { time: addMin(27), title: "교대 신호 및 입실 준비", desc: "27분 30초경 공부 교대 신호(헛기침). 27분 50초 종이 울리면 입실.", roleInfo: { member: "★ 크게 헛기침 신호", oesu: "대기", naesu: "대기" } },
+                { time: addMin(30), title: "공부방 입실", desc: "종이 울리면 방으로 들어갑니다. (회원을 중심으로)", roleInfo: { member: "1번 입장. 향 불 붙이기. 좌배 주도.", oesu: "3번 입장. 걸레 챙겨서 내수에게 전달. 소독/청소. 손수건 뒷사람 전달.", naesu: "2번 입장. 외곽 이동. 소독/청소. 손수건 뒷사람 전달." } },
+                { time: addMin(88), title: "퇴실 준비", desc: "다음 타임 교대 및 퇴실 (28분경). 회원에 맞춰 행동.", roleInfo: { member: "좌배. 먼저 뒤로 이동.", oesu: "나중 이동.", naesu: "먼저 이동." } },
                 { time: addMin(90), title: "종료 및 해산", desc: "문단속 후 1층에서 인사 (30분).", roleInfo: { member: "1층 이동.", oesu: "★ 바깥 문 닫기", naesu: "★ 안쪽 문 닫기" } }
             ];
 
@@ -660,15 +702,293 @@
             `}).join('');
         }
 
-        window.onload = function() {
-            // Check if it is Sunday cycle (Simulated as True for demo as requested)
-            if (isSundayCycle()) {
-                toggleSundayMode(true);
-            } else {
-                renderSchedule();
+        // --- Simulator Engine ---
+        const canvas = document.getElementById('simCanvas');
+        let ctx = null;
+        if(canvas) ctx = canvas.getContext('2d');
+        
+        const C_MEMBER = '#d97706';
+        const C_OESU = '#2563eb';
+        const C_NAESU = '#dc2626';
+
+        // Steps for Animation
+        const simSteps = [
+            {
+                text: "1. 공부 진행 중 (현재 시간)",
+                setup: (s) => {
+                    // Room (Right Side, 0-500 width relative coords, but let's shift)
+                    // Let's redefine coord system: 
+                    // Room: x 100 to 500 (400x500 box)
+                    // Corridor: x 0 to 100 (100x500 box)
+                    // Door: x=100, y=250 (Gap 230~270)
+                    
+                    // Current Team (Seated)
+                    s.p_oesu = {x: 200, y: 150, label: '현 외수', c: C_OESU};
+                    s.p_member = {x: 300, y: 150, label: '현 회원', c: C_MEMBER};
+                    s.p_naesu = {x: 400, y: 150, label: '현 내수', c: C_NAESU};
+                    
+                    // Next Team (Waiting in Corridor)
+                    // Requested: Oesu & Member ABOVE door, Naesu BELOW door.
+                    // Door gap is ~230 to 270.
+                    
+                    s.n_oesu = {x: 40, y: 150, label: '다음 외수', c: C_OESU, alpha: 1};   // Above
+                    s.n_member = {x: 40, y: 200, label: '다음 회원', c: C_MEMBER, alpha: 1}; // Above, closer to door
+                    s.n_naesu = {x: 40, y: 320, label: '다음 내수', c: C_NAESU, alpha: 1};   // Below door
+                }
+            },
+            {
+                text: "2. 교대 준비: 회원과 내수 후퇴",
+                desc: "종이 울리면 회원과 내수는 뒤로 물러나 앞자리를 비웁니다. 외수는 가만히 있습니다.",
+                animate: (s, p) => {
+                    s.p_member.y = lerp(150, 350, p);
+                    s.p_naesu.y = lerp(150, 350, p);
+                }
+            },
+            {
+                text: "3. 다음 회원 입장",
+                desc: "다음 회원이 들어와 외수 뒤를 돌아 중앙 자리로 갑니다.",
+                animate: (s, p) => {
+                    // Path: Wait(40, 200) -> Door(100, 250) -> Behind Oesu(200, 250) -> Seat(300, 150)
+                    
+                    if(p < 0.2) {
+                        // Move to Door
+                        const lp = p / 0.2;
+                        s.n_member.x = lerp(40, 120, lp);
+                        s.n_member.y = lerp(200, 250, lp);
+                    } else if (p < 0.5) {
+                        // Enter & Walk behind Oesu
+                        const lp = (p - 0.2) / 0.3;
+                        s.n_member.x = lerp(120, 300, lp);
+                        s.n_member.y = 250;
+                    } else {
+                        // Move to Seat
+                        const lp = (p - 0.5) / 0.5;
+                        s.n_member.x = 300;
+                        s.n_member.y = lerp(250, 150, lp);
+                    }
+                }
+            },
+            {
+                text: "4. 다음 내수 입장",
+                desc: "다음 내수가 들어와 기존 인원들의 등 뒤를 지나, 오른쪽 끝으로 크게 돌아 자리로 갑니다.",
+                animate: (s, p) => {
+                    // Start: (40, 320)
+                    // Obstacles: Old Member(300, 350), Old Naesu(400, 350)
+                    // Path: Door -> Deep Back (y=450) -> Far Right (x=460) -> Up (y=150) -> Seat (400, 150)
+                    
+                    if(p < 0.15) {
+                        // 1. To Door
+                        const lp = p / 0.15;
+                        s.n_naesu.x = lerp(40, 120, lp);
+                        s.n_naesu.y = lerp(320, 250, lp);
+                    } else if (p < 0.35) {
+                        // 2. Go Deep Back (Behind existing people)
+                        const lp = (p - 0.15) / 0.2;
+                        s.n_naesu.x = lerp(120, 180, lp);
+                        s.n_naesu.y = lerp(250, 450, lp); 
+                    } else if (p < 0.65) {
+                        // 3. Go Across to Far Right
+                        const lp = (p - 0.35) / 0.3;
+                        s.n_naesu.x = lerp(180, 460, lp);
+                        s.n_naesu.y = 450;
+                    } else if (p < 0.85) {
+                        // 4. Move Up (Right side of room)
+                        const lp = (p - 0.65) / 0.2;
+                        s.n_naesu.x = 460;
+                        s.n_naesu.y = lerp(450, 150, lp);
+                    } else {
+                        // 5. Move Left into Seat
+                        const lp = (p - 0.85) / 0.15;
+                        s.n_naesu.x = lerp(460, 400, lp);
+                        s.n_naesu.y = 150;
+                    }
+                }
+            },
+            {
+                text: "5. 외수 교대",
+                desc: "이전 외수가 뒤로 물러나고, 다음 외수가 문을 닫으며 들어와 앉습니다.",
+                animate: (s, p) => {
+                    // 1. Old Oesu retreats (0.0-0.3)
+                    // 2. New Oesu enters (0.3-1.0)
+                    
+                    if(p < 0.3) {
+                        const lp = p / 0.3;
+                        s.p_oesu.y = lerp(150, 350, lp);
+                    } else {
+                        s.p_oesu.y = 350;
+                        
+                        const lp = (p - 0.3) / 0.7;
+                        // Path: Wait(40, 150) -> Door(100, 250) -> Seat(200, 150)
+                        if(lp < 0.3) {
+                            s.n_oesu.x = lerp(40, 120, lp/0.3);
+                            s.n_oesu.y = lerp(150, 250, lp/0.3);
+                        } else {
+                            s.n_oesu.x = lerp(120, 200, (lp-0.3)/0.7);
+                            s.n_oesu.y = lerp(250, 150, (lp-0.3)/0.7);
+                        }
+                    }
+                }
+            },
+            {
+                text: "완료: 공부 시작 / 퇴실",
+                desc: "새로운 조가 자리를 잡았습니다. 이전 조는 퇴실합니다.",
+                animate: (s, p) => {
+                    s.p_member.alpha = 1 - p;
+                    s.p_oesu.alpha = 1 - p;
+                    s.p_naesu.alpha = 1 - p;
+                }
             }
-            setInterval(renderSchedule, 60000);
+        ];
+
+        const simController = {
+            stepIndex: 0,
+            progress: 0,
+            isPlaying: false,
+            lastTime: 0,
+            state: {},
+            
+            init: function() {
+                this.reset();
+                requestAnimationFrame((t) => this.loop(t));
+            },
+            
+            reset: function() {
+                this.stepIndex = 0;
+                this.progress = 0;
+                this.isPlaying = false;
+                simSteps[0].setup(this.state);
+                this.draw();
+                this.updateText();
+            },
+            
+            next: function() {
+                if (this.stepIndex < simSteps.length - 1) {
+                    if(simSteps[this.stepIndex].animate) simSteps[this.stepIndex].animate(this.state, 1.0);
+                    this.stepIndex++;
+                    this.progress = 0;
+                    this.updateText();
+                    this.draw();
+                }
+            },
+            
+            prev: function() {
+                if (this.stepIndex > 0) {
+                    this.stepIndex--;
+                    this.progress = 0;
+                    simSteps[0].setup(this.state);
+                    for(let i=1; i<this.stepIndex; i++) {
+                        if(simSteps[i].animate) simSteps[i].animate(this.state, 1.0);
+                    }
+                    this.updateText();
+                    this.draw();
+                }
+            },
+            
+            play: function() {
+                this.isPlaying = !this.isPlaying;
+            },
+            
+            updateText: function() {
+                const el = document.getElementById('step-description');
+                const step = simSteps[this.stepIndex];
+                el.innerHTML = `<span class="block text-sm text-point mb-1">STEP ${this.stepIndex}</span>${step.text}<br><span class="text-sm font-normal text-stone-500">${step.desc || ''}</span>`;
+            },
+            
+            loop: function(timestamp) {
+                const dt = timestamp - this.lastTime;
+                this.lastTime = timestamp;
+                
+                if (this.isPlaying) {
+                    this.progress += dt * 0.0005;
+                    if (this.progress >= 1) {
+                        this.progress = 1;
+                        if(this.stepIndex < simSteps.length - 1) {
+                            this.next();
+                        } else {
+                            this.isPlaying = false;
+                        }
+                    }
+                    if(simSteps[this.stepIndex].animate) {
+                        simSteps[this.stepIndex].animate(this.state, this.progress);
+                    }
+                    this.draw();
+                }
+                requestAnimationFrame((t) => this.loop(t));
+            },
+
+            draw: function() {
+                if(!ctx) return;
+                ctx.clearRect(0, 0, 500, 500);
+                
+                // Draw Corridor Area (Left 100px)
+                ctx.fillStyle = '#EFEBE9'; // Light corridor color
+                ctx.fillRect(0, 0, 100, 500);
+                
+                // Draw Room Area (Right 400px)
+                // Grid
+                ctx.strokeStyle = '#D7CCC8';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for(let i=100; i<500; i+=50) {
+                    ctx.moveTo(i, 0); ctx.lineTo(i, 500);
+                }
+                for(let i=0; i<500; i+=50) {
+                    ctx.moveTo(100, i); ctx.lineTo(500, i);
+                }
+                ctx.stroke();
+                
+                // Wall separator
+                ctx.strokeStyle = '#5D4037';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(100, 0); ctx.lineTo(100, 230); // Top wall
+                ctx.moveTo(100, 270); ctx.lineTo(100, 500); // Bottom wall
+                ctx.stroke();
+                
+                // Door open/close visual (Optional)
+                // Just gap is fine
+
+                const drawBall = (obj) => {
+                    if (obj.alpha === 0) return;
+                    ctx.globalAlpha = obj.alpha !== undefined ? obj.alpha : 1;
+                    ctx.fillStyle = obj.c;
+                    ctx.beginPath();
+                    // Increased Radius from 18 to 22
+                    ctx.arc(obj.x, obj.y, 22, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '10px Noto Sans KR';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    let short = obj.label.includes('회원') ? '회' : (obj.label.includes('외수') ? '외' : '내');
+                    // Changed Labels to Korean
+                    ctx.fillText(obj.label.includes('다음') ? '다음' : '기존', obj.x, obj.y - 8);
+                    ctx.fillText(short, obj.x, obj.y + 6);
+                    ctx.globalAlpha = 1;
+                };
+
+                drawBall(this.state.p_oesu);
+                drawBall(this.state.p_member);
+                drawBall(this.state.p_naesu);
+                
+                drawBall(this.state.n_member);
+                drawBall(this.state.n_naesu);
+                drawBall(this.state.n_oesu);
+            }
         };
+        
+        function lerp(start, end, t) {
+            return start * (1 - t) + end * t;
+        }
+
+        // Initialization
+        window.onload = function() {
+            renderSchedule();
+            generateRitualTimeline();
+        }
     </script>
 </body>
 </html>
