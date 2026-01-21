@@ -116,13 +116,18 @@
             background-color: #d6d3d1;
             border-radius: 50%;
         }
+        
+        /* Smooth Scrolling logic is handled in JS */
+        html {
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
 <body class="font-sans text-ink antialiased selection:bg-k-red/20 selection:text-k-red text-lg">
 
     <!-- Header / Navigation -->
-    <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-white/70 border-b border-stone-200/50">
-        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+    <header class="sticky top-0 z-50 w-full backdrop-blur-md bg-white/70 border-b border-stone-200/50 h-20 transition-all duration-300" id="main-header">
+        <div class="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <!-- Simple Logo/Icon Area -->
                 <div class="w-8 h-8 rounded-full border border-k-red flex items-center justify-center">
@@ -172,7 +177,7 @@
         </section>
 
         <!-- Phase Navigation (Tab Style) -->
-        <nav class="mb-12 border-b border-stone-200">
+        <nav class="mb-12 border-b border-stone-200" id="phase-nav">
             <div class="flex flex-col sm:flex-row gap-8 sm:gap-12">
                 <button onclick="setPhase(0)" id="btn-phase-0" class="pb-4 text-left transition-all duration-300 group border-b-2 border-transparent">
                     <span class="block text-sm font-serif text-stone-500 mb-1 group-hover:text-k-red">Step 01</span>
@@ -205,25 +210,32 @@
             <div>
                 <h3 class="font-serif text-2xl text-ink font-bold mb-6 flex items-center gap-2">
                     <span class="w-1.5 h-6 bg-k-red inline-block rounded-full"></span>
-                    핵심 준수 사항
+                    봉심 핵심 준수 사항
                 </h3>
                 <ul class="space-y-4">
                     <li class="flex items-start gap-4 p-4 bg-white/60 rounded-sm border border-stone-100 hover:border-stone-300 transition-colors">
                         <span class="text-k-red font-serif text-lg font-bold">01</span>
                         <div>
                             <strong class="block text-ink font-medium mb-1">왼발 원칙</strong>
-                            <span class="text-stone-600 text-base">대강전 드나들 때 항상 <strong>왼발</strong> 먼저 내딛습니다.</span>
+                            <span class="text-stone-600 text-base">봉심할 때 항상 <strong>왼발</strong>을 먼저 내딛습니다.</span>
                         </div>
                     </li>
                     <li class="flex items-start gap-4 p-4 bg-white/60 rounded-sm border border-stone-100 hover:border-stone-300 transition-colors">
                         <span class="text-k-red font-serif text-lg font-bold">02</span>
                         <div>
-                            <strong class="block text-ink font-medium mb-1">국궁 자세</strong>
-                            <span class="text-stone-600 text-base">이동 구령 시 허리를 숙인 자세를 끝까지 유지합니다.</span>
+                            <strong class="block text-ink font-medium mb-1">면수(俛首)</strong>
+                            <span class="text-stone-600 text-base">곧게 선 자세에서 턱을 살짝 당겨 시선을 아래로 바라보는 자세입니다.</span>
                         </div>
                     </li>
                     <li class="flex items-start gap-4 p-4 bg-white/60 rounded-sm border border-stone-100 hover:border-stone-300 transition-colors">
                         <span class="text-k-red font-serif text-lg font-bold">03</span>
+                        <div>
+                            <strong class="block text-ink font-medium mb-1">국궁(鞠躬)</strong>
+                            <span class="text-stone-600 text-base">이동 구령 시 허리를 숙인 자세를 끝까지 유지합니다.</span>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4 p-4 bg-white/60 rounded-sm border border-stone-100 hover:border-stone-300 transition-colors">
+                        <span class="text-k-red font-serif text-lg font-bold">04</span>
                         <div>
                             <strong class="block text-ink font-medium mb-1">정숙 유지</strong>
                             <span class="text-stone-600 text-base">대기 중에는 잡담을 금하고 마음을 모읍니다.</span>
@@ -237,7 +249,7 @@
                     <p class="font-serif text-stone-500 mb-4 text-sm tracking-wider">도움말</p>
                     <p class="text-lg text-stone-700 leading-relaxed font-light">
                         3단계 <strong class="text-ink font-medium">'드는 봉심'</strong> 탭에서는 총 36명의 대형 변화 시뮬레이션을 확인하실 수 있습니다.<br><br>
-                        오른쪽과 상단의 <span class="text-k-red font-serif">신위(神位)</span> 위치를 기준으로 본인의 정렬 위치를 미리 파악해 보세요.
+                        오른쪽의 <span class="text-k-red font-serif">법단(法壇)</span> 위치를 기준으로 본인의 정렬 위치를 미리 파악해 보세요.
                     </p>
                 </div>
             </div>
@@ -256,7 +268,7 @@
                 title: "도착 및 준비",
                 description: "공부 시작 전날 저녁, 본부에 도착하여 행정 절차를 마치고 몸과 마음을 정돈하는 단계입니다.",
                 steps: [
-                    { time: "20:00 이전", title: "본부 도착 및 국궁", desc: "도착 즉시 대강전에 들러 인사를 드리고, 정급실에서 숙소를 배정받습니다." },
+                    { time: "20:00 이전", title: "본부 도착 및 국궁", desc: "도착 즉시 <strong>대강전 앞마당</strong>에서 국궁(인사)을 드리고, 정급실에서 숙소를 배정받습니다." },
                     { time: "20:10", title: "환복", desc: "숙소에 짐을 풀고 정갈한 한복으로 갈아입습니다." },
                     { time: "20:30", title: "공지사항 청취", desc: "사무실에서 전달하는 중요 공지사항을 듣습니다." },
                     { time: "21:20 전", title: "혈압 체크", desc: "점호 전까지 <strong class='text-k-red'>'청학관'</strong>에서 반드시 혈압을 측정하고 완료합니다." }
@@ -267,8 +279,8 @@
                 title: "점호",
                 description: "인원 점검을 마치고, 입소 의식인 '드는 봉심'을 위해 경건하게 준비하는 단계입니다.",
                 steps: [
-                    { time: "21:20 까지", title: "대기 완료", desc: "늦어도 21:20까지는 대강전 1층에 도착하여 점호를 기다립니다. <strong>각자 공부 시간에 맞게 줄을 서면 됩니다.</strong>" },
-                    { time: "21:30", title: "점호 시작", desc: "대강전 1층에서 전체 점호를 실시합니다. <br><span class='text-k-red font-bold'>주의: 시학원께서 호명하실 때는 고개를 숙이거나 허리를 굽히지 않고, 바른 자세 그대로 간결하게 '네'하고 답합니다.</span>" }
+                    { time: "21:20 까지", title: "대기 완료", desc: "늦어도 21:20까지는 대강전 1층에 도착하여 대기합니다. <strong>점호시 다다미 2칸에 3명 시립합니다.</strong><br><br><strong>• 회원은 직급과 입도 순서에 맞게 줄을 섭니다.<br>• 외수와 내수는 공부 시간에 맞게 줄을 섭니다.</strong>" },
+                    { time: "21:30", title: "점호 시작", desc: "대강전 1층에서 전체 점호를 실시합니다.<br><br><span class='text-k-red font-bold'>주의: 시학원께서 호명하실 때는 고개를 숙이거나 허리를 굽히지 않고, 바른 자세 그대로 간결하게 '네'하고 답합니다.</span>" }
                 ]
             },
             {
@@ -281,9 +293,9 @@
                     { time: "22:27", title: "소종 및 이동 시작", desc: "소종이 울리면 구령에 따라 이동합니다." }
                 ],
                 dropdowns: [
-                    { title: "입장 절차", content: "<p class='text-stone-600 italic'>3층 대동문 앞에서 국궁 자세로 왼발부터 입장합니다.</p>" },
+                    { title: "입장 절차", content: "<p class='text-stone-600 italic'>3층 대동문 앞에서 국궁(鞠躬) 자세로 왼발부터 입장합니다.</p>" },
                     { title: "봉심 절차", content: "<p class='text-stone-600 italic'>구천상제님과 옥황상제님 신위에 각 4배씩 총 8배를 올립니다.</p>" },
-                    { title: "퇴장 절차", content: "<p class='text-stone-600 italic'>국궁 자세를 유지하며 뒷걸음으로 퇴장합니다. 4, 5시 공부자가 먼저 나갑니다.</p>" }
+                    { title: "퇴장 절차", content: "<p class='text-stone-600 italic'>국궁(鞠躬) 자세를 유지하며 뒷걸음으로 퇴장합니다. 4, 5시 공부자가 먼저 나갑니다.</p>" }
                 ]
             }
         ];
@@ -297,6 +309,15 @@
         function setPhase(index) {
             currentPhaseIdx = index;
             renderPhase(index);
+            // Custom Auto-scroll: Scroll to the Navigation bar (Tabs) instead of content.
+            // Offset logic: Scroll to 'phase-nav' element - Header Height (80px) - Some Padding (20px) = -100px roughly.
+            const navDiv = document.getElementById('phase-nav');
+            if (navDiv) {
+                const headerHeight = document.getElementById('main-header').offsetHeight || 80;
+                const offset = headerHeight + 20; 
+                const y = navDiv.getBoundingClientRect().top + window.pageYOffset - offset; 
+                window.scrollTo({top: y, behavior: 'smooth'});
+            }
         }
 
         function renderPhase(index) {
@@ -392,7 +413,7 @@
                         </div>
                         <div class="flex gap-2 w-full md:w-auto">
                             <button onclick="updateSim('initial')" class="flex-1 md:flex-none px-6 py-3 bg-stone-100 hover:bg-stone-200 text-stone-600 font-serif font-bold rounded-sm border border-stone-200 transition-colors">초기 정렬</button>
-                            <button onclick="updateSim('final')" class="flex-1 md:flex-none px-6 py-3 bg-k-red text-white hover:bg-[#7a3030] font-serif font-bold rounded-sm transition-colors shadow-sm">재정렬 후</button>
+                            <button onclick="updateSim('final')" class="flex-1 md:flex-none px-6 py-3 bg-k-red text-white hover:bg-[#7a3030] font-serif font-bold rounded-sm transition-colors shadow-sm">6열로 우향우</button>
                         </div>
                     </div>
 
@@ -401,9 +422,9 @@
                         <!-- Grid Background Line (Optional Visual) -->
                         <div class="absolute inset-0 pointer-events-none opacity-5" style="background-image: linear-gradient(#2c2c2c 1px, transparent 1px), linear-gradient(90deg, #2c2c2c 1px, transparent 1px); background-size: 40px 40px;"></div>
 
-                        <!-- Sinwi (Right Side) -->
+                        <!-- Beopdan (Right Side) -->
                         <div class="absolute right-0 top-0 h-full w-12 bg-stone-100 border-l border-stone-200 flex flex-col items-center justify-center z-20 shadow-sm">
-                            <span class="writing-vertical text-k-red font-serif font-bold text-xl tracking-[0.4em]">신위</span>
+                            <span class="writing-vertical text-k-red font-serif font-bold text-xl tracking-[0.4em]">법단</span>
                         </div>
 
                         <!-- Sinwi (Top Side) -->
@@ -431,13 +452,20 @@
                 { name: 'naesu', colorClass: 'bg-[#d68c8c] text-white border-[#b06060]' }
             ];
 
+            // New Numbering Order: Right -> Left [11, 12, 1, 2, ..., 10]
+            const labels = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
             roles.forEach((role, rIndex) => {
-                for (let i = 1; i <= 12; i++) {
-                    const colIndexFromRight = i - 1; 
+                for (let i = 0; i < 12; i++) {
+                    const colIndexFromRight = i; 
+                    const num = labels[i]; // Get display number based on position
                     const horizontalSpacing = 7.5; 
                     
                     let effectiveColIndex = colIndexFromRight;
-                    if (state === 'final' && i % 2 === 0) {
+                    // Move logic: Even number moves to Odd number position (which is always to the left in this seq)
+                    // Sequence: 11, 12 (Even, moves to 11 pos -> -1 index change)
+                    //           1, 2 (Even, moves to 1 pos -> -1 index change)
+                    if (state === 'final' && num % 2 === 0) {
                         effectiveColIndex = colIndexFromRight - 1; 
                     }
                     
@@ -450,15 +478,11 @@
                     let top = rowBaseTop + '%';
 
                     // Draw Movement Path (Dotted Line) if Final and Even
-                    if (state === 'final' && i % 2 === 0) {
+                    if (state === 'final' && num % 2 === 0) {
                         // Arrow Logic: 'ㄴ' Shape (Down then Right)
-                        // Start: (leftVal, rowBaseTop) - Center of even node
-                        // End: (finalLeftVal, rowBaseTop + 12) - Center of destination (below odd node)
-                        
                         const pathContainer = document.createElement('div');
                         pathContainer.className = 'absolute z-0 arrow-path';
                         
-                        // Center offset calculation (~1.5% to align with node center)
                         const offset = 1.5;
 
                         pathContainer.style.left = (leftVal + offset) + '%';
@@ -466,10 +490,9 @@
                         pathContainer.style.width = ((finalLeftVal - leftVal)) + '%';
                         pathContainer.style.height = '12%'; 
                         
-                        // Shape: Left Border (Down), Bottom Border (Right) -> 'L' (or 'ㄴ') shape
                         pathContainer.style.borderLeft = '2px dotted #a8a29e';
                         pathContainer.style.borderBottom = '2px dotted #a8a29e';
-                        pathContainer.style.borderBottomLeftRadius = '10px'; // Rounded corner
+                        pathContainer.style.borderBottomLeftRadius = '10px'; 
 
                         area.appendChild(pathContainer);
 
@@ -480,7 +503,7 @@
                     const node = document.createElement('div');
                     // Mobile: w-7 h-7, Larger text
                     node.className = `formation-node absolute w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md z-10 border ${role.colorClass}`;
-                    node.innerText = i;
+                    node.innerText = num;
 
                     if (state === 'final') {
                         node.style.transform = 'rotate(90deg)'; 
@@ -492,7 +515,7 @@
                     node.style.left = left;
                     node.style.top = top;
 
-                    if (i % 2 === 0) {
+                    if (num % 2 === 0) {
                         node.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.4)'; // Subtle dashed effect replacement
                     }
 
