@@ -130,7 +130,7 @@
             </div>
             
             <!-- Home Button -->
-            <a href="#" onclick="window.location.reload()" class="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors duration-300 group">
+            <a href="index.html" class="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors duration-300 group">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-105 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
@@ -190,7 +190,7 @@
             
             <div class="bg-white/60 backdrop-blur-sm border-b border-stone-200 pb-6 mb-8 rounded-lg p-6 shadow-sm">
                 <h2 class="text-2xl font-bold text-ink font-serif mb-3">나의 공부 및 역할</h2>
-                <p class="text-stone-600 leading-relaxed">시간 흐름에 따른 구체적인 임무와 절차를 확인하세요.<br><strong>모든 행동은 회원을 중심으로 맞추는 것이 중요합니다.</strong></p>
+                <p class="text-stone-600 leading-relaxed">시간 흐름에 따른 구체적인 임무와 절차를 확인하세요.<br><strong class="text-red-600">모든 행동은 회원을 중심으로 맞추는 것이 중요합니다.</strong></p>
             </div>
 
             <!-- Inputs Wrapper -->
@@ -232,47 +232,83 @@
             </div>
 
             <!-- Core Rules -->
-            <div class="mt-12 pt-8 border-t border-stone-200">
-                <h3 class="font-bold text-xl text-ink mb-6 font-serif flex items-center gap-2">
-                    <span class="text-point">⚠️</span> 주요 준수 사항
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
-                        <span class="text-point text-xl font-bold">✔</span>
-                        <div>
-                            <span class="font-bold text-ink block mb-1">시간 엄수</span>
-                            <span class="text-sm text-stone-500">모든 집합 10~20분 전 도착</span>
+            <div class="mt-12 pt-8 border-t border-stone-200 space-y-10">
+                
+                <!-- 1. Daegangjeon Precautions (Separated) -->
+                <section>
+                    <h3 class="font-bold text-xl text-ink mb-4 font-serif flex items-center gap-2">
+                        <span class="text-point">🏛️</span> 대강전 내 주의사항
+                    </h3>
+                    <div class="bg-[#f5f5f4] border border-stone-300 p-6 rounded-lg shadow-sm">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
+                            <div class="flex flex-col gap-1 text-stone-700 font-medium">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-point"></span> 면수
+                                </div>
+                                <p class="text-xs text-stone-500 pl-4 font-normal leading-snug break-keep">바르게 서서 턱을 살짝 당겨 시선을 아래쪽으로 처리한 자세</p>
+                            </div>
+                            <div class="flex flex-col gap-1 text-stone-700 font-medium">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-point"></span> 양수교지
+                                </div>
+                                <p class="text-xs text-stone-500 pl-4 font-normal leading-snug break-keep">엄지 손가락을 교차하여 손을 모으고 있는 자세</p>
+                            </div>
+                            <div class="flex items-center gap-2 text-stone-700 font-medium h-fit self-start sm:mt-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-point"></span> 큰소리 내지 않기
+                            </div>
+                            <div class="flex items-center gap-2 text-stone-700 font-medium h-fit self-start">
+                                <span class="w-1.5 h-1.5 rounded-full bg-point"></span> 뛰지 않기
+                            </div>
+                            <div class="flex items-center gap-2 text-stone-700 font-medium h-fit self-start">
+                                <span class="w-1.5 h-1.5 rounded-full bg-point"></span> 잡담하지 않기
+                            </div>
                         </div>
                     </div>
-                    <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
-                        <span class="text-point text-xl font-bold">✔</span>
-                        <div>
-                            <span class="font-bold text-ink block mb-1">왼발 먼저</span>
-                            <span class="text-sm text-stone-500">계단, 문턱 넘을 때 항상 왼발부터</span>
+                </section>
+
+                <!-- 2. Bongsim Major Precautions (Renamed) -->
+                <section>
+                    <h3 class="font-bold text-xl text-ink mb-6 font-serif flex items-center gap-2">
+                        <span class="text-point">⚠️</span> 봉심 주요 주의 사항
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
+                            <span class="text-point text-xl font-bold">✔</span>
+                            <div>
+                                <span class="font-bold text-ink block mb-1">시간 엄수</span>
+                                <span class="text-sm text-stone-500">모든 집합 10~20분 전 도착</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
+                            <span class="text-point text-xl font-bold">✔</span>
+                            <div>
+                                <span class="font-bold text-ink block mb-1">왼발 먼저</span>
+                                <span class="text-sm text-stone-500">계단, 문턱 넘을 때 항상 왼발부터</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
+                            <span class="text-point text-xl font-bold">✔</span>
+                            <div>
+                                <span class="font-bold text-ink block mb-1">정숙 (묵언)</span>
+                                <span class="text-sm text-stone-500">대기 중 잡담 금지</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
+                            <span class="text-point text-xl font-bold">✔</span>
+                            <div>
+                                <span class="font-bold text-ink block mb-1">국궁 유지</span>
+                                <span class="text-sm text-stone-500">이동 완료 시까지 허리 숙인 자세</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-center p-5 rounded-lg bg-[#fff5f5] border border-red-100 shadow-sm md:col-span-2">
+                            <span class="text-point text-xl">📢</span>
+                            <div>
+                                <span class="font-bold text-point block mb-1">주문 연결</span>
+                                <span class="text-sm text-stone-600">주문이 끊기지 않도록 앞 시간 공부자의 주성에 귀 기울여 주세요.</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
-                        <span class="text-point text-xl font-bold">✔</span>
-                        <div>
-                            <span class="font-bold text-ink block mb-1">정숙 (묵언)</span>
-                            <span class="text-sm text-stone-500">대기 중 잡담 금지</span>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
-                        <span class="text-point text-xl font-bold">✔</span>
-                        <div>
-                            <span class="font-bold text-ink block mb-1">국궁 유지</span>
-                            <span class="text-sm text-stone-500">이동 완료 시까지 허리 숙인 자세</span>
-                        </div>
-                    </div>
-                    <div class="flex gap-4 items-center p-5 rounded-lg bg-[#fff5f5] border border-red-100 shadow-sm md:col-span-2">
-                        <span class="text-point text-xl">📢</span>
-                        <div>
-                            <span class="font-bold text-point block mb-1">주문 연결</span>
-                            <span class="text-sm text-stone-600">주문이 끊기지 않도록 앞 시간 공부자의 주성에 귀 기울여 주세요.</span>
-                        </div>
-                    </div>
-                </div>
+                </section>
             </div>
         </section>
 
@@ -322,34 +358,35 @@
 
         // Data - Weekday Schedule
         const weekdayItems = [
-            { time: "01:30", title: "축시 기도", loc: "대강전 1층", note: "01:20까지 도착", role: "all" },
+            { time: "01:30", title: "축시 기도", loc: "대강전 1층", note: "01:20까지 대기 및 명상", role: "all" },
             { time: "02:00", title: "취침", loc: "숙소", note: "", role: "all" },
             // Removed 07:15 기상
             { time: "07:10", title: "체조", loc: "대강전 1층", note: "", role: "all" },
-            { time: "07:30", title: "진시 기도", loc: "대강전 1층", note: "07:20까지 도착", role: "all" },
+            { time: "07:30", title: "진시 기도", loc: "대강전 1층", note: "07:20까지 대기 및 명상", role: "all" },
             { time: "07:50", title: "아침 식사", loc: "식당", note: "", role: "all" },
             { time: "08:15", title: "방장 회의", loc: "별관", note: "사수 필수 참석", role: "sasu" },
             { time: "08:27", title: "체조", loc: "청학관", note: "", role: "all" },
             { time: "08:35", title: "공지사항", loc: "청학관", note: "08:40까지", role: "all" },
             { time: "08:40", title: "청소", loc: "지정 구역", note: "09:20까지 진행", role: "learner_only" }, 
-            { time: "09:00", title: "사수 각오", loc: "별관", note: "", role: "sasu" },
+            { time: "08:50", title: "사수 회의", loc: "별관", note: "", role: "sasu" },
             { time: "10:05", title: "수련 대기 및 환영", loc: "대강전 2층", note: "공부자 환영 준비", role: "sasu" },
             { time: "10:20", title: "사수 스피치", loc: "대강전 2층", note: "", role: "sasu" },
             { time: "10:30", title: "오전 수련", loc: "대강전 2층", note: "10:10까지 대기", role: "all" },
             { time: "11:30", title: "점심 식사", loc: "식당", note: "", role: "all" },
             { time: "12:00", title: "토론", loc: "청학관", note: "", role: "all" },
-            { time: "13:30", title: "미시 기도", loc: "대강전 1층", note: "13:20까지 도착", role: "all" },
+            { time: "13:30", title: "미시 기도", loc: "대강전 1층", note: "13:20까지 대기 및 명상", role: "all" },
             { time: "14:00", title: "일대일 만남", loc: "청학관", note: "", role: "all" },
             { time: "15:00", title: "일대일 만남", loc: "청학관", note: "", role: "all" },
             { time: "16:05", title: "수련 대기 및 환영", loc: "대강전 2층", note: "공부자 환영 준비", role: "sasu" },
             { time: "16:20", title: "사수 스피치", loc: "대강전 2층", note: "", role: "sasu" },
             { time: "16:30", title: "오후 수련", loc: "대강전 2층", note: "16:10까지 대기", role: "all" },
-            { time: "17:00", title: "사수 보고", loc: "별관", note: "사수 일정 종료 보고", role: "sasu" },
+            { time: "17:00", title: "사수 회의", loc: "별관", note: "사수 일정 종료 보고", role: "sasu" },
             { time: "17:30", title: "저녁 식사", loc: "식당", note: "", role: "all" },
-            { time: "19:30", title: "술시 기도", loc: "대강전 1층", note: "19:20까지 도착", role: "all" },
+            { time: "19:30", title: "술시 기도", loc: "대강전 1층", note: "19:20까지 대기 및 명상", role: "all" },
             { time: "19:50", title: "체조", loc: "대강전 1층", note: "20:00까지", role: "all" },
             { time: "20:00", title: "사수 교대", loc: "별관", note: "소감 발표", role: "sasu" },
             { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "learner_only" },
+            { time: "20:30", title: "명상", loc: "대강전 2층", note: "21:10까지 진행", role: "all" },
             { time: "21:30", title: "점호", loc: "대강전 1층", note: "21:20까지 도착", role: "all" },
             { time: "22:30", title: "드는 봉심", loc: "대강전 2층 승정문 앞", note: "22:20까지 시립", role: "all" },
             { time: "23:30", title: "퇴배 봉심", loc: "대강전 2층 승정문", note: "23:20까지 정렬, 하루 일과 마무리", role: "all" },
@@ -360,29 +397,30 @@
         // Data - Sunday Schedule
         const sundayItems = [
             // Saturday Night (Eve)
-            { time: "23:30", title: "자시 기도 (전날)", loc: "대강전 1층", note: "주일 드는 날, 23:20까지 도착", role: "all" },
+            { time: "23:30", title: "자시 기도 (전날)", loc: "대강전 1층", note: "주일 드는 날, 23:20까지 대기 및 명상", role: "all" },
             { time: "23:50", title: "취침 (전날)", loc: "숙소", note: "", role: "all" },
             // Sunday Morning
-            { time: "01:30", title: "축시 기도", loc: "대강전 1층", note: "01:20까지 도착", role: "all" },
+            { time: "01:30", title: "축시 기도", loc: "대강전 1층", note: "01:20까지 대기 및 명상", role: "all" },
             { time: "01:50", title: "취침", loc: "숙소", note: "", role: "all" },
             { time: "05:20", title: "기상", loc: "-", note: "", role: "all" },
-            { time: "05:30", title: "묘시 기도", loc: "대강전 1층", note: "05:20까지 도착", role: "all" },
+            { time: "05:30", title: "묘시 기도", loc: "대강전 1층", note: "05:20까지 대기 및 명상", role: "all" },
             { time: "05:50", title: "취침", loc: "숙소", note: "혹은 각자 할 일", role: "all" },
             { time: "07:15", title: "기상", loc: "-", note: "", role: "all" },
-            { time: "07:30", title: "진시 기도", loc: "대강전 1층", note: "07:20까지 도착", role: "all" },
+            { time: "07:30", title: "진시 기도", loc: "대강전 1층", note: "07:20까지 대기 및 명상", role: "all" },
             { time: "07:50", title: "아침 식사", loc: "식당", note: "", role: "all" },
-            { time: "09:00", title: "청소", loc: "지정 구역", note: "", role: "all" },
+            { time: "08:15", title: "방장 회의", loc: "별관", note: "사수 필수 참석", role: "sasu" },
+            { time: "09:00", title: "청소", loc: "지정 구역", note: "", role: "learner_only" },
             { time: "10:30", title: "오전 수련", loc: "대강전 2층", note: "10:10까지 대기", role: "all" },
             { time: "11:30", title: "오시 기도", loc: "대강전 1층", note: "", role: "all" },
             { time: "12:00", title: "점심 식사", loc: "식당", note: "", role: "all" },
             { time: "12:20", title: "토론", loc: "청학관", note: "", role: "all" },
-            { time: "13:30", title: "미시 기도", loc: "대강전 1층", note: "13:20까지 도착", role: "all" },
+            { time: "13:30", title: "미시 기도", loc: "대강전 1층", note: "13:20까지 대기 및 명상", role: "all" },
             { time: "14:00", title: "일대일 만남", loc: "청학관", note: "", role: "all" },
             { time: "15:00", title: "일대일 만남", loc: "청학관", note: "", role: "all" },
             { time: "16:30", title: "오후 수련", loc: "대강전 2층", note: "16:10까지 대기", role: "all" },
-            { time: "17:30", title: "유시 기도", loc: "대강전 1층", note: "17:20까지 도착", role: "all" },
+            { time: "17:30", title: "유시 기도", loc: "대강전 1층", note: "17:20까지 대기 및 명상", role: "all" },
             { time: "18:00", title: "저녁 식사", loc: "식당", note: "", role: "all" },
-            { time: "19:30", title: "술시 기도", loc: "대강전 1층", note: "19:20까지 도착", role: "all" },
+            { time: "19:30", title: "술시 기도", loc: "대강전 1층", note: "19:20까지 대기 및 명상", role: "all" },
             { time: "19:50", title: "체조", loc: "대강전 1층", note: "20:00까지", role: "all" },
             { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "all" },
             { time: "21:30", title: "점호", loc: "대강전 1층", note: "21:20까지 도착", role: "all" },
