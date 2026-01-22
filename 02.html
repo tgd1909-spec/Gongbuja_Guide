@@ -316,7 +316,18 @@
         <section id="view-simulator" class="hidden space-y-8 animate-fade-in">
             <div class="bg-white/60 backdrop-blur-sm border-b border-stone-200 pb-6 mb-8 rounded-lg p-6 shadow-sm">
                 <h2 class="text-2xl font-bold text-ink font-serif mb-3">공부방 입실 시뮬레이터</h2>
-                <p class="text-stone-600 leading-relaxed">복잡한 입실 동선을 시각적으로 익혀보세요. <br><strong>회원과 내수는 뒤로 물러나고, 들어오는 사람은 기존 사람들의 뒤로 돌아갑니다.</strong></p>
+                <div class="space-y-4">
+                    <p class="text-stone-600 leading-relaxed">복잡한 입실 동선을 시각적으로 익혀보세요. 회원과 내수는 뒤로 물러나고, 들어오는 사람은 기존 사람들의 뒤로 돌아갑니다.</p>
+                    
+                    <!-- Added Detailed Instructions Box -->
+                    <div class="bg-stone-50 border border-stone-200 rounded p-4 text-sm text-stone-700">
+                        <ul class="list-disc pl-4 space-y-2">
+                            <li><strong class="text-ink">과한 인사 지양:</strong> 입실 후에는 너무 과한 인사를 하지 않습니다. 좌배(坐拜)로 시작해서 좌배로 끝날 수 있도록 과한 부복(엎드려 절함)은 하지 않습니다.</li>
+                            <li><strong class="text-ink">회원에게 속도 맞춤:</strong> 옆의 회원이 자리에 앉으면 청소를 멈추고 정돈합니다. 모든 행동의 속도는 회원에게 맞춰야 합니다.</li>
+                            <li><strong class="text-ink">교대 시 거리 확보:</strong> 회원과 내수가 엉덩이를 뒤로 물릴 때, 다음 공부자가 지나갈 수 있는 거리를 확보하고 물러나야 합니다. 너무 뒤로 물러나면 벽과의 공간이 없어 통행이 어렵습니다.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
             <div class="bg-white border border-stone-200 rounded-lg p-4 shadow-sm flex flex-col items-center">
@@ -630,10 +641,42 @@
             const rawSteps = [
                 { time: addMin(-15), title: "준비 및 주성 연습", desc: "대강전 1층 도착, 주문 연습 시작.", roleInfo: null },
                 { time: addMin(20), title: "이동 대기 및 출발", desc: "주문 연습 종료 후 3층으로 이동 준비.", highlight: true, roleInfo: { member: "1열 (가장 먼저 출발)", oesu: "2열 (회원 뒤)", naesu: "3열 (마지막)" } },
-                { time: addMin(25), title: "공부방 앞 대기 & 입장", desc: "공부방 앞 도착 및 입장. (회원과 함께)", roleInfo: { member: "1번 입장", oesu: "앞 시간 공부자 신발 정리, 문 열기, 3번 입장", naesu: "2번 입장" } },
-                { time: addMin(27), title: "교대 신호 및 입실 준비", desc: "27분 30초경 공부 교대 신호(헛기침). 27분 50초 종이 울리면 입실.", roleInfo: { member: "★ 크게 헛기침 신호", oesu: "대기", naesu: "대기" } },
-                { time: addMin(30), title: "공부방 입실", desc: "종이 울리면 방으로 들어갑니다. (회원을 중심으로)", roleInfo: { member: "1번 입장. 향 불 붙이기. 좌배 주도.", oesu: "3번 입장. 걸레 챙겨서 내수에게 전달. 소독/청소. 손수건 뒷사람 전달.", naesu: "2번 입장. 외곽 이동. 소독/청소. 손수건 뒷사람 전달." } },
-                { time: addMin(88), title: "퇴실 준비", desc: "다음 타임 교대 및 퇴실 (28분경). 회원에 맞춰 행동.", roleInfo: { member: "좌배. 먼저 뒤로 이동.", oesu: "나중 이동.", naesu: "먼저 이동." } },
+                { 
+                    time: addMin(25), 
+                    title: "공부방 앞 대기 & 입장", 
+                    desc: "공부방 앞 도착 및 입장. (회원과 함께)", 
+                    roleInfo: { 
+                        member: "1번 입장", 
+                        oesu: "앞 시간 신발 정리, 문 열기, 3번 입장. 입장 후 비치된 걸레를 챙겨 하나는 본인이 들고, 하나는 내수에게 전달.", 
+                        naesu: "2번 입장" 
+                    } 
+                },
+                { 
+                    time: addMin(27), 
+                    title: "교대 신호 및 입실 준비", 
+                    desc: `<span class="text-point font-bold">27분 30초</span>경 공부 교대 신호(헛기침). <span class="text-point font-bold">27분 50초</span> 종이 울리면 입실.`, 
+                    roleInfo: { 
+                        member: `★ <span class="text-point font-bold">30초</span> 크게 헛기침 신호`, 
+                        oesu: "대기", 
+                        naesu: "대기" 
+                    } 
+                },
+                { 
+                    time: addMin(30), 
+                    title: "공부방 입실", 
+                    desc: "종이 울리면 방으로 들어갑니다. (회원을 중심으로)", 
+                    roleInfo: { 
+                        member: "1번 입장. 향 불 붙이기. 좌배 주도.", 
+                        oesu: "3번 입장. 소독/청소. 걸레 뒷사람 전달.", 
+                        naesu: "2번 입장. 외곽 이동. 소독/청소. 걸레 뒷사람 전달." 
+                    } 
+                },
+                { 
+                    time: addMin(88), 
+                    title: "퇴실 준비", 
+                    desc: "다음 타임 교대 및 퇴실 (28분경). <br><span class='text-point font-bold'>눈을 뜨고 주성 속도를 조절</span>합니다. 심고할 때도 눈을 뜨고 회원의 동작에 맞춥니다.", 
+                    roleInfo: { member: "좌배. 먼저 뒤로 이동.", oesu: "나중 이동.", naesu: "먼저 이동." } 
+                },
                 { time: addMin(90), title: "종료 및 해산", desc: "문단속 후 1층에서 인사 (30분).", roleInfo: { member: "1층 이동.", oesu: "★ 바깥 문 닫기", naesu: "★ 안쪽 문 닫기" } }
             ];
 
