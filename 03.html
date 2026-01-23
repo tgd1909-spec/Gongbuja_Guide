@@ -126,14 +126,31 @@
 
     <!-- 메인 콘텐츠 영역 -->
     <main id="main-content" class="w-full max-w-4xl bg-white/60 backdrop-blur-md rounded-2xl min-h-[500px] flex flex-col transition-all duration-300 p-4 md:p-6 relative">
-        <!-- 초기 로딩 상태 -->
-        <div id="initial-loader" class="absolute inset-0 flex items-center justify-center bg-white/80 z-10 rounded-2xl">
-            <div class="flex flex-col items-center gap-3 p-4 text-center">
-                <div class="loader w-10 h-10 border-4"></div>
-                <p id="loading-text" class="text-stone-500 font-sans-kr animate-pulse">데이터 베이스 연결 중...</p>
-                <p id="loading-subtext" class="text-xs text-red-500 hidden mt-2 font-bold bg-red-50 p-2 rounded">
-                    연결이 지연되고 있습니다.<br>Firebase 설정(익명 로그인, 규칙)을 확인해주세요.
-                </p>
+        <!-- 초기 로딩 상태 (개선됨) -->
+        <div id="initial-loader" class="absolute inset-0 flex items-center justify-center bg-white/95 z-10 rounded-2xl">
+            <div class="flex flex-col items-center gap-4 p-6 text-center max-w-sm w-full">
+                <div id="loader-spinner" class="loader w-10 h-10 border-4"></div>
+                
+                <div class="space-y-2">
+                    <p id="loading-text" class="text-stone-800 font-bold text-lg animate-pulse">시스템 접속 중...</p>
+                    <p id="loading-detail" class="text-sm text-stone-500 font-sans-kr">잠시만 기다려주세요.</p>
+                </div>
+
+                <!-- 10초 이상 지연 시 표시될 도움말 -->
+                <div id="loading-help" class="hidden mt-6 bg-stone-50 p-5 rounded-xl text-left text-stone-600 border border-stone-200 w-full shadow-sm">
+                    <div class="flex items-center gap-2 mb-3 text-red-600 font-bold text-sm">
+                        <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                        <span>연결이 지연되고 있습니다.</span>
+                    </div>
+                    <ul class="list-disc pl-4 space-y-2 text-xs mb-4">
+                        <li>인터넷 연결 상태를 확인해주세요.</li>
+                        <li><strong>Firebase 익명 로그인</strong>이 켜져 있나요?</li>
+                        <li><strong>Firestore 규칙</strong>이 설정되어 있나요?</li>
+                    </ul>
+                    <button onclick="window.location.reload()" class="w-full py-2.5 bg-[#1a1a1a] text-white rounded-lg font-bold hover:bg-[#333] transition text-sm flex items-center justify-center gap-2">
+                        <i data-lucide="refresh-cw" class="w-3 h-3"></i> 페이지 새로고침
+                    </button>
+                </div>
             </div>
         </div>
         <!-- JS Render Target -->
@@ -190,21 +207,35 @@
         const app = {
             // Firebase 초기화
             initFirebase: async function() {
+                this.updateLoadingStatus("Firebase 모듈 로드 중...", "필수 파일을 불러오고 있습니다.");
+
+                // 모듈 로드 대기
                 if (!window.firebaseModules) {
-                    setTimeout(() => this.initFirebase(), 100);
+                    setTimeout(() => this.initFirebase(), 500); // 0.5초 간격으로 재시도
                     return;
                 }
 
-                setTimeout(() => {
+                // 타임아웃 타이머 설정 (10초)
+                const timeoutId = setTimeout(() => {
                     if (state.isLoading) {
-                        const subtext = document.getElementById('loading-subtext');
-                        if (subtext) subtext.classList.remove('hidden');
+                        document.getElementById('loader-spinner').classList.add('hidden'); // 스피너 숨김
+                        document.getElementById('loading-text').innerText = "연결 실패";
+                        document.getElementById('loading-text').classList.remove('animate-pulse');
+                        document.getElementById('loading-text').classList.add('text-red-600');
+                        document.getElementById('loading-detail').innerText = "서버 응답이 없습니다.";
+                        const helpBox = document.getElementById('loading-help');
+                        if(helpBox) {
+                            helpBox.classList.remove('hidden');
+                            lucide.createIcons();
+                        }
                     }
-                }, 5000);
+                }, 10000);
 
                 const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, onSnapshot, query, orderBy } = window.firebaseModules;
 
                 try {
+                    this.updateLoadingStatus("설정 초기화 중...", "앱 정보를 확인하고 있습니다.");
+
                     const firebaseConfig = {
                         apiKey: "AIzaSyDe1mpaPcDfiNG63peU7EFNXXNJQmKc2rM",
                         authDomain: "taegukdo-notice.firebaseapp.com",
@@ -220,6 +251,8 @@
                     const auth = getAuth(firebaseApp);
                     state.db = getFirestore(firebaseApp);
 
+                    // 인증 시도
+                    this.updateLoadingStatus("사용자 인증 중...", "보안 접속을 시도합니다.");
                     try {
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             await signInWithCustomToken(auth, __initial_auth_token);
@@ -227,14 +260,15 @@
                             await signInAnonymously(auth);
                         }
                     } catch (authError) {
+                        clearTimeout(timeoutId); // 타임아웃 해제
                         console.error("Auth Failed:", authError);
                         this.stopLoading();
                         
                         if (authError.code === 'auth/operation-not-allowed') {
-                            this.showToast("Firebase 콘솔에서 '익명 로그인'을 켜주세요!", 'error');
-                            document.getElementById('loading-text').innerText = "인증 오류: 익명 로그인이 비활성화됨";
-                            document.getElementById('loading-subtext').innerText = "Firebase > Authentication > Sign-in method에서\nAnonymous를 Enable로 설정해주세요.";
-                            document.getElementById('loading-subtext').classList.remove('hidden');
+                            this.showErrorModal(
+                                "인증 설정 오류", 
+                                "Firebase 콘솔에서 '익명 로그인'이 꺼져 있습니다.<br><br>Authentication > Sign-in method 탭에서<br>Anonymous를 <strong>Enable</strong>로 설정해주세요."
+                            );
                         } else {
                             this.showToast("인증 실패: " + authError.message, 'error');
                         }
@@ -242,26 +276,67 @@
                         return;
                     }
 
+                    // 인증 상태 감지
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
                             state.user = user;
+                            this.updateLoadingStatus("데이터 동기화 중...", "최신 공지사항을 가져오고 있습니다.");
                             this.subscribeToPosts();
                         } else {
-                            this.stopLoading();
+                             // 로그아웃 상태 등
+                             this.updateLoadingStatus("인증 대기 중...", "사용자 정보를 확인하고 있습니다.");
                         }
                     });
 
                 } catch (error) {
+                    clearTimeout(timeoutId);
                     console.error("Firebase Init Error:", error);
                     this.stopLoading();
-                    this.showToast("초기화 오류: " + error.message, 'error');
+                    this.showErrorModal("초기화 오류", error.message);
                 }
+            },
+            
+            // 로딩 상태 텍스트 업데이트 헬퍼
+            updateLoadingStatus: function(title, detail) {
+                const titleEl = document.getElementById('loading-text');
+                const detailEl = document.getElementById('loading-detail');
+                if (titleEl) titleEl.innerText = title;
+                if (detailEl) detailEl.innerText = detail;
             },
 
             stopLoading: function() {
                 state.isLoading = false;
                 const loader = document.getElementById('initial-loader');
                 if (loader) loader.classList.add('hidden');
+            },
+            
+            // 에러 전용 모달 (토스트보다 강력하게 경고)
+            showErrorModal: function(title, message) {
+                state.modalType = 'error_alert';
+                const container = document.getElementById('modal-container');
+                const content = document.getElementById('modal-content');
+                
+                container.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                });
+
+                content.innerHTML = `
+                    <div class="p-8 text-center font-sans-kr bg-white">
+                        <div class="mx-auto w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-5 border-2 border-red-200">
+                            <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="font-bold text-2xl mb-3 text-[#1a1a1a]">${title}</h3>
+                        <div class="text-base text-stone-600 mb-8 break-keep leading-relaxed bg-stone-50 p-4 rounded-xl border border-stone-200">
+                            ${message}
+                        </div>
+                        <button onclick="window.location.reload()" class="w-full py-4 bg-[#1a1a1a] text-white rounded-xl font-bold hover:bg-[#333] transition shadow-md hover:-translate-y-1 flex items-center justify-center gap-2 text-lg">
+                            <i data-lucide="refresh-cw" class="w-5 h-5"></i> 페이지 새로고침
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
             },
 
             subscribeToPosts: function() {
@@ -289,24 +364,18 @@
                     }
 
                     state.posts = loadedPosts;
-                    this.stopLoading();
+                    this.stopLoading(); // 성공 시 로딩 종료
                     this.renderApp();
 
                 }, (error) => {
                     console.error("Firestore Listen Error:", error);
-                    this.stopLoading();
+                    this.stopLoading(); // 에러 발생 시 로딩 종료 후 모달
                     
                     if (error.code === 'permission-denied') {
-                        const errorMsg = "데이터 접근 권한이 없습니다.";
-                        this.showToast(errorMsg, 'error');
-                        
-                        const loader = document.getElementById('initial-loader');
-                        if (loader) {
-                            loader.classList.remove('hidden');
-                            document.getElementById('loading-text').innerText = "권한 오류 발생";
-                            document.getElementById('loading-subtext').innerText = "Firebase > Firestore > Rules 탭에서\n규칙을 'allow read, write: if true;'로 수정해주세요.";
-                            document.getElementById('loading-subtext').classList.remove('hidden');
-                        }
+                        this.showErrorModal(
+                            "데이터 접근 권한 오류", 
+                            "Firestore 보안 규칙(Rules)이 설정되지 않아<br>데이터를 읽을 수 없습니다.<br><br>Firestore Database > Rules 탭에서 규칙을<br><code class='bg-stone-200 px-2 py-0.5 rounded text-red-600 font-bold'>allow read, write: if true;</code><br>로 수정하고 [게시]를 눌러주세요."
+                        );
                     } else {
                         this.showToast("데이터 불러오기 실패: " + error.message, 'error');
                     }
@@ -704,105 +773,16 @@ ${post.content}
                             </div>
                         </div>
                     `;
+                } else if (state.modalType === 'error_alert') {
+                    // (에러 모달 HTML은 initFirebase 내부 로직에서 처리하지만 혹시 renderModal 호출될 경우 대비)
+                    // 내용은 동적으로 채워짐
                 }
                 
-                content.innerHTML = html;
+                if (state.modalType !== 'error_alert') {
+                    content.innerHTML = html;
+                }
                 
                 if(state.modalType === 'login') setTimeout(() => document.getElementById('pw-input').focus(), 100);
-            },
-
-            showToast: function(message, type = 'success') {
-                const container = document.getElementById('toast-container');
-                const toast = document.createElement('div');
-                
-                const bgColor = type === 'error' ? 'bg-[#9d2424]' : 'bg-[#1a1a1a]';
-                const icon = type === 'error' ? 'alert-circle' : 'check-circle-2';
-                
-                toast.className = "fixed top-8 left-1/2 transform -translate-x-1/2 z-[100] animate-slide-down shadow-2xl w-[90%] md:w-auto text-center";
-                toast.innerHTML = `
-                    <div class="${bgColor} text-white px-6 py-4 rounded-full inline-flex items-center justify-center gap-3 font-sans-kr text-base font-bold border-2 border-white/20 shadow-lg">
-                        <i data-lucide="${icon}" class="w-5 h-5 text-white flex-shrink-0"></i> 
-                        <span class="break-keep">${message}</span>
-                    </div>
-                `;
-                
-                container.appendChild(toast);
-                lucide.createIcons();
-
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translate(-50%, -20px)';
-                    toast.style.transition = 'all 0.3s ease-out';
-                    setTimeout(() => toast.remove(), 300);
-                }, 4000); 
-            },
-
-            // --- Action Handlers ---
-            
-            goHome: function() {
-                state.selectedPostId = null;
-                this.renderApp();
-                window.scrollTo({top: 0, behavior: 'smooth'});
-            },
-
-            goList: function() {
-                state.selectedPostId = null;
-                this.renderApp();
-            },
-
-            selectPost: function(id) {
-                state.selectedPostId = id;
-                this.renderApp();
-                window.scrollTo({top: 0, behavior: 'smooth'});
-            },
-
-            changeViewMode: function(mode) {
-                state.viewMode = mode;
-                this.renderApp();
-            },
-
-            toggleAdmin: function() {
-                if (state.isAdmin) {
-                    state.isAdmin = false;
-                    this.showToast("관리자 모드가 종료되었습니다.");
-                    this.renderApp();
-                } else {
-                    this.openModal('login');
-                }
-            },
-
-            openModal: function(type) {
-                state.modalType = type;
-                this.renderApp();
-            },
-
-            closeModal: function() {
-                state.modalType = null;
-                state.deleteTargetId = null;
-                this.renderApp();
-            },
-
-            submitLogin: function() {
-                const input = document.getElementById('pw-input');
-                const container = input.parentElement;
-                
-                if (input.value === ADMIN_PASSWORD) {
-                    state.isAdmin = true;
-                    this.showToast("관리자 모드로 전환되었습니다.");
-                    this.closeModal();
-                } else {
-                    container.classList.remove('animate-shake');
-                    void container.offsetWidth;
-                    container.classList.add('animate-shake');
-                    input.classList.add('border-[#9d2424]', 'text-[#9d2424]');
-                    this.showToast("비밀번호가 일치하지 않습니다.", 'error');
-                    
-                    setTimeout(() => {
-                        input.classList.remove('border-[#9d2424]', 'text-[#9d2424]');
-                        input.value = '';
-                        input.focus();
-                    }, 1000);
-                }
             },
             
             requestDelete: function(id) {
