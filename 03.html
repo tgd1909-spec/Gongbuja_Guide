@@ -128,9 +128,12 @@
     <main id="main-content" class="w-full max-w-4xl bg-white/60 backdrop-blur-md rounded-2xl min-h-[500px] flex flex-col transition-all duration-300 p-4 md:p-6 relative">
         <!-- 초기 로딩 상태 -->
         <div id="initial-loader" class="absolute inset-0 flex items-center justify-center bg-white/80 z-10 rounded-2xl">
-            <div class="flex flex-col items-center gap-3">
+            <div class="flex flex-col items-center gap-3 p-4 text-center">
                 <div class="loader w-10 h-10 border-4"></div>
-                <p class="text-stone-500 font-sans-kr animate-pulse">데이터를 불러오는 중...</p>
+                <p id="loading-text" class="text-stone-500 font-sans-kr animate-pulse">데이터 베이스 연결 중...</p>
+                <p id="loading-subtext" class="text-xs text-red-500 hidden mt-2 font-bold bg-red-50 p-2 rounded">
+                    연결이 지연되고 있습니다.<br>Firebase 설정(익명 로그인, 규칙)을 확인해주세요.
+                </p>
             </div>
         </div>
         <!-- JS Render Target -->
@@ -185,18 +188,23 @@
          * ------------------------------------------------------------------
          */
         const app = {
-            // Firebase 초기화 (window.firebaseModules가 로드된 후 실행됨)
+            // Firebase 초기화
             initFirebase: async function() {
-                // 모듈 대기
                 if (!window.firebaseModules) {
                     setTimeout(() => this.initFirebase(), 100);
                     return;
                 }
 
+                setTimeout(() => {
+                    if (state.isLoading) {
+                        const subtext = document.getElementById('loading-subtext');
+                        if (subtext) subtext.classList.remove('hidden');
+                    }
+                }, 5000);
+
                 const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, onSnapshot, query, orderBy } = window.firebaseModules;
 
                 try {
-                    // [수정됨] 사용자분의 Firebase 설정값을 여기에 직접 입력합니다.
                     const firebaseConfig = {
                         apiKey: "AIzaSyDe1mpaPcDfiNG63peU7EFNXXNJQmKc2rM",
                         authDomain: "taegukdo-notice.firebaseapp.com",
@@ -206,48 +214,62 @@
                         appId: "1:322790351041:web:aa43db9559a99792d3f440"
                     };
                     
-                    // [수정됨] 데이터가 저장될 경로(ID)를 프로젝트 ID로 고정합니다.
                     state.appId = 'taegukdo-notice'; 
 
-                    // Firebase 앱 시작
                     const firebaseApp = initializeApp(firebaseConfig);
                     const auth = getAuth(firebaseApp);
                     state.db = getFirestore(firebaseApp);
 
-                    // 인증 처리
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (authError) {
+                        console.error("Auth Failed:", authError);
+                        this.stopLoading();
+                        
+                        if (authError.code === 'auth/operation-not-allowed') {
+                            this.showToast("Firebase 콘솔에서 '익명 로그인'을 켜주세요!", 'error');
+                            document.getElementById('loading-text').innerText = "인증 오류: 익명 로그인이 비활성화됨";
+                            document.getElementById('loading-subtext').innerText = "Firebase > Authentication > Sign-in method에서\nAnonymous를 Enable로 설정해주세요.";
+                            document.getElementById('loading-subtext').classList.remove('hidden');
+                        } else {
+                            this.showToast("인증 실패: " + authError.message, 'error');
+                        }
+                        this.renderApp(); 
+                        return;
                     }
 
-                    // 인증 상태 감지 및 데이터 리스너 연결
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
                             state.user = user;
                             this.subscribeToPosts();
+                        } else {
+                            this.stopLoading();
                         }
                     });
 
                 } catch (error) {
                     console.error("Firebase Init Error:", error);
-                    this.showToast("데이터 연결에 실패했습니다.", 'error');
+                    this.stopLoading();
+                    this.showToast("초기화 오류: " + error.message, 'error');
                 }
             },
 
-            // Firestore 실시간 리스너
+            stopLoading: function() {
+                state.isLoading = false;
+                const loader = document.getElementById('initial-loader');
+                if (loader) loader.classList.add('hidden');
+            },
+
             subscribeToPosts: function() {
                 const { collection, onSnapshot, query, orderBy } = window.firebaseModules;
                 
                 if (!state.user || !state.db) return;
 
-                // RULE 1 준수: /artifacts/{appId}/public/data/{collectionName}
-                const postsRef = collection(state.db, 'artifacts', state.appId, 'public', 'data', COLLECTION_NAME);
-                
-                // 생성일 기준 내림차순 정렬 (최신글 위로)
-                // RULE 2: 복합 쿼리 지양. 여기서는 orderBy 하나만 사용.
-                // 메모리 내 정렬을 수행하기 위해 일단 다 가져오고 JS에서 정렬하는게 안전할 수 있으나, 
-                // 간단한 orderBy는 인덱스 없이도 동작하는 경우가 많음. 만약 에러나면 JS 정렬로 전환.
+                const postsRef = collection(state.db, COLLECTION_NAME);
                 const q = query(postsRef);
 
                 onSnapshot(q, (snapshot) => {
@@ -256,37 +278,43 @@
                         loadedPosts.push({ id: doc.id, ...doc.data() });
                     });
 
-                    // JS에서 날짜/시간 순 정렬 (timestamp 기준)
                     loadedPosts.sort((a, b) => {
                         const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (new Date(a.date).getTime() || 0);
                         const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (new Date(b.date).getTime() || 0);
-                        
-                        // 공지사항 로직: 필독(MustRead) 우선, 그 다음 최신순
-                        // 뷰 모드에 따라 정렬 로직이 달라지므로, 여기선 최신순만 기본으로 잡음
                         return timeB - timeA;
                     });
 
-                    // 이전 포스트 개수와 비교하여 새로운 글 알림
                     if (!state.isLoading && loadedPosts.length > state.posts.length) {
-                        // 내가 쓴 글이 아닐때만 (이건 로직상 구분하기 힘드므로 일단 띄움)
                         this.showToast("🔔 새로운 공지사항이 등록되었습니다!");
                     }
 
                     state.posts = loadedPosts;
-                    state.isLoading = false;
-                    
-                    const loader = document.getElementById('initial-loader');
-                    if (loader) loader.classList.add('hidden');
-                    
+                    this.stopLoading();
                     this.renderApp();
+
                 }, (error) => {
                     console.error("Firestore Listen Error:", error);
-                    state.isLoading = false;
-                    this.renderMainContent(); // 에러 시 빈 화면이라도 렌더링
+                    this.stopLoading();
+                    
+                    if (error.code === 'permission-denied') {
+                        const errorMsg = "데이터 접근 권한이 없습니다.";
+                        this.showToast(errorMsg, 'error');
+                        
+                        const loader = document.getElementById('initial-loader');
+                        if (loader) {
+                            loader.classList.remove('hidden');
+                            document.getElementById('loading-text').innerText = "권한 오류 발생";
+                            document.getElementById('loading-subtext').innerText = "Firebase > Firestore > Rules 탭에서\n규칙을 'allow read, write: if true;'로 수정해주세요.";
+                            document.getElementById('loading-subtext').classList.remove('hidden');
+                        }
+                    } else {
+                        this.showToast("데이터 불러오기 실패: " + error.message, 'error');
+                    }
+                    
+                    this.renderMainContent(); 
                 });
             },
 
-            // 글 작성 (Firestore 저장)
             submitPost: async function() {
                 const { addDoc, collection, serverTimestamp } = window.firebaseModules;
                 
@@ -299,17 +327,17 @@
                     return;
                 }
 
-                // 날짜 문자열 생성
                 const today = new Date();
                 const dateString = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
 
                 try {
-                    const postsRef = collection(state.db, 'artifacts', state.appId, 'public', 'data', COLLECTION_NAME);
+                    const postsRef = collection(state.db, COLLECTION_NAME);
+                    
                     await addDoc(postsRef, {
                         title: title,
                         content: content,
                         date: dateString,
-                        timestamp: serverTimestamp(), // 서버 시간
+                        timestamp: serverTimestamp(),
                         isArchived: false,
                         isMustRead: isMustRead
                     });
@@ -320,18 +348,21 @@
 
                 } catch (e) {
                     console.error(e);
-                    this.showToast("저장 중 오류가 발생했습니다.", 'error');
+                    if (e.code === 'permission-denied') {
+                        this.showToast("글쓰기 권한이 없습니다. (Rules 확인)", 'error');
+                    } else {
+                        this.showToast("저장 실패: " + e.message, 'error');
+                    }
                 }
             },
 
-            // 글 삭제 (Firestore 삭제)
             confirmDelete: async function() {
                 const { deleteDoc, doc } = window.firebaseModules;
                 
                 if (!state.deleteTargetId) return;
 
                 try {
-                    const postRef = doc(state.db, 'artifacts', state.appId, 'public', 'data', COLLECTION_NAME, state.deleteTargetId);
+                    const postRef = doc(state.db, COLLECTION_NAME, state.deleteTargetId);
                     await deleteDoc(postRef);
 
                     if (state.selectedPostId === state.deleteTargetId) state.selectedPostId = null;
@@ -343,7 +374,6 @@
                 }
             },
 
-            // 아카이브 토글 (Firestore 업데이트)
             toggleArchive: async function(id) {
                 const { updateDoc, doc } = window.firebaseModules;
                 
@@ -353,14 +383,13 @@
                 const newStatus = !post.isArchived;
 
                 try {
-                    const postRef = doc(state.db, 'artifacts', state.appId, 'public', 'data', COLLECTION_NAME, id);
+                    const postRef = doc(state.db, COLLECTION_NAME, id);
                     await updateDoc(postRef, {
                         isArchived: newStatus
                     });
 
                     this.showToast(newStatus ? "게시글이 보관함으로 이동되었습니다." : "게시글이 공지사항으로 복원되었습니다.");
                     
-                    // 뷰 상태 정리
                     if (newStatus && state.viewMode === 'current' && state.selectedPostId) state.selectedPostId = null;
                     if (!newStatus && state.viewMode === 'archived' && state.selectedPostId) state.selectedPostId = null;
 
@@ -370,30 +399,24 @@
                 }
             },
 
-            // 헬퍼: 최근 3일 이내인지 확인 (NEW 뱃지용)
             isNewPost: function(post) {
                 if (!post.timestamp) {
-                    // timestamp가 없는 레거시 데이터나 로컬 데이터의 경우 날짜 문자열로 비교
                     const postDate = new Date(post.date);
                     const diff = Date.now() - postDate.getTime();
-                    return diff < (3 * 24 * 60 * 60 * 1000); // 3일
+                    return diff < (3 * 24 * 60 * 60 * 1000); 
                 }
-                // Firestore Timestamp 객체 처리
                 const postMillis = post.timestamp.toMillis ? post.timestamp.toMillis() : Date.now();
                 const diff = Date.now() - postMillis;
-                return diff < (3 * 24 * 60 * 60 * 1000); // 3일
+                return diff < (3 * 24 * 60 * 60 * 1000); 
             },
 
-
-            // --- UI Rendering & Actions (기존 유지 및 일부 수정) ---
+            // --- UI Rendering & Actions (복구된 함수들) ---
 
             init: function() {
-                // Firebase Init은 스크립트 로드 후 자동 실행됨
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && state.modalType) this.closeModal();
                 });
                 
-                // ESC 키로 관리자 모드 시크릿 종료 (이스터 에그?)
                 document.addEventListener('keydown', (e) => {
                     if (e.ctrlKey && e.key === 'q') this.toggleAdmin();
                 });
@@ -410,8 +433,6 @@
 
             renderMainContent: function() {
                 const mainEl = document.getElementById('main-content');
-                
-                // 로딩 중이면 콘텐츠 렌더링 스킵 (로더가 보여짐)
                 if (state.isLoading) return;
 
                 if (state.selectedPostId !== null) {
@@ -450,7 +471,6 @@
                             ` : ''}
                         </div>
 
-                        <!-- 제목 및 정보 -->
                         <div class="mb-8">
                             <div class="flex flex-wrap items-center gap-2 mb-4">
                                 ${post.isMustRead && !post.isArchived ? 
@@ -465,7 +485,6 @@
                             <h2 class="text-3xl md:text-4xl font-serif-kr font-bold text-[#1a1a1a] leading-tight break-keep mb-6">${post.title}</h2>
                         </div>
 
-                        <!-- 본문 -->
                         <div class="font-sans-kr text-[#1a1a1a] text-lg md:text-xl leading-relaxed whitespace-pre-wrap break-keep min-h-[300px] bg-stone-50/50 p-6 rounded-xl border border-stone-100">
 ${post.content}
                         </div>
@@ -502,7 +521,6 @@ ${post.content}
                             if (a.isMustRead && !b.isMustRead) return -1;
                             if (!a.isMustRead && b.isMustRead) return 1;
                         }
-                        // 이미 Firebase 로드시 시간순 정렬했으므로 여기선 필독 여부만 처리하면 됨
                         return 0; 
                     });
 
@@ -542,7 +560,6 @@ ${post.content}
                                                     <i data-lucide="megaphone" class="w-3.5 h-3.5 fill-current"></i> 필독
                                                  </span>` : ''}
                                             
-                                            <!-- NEW 뱃지 구현 (빨간색) -->
                                             ${isNew && !post.isArchived ? 
                                                 `<span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse-red shadow-sm">NEW</span>` : ''}
                                         </div>
@@ -701,7 +718,6 @@ ${post.content}
                 const bgColor = type === 'error' ? 'bg-[#9d2424]' : 'bg-[#1a1a1a]';
                 const icon = type === 'error' ? 'alert-circle' : 'check-circle-2';
                 
-                // 모바일에서도 잘 보이게 z-index 높임 및 스타일 조정
                 toast.className = "fixed top-8 left-1/2 transform -translate-x-1/2 z-[100] animate-slide-down shadow-2xl w-[90%] md:w-auto text-center";
                 toast.innerHTML = `
                     <div class="${bgColor} text-white px-6 py-4 rounded-full inline-flex items-center justify-center gap-3 font-sans-kr text-base font-bold border-2 border-white/20 shadow-lg">
@@ -718,9 +734,11 @@ ${post.content}
                     toast.style.transform = 'translate(-50%, -20px)';
                     toast.style.transition = 'all 0.3s ease-out';
                     setTimeout(() => toast.remove(), 300);
-                }, 4000); // 읽을 시간을 위해 조금 더 길게(4초)
+                }, 4000); 
             },
 
+            // --- Action Handlers ---
+            
             goHome: function() {
                 state.selectedPostId = null;
                 this.renderApp();
