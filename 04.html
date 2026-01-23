@@ -11,7 +11,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -22,14 +22,14 @@
             theme: {
                 extend: {
                     colors: {
-                        bg: '#fdfbf7',       // 기본 미색 배경
+                        bg: '#fdfbf7',       // 기본 미색 배경 (전체 배경)
                         dot: '#e6e2d3',      // 패턴 점 색상
-                        ink: '#2c2c2c',      // 짙은 먹색
-                        bean: '#8b3a3a',     // 팥색 (포인트)
+                        ink: '#1a1a1a',      // 진한 검정 (가독성 최우선)
+                        bean: '#9d2424',     // 깊은 적색 포인트 (팥색)
                         stone: {
                             50: '#fafaf9',
                             100: '#f5f5f4',
-                            200: '#e7e5e4',
+                            200: '#e7e5e4', // 테두리용 진한 회색
                             300: '#d6d3d1',
                             400: '#a8a29e',
                             500: '#78716c',
@@ -42,6 +42,9 @@
                     fontFamily: {
                         serif: ['"Noto Serif KR"', 'serif'],
                         sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', // 부드러운 입체감
                     }
                 }
             }
@@ -54,18 +57,19 @@
             background-color: #fdfbf7;
             background-image: radial-gradient(#e6e2d3 1px, transparent 1px);
             background-size: 24px 24px;
+            word-break: keep-all; /* 한글 줄바꿈 최적화 */
         }
 
         /* 스크롤바 커스터마이징 */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
             background: #d6d3d1;
-            border-radius: 3px;
+            border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #a8a29e;
@@ -73,137 +77,161 @@
 
         /* 텍스트 드래그 색상 */
         ::selection {
-            background-color: #8b3a3a;
+            background-color: #9d2424;
             color: #ffffff;
         }
         
         /* 로딩 인디케이터 */
         .loader {
-            border: 3px solid #f3f3f3;
+            border: 4px solid #f3f3f3;
             border-radius: 50%;
-            border-top: 3px solid #8b3a3a;
-            width: 24px;
-            height: 24px;
-            -webkit-animation: spin 1s linear infinite; /* Safari */
+            border-top: 4px solid #9d2424;
+            width: 32px;
+            height: 32px;
             animation: spin 1s linear infinite;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* 깜빡이는 NEW 배지 효과 */
+        .new-badge {
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(157, 36, 36, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(157, 36, 36, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(157, 36, 36, 0); }
+        }
     </style>
 </head>
-<body class="text-ink font-sans min-h-screen flex flex-col items-center py-8 px-4 sm:px-6">
+<body class="text-ink font-sans min-h-screen flex flex-col items-center py-6 px-4 sm:px-6">
 
-    <!-- 메인 컨테이너 -->
-    <main class="w-full max-w-3xl bg-white/60 backdrop-blur-sm border border-stone-200 shadow-sm rounded-lg overflow-hidden relative transition-all duration-500">
+    <!-- 메인 컨테이너 (어르신들을 위해 폭을 조금 더 넓힘: max-w-4xl) -->
+    <main class="w-full max-w-4xl bg-white/80 backdrop-blur-md border-2 border-stone-200 shadow-xl rounded-xl overflow-hidden relative transition-all duration-500">
         
-        <!-- 홈 버튼 (우측 상단 고정) -->
-        <a href="index.html" class="absolute top-6 right-6 sm:top-8 sm:right-8 z-20 flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors duration-300 group">
-            <i data-lucide="home" class="w-5 h-5"></i>
-            <span class="hidden sm:inline font-serif text-sm font-medium pt-0.5 group-hover:underline decoration-bean underline-offset-4 decoration-1">홈으로</span>
-        </a>
+        <!-- 상단 컨트롤 (홈 버튼 & 알림 버튼) -->
+        <div class="absolute top-6 right-6 sm:top-8 sm:right-8 z-20 flex items-center gap-3">
+            <!-- 알림 권한 요청 버튼 -->
+            <button id="noti-btn" onclick="window.requestNotificationPermission()" class="flex items-center gap-1 text-stone-500 hover:text-bean transition-colors" title="새 글 알림 받기">
+                <i data-lucide="bell" class="w-5 h-5"></i>
+            </button>
+            <!-- 홈 버튼 -->
+            <a href="index.html" class="flex items-center gap-2 text-stone-600 hover:text-ink transition-colors duration-300 group">
+                <i data-lucide="home" class="w-6 h-6"></i>
+                <span class="hidden sm:inline font-serif text-base font-bold pt-0.5 group-hover:underline decoration-bean underline-offset-4 decoration-2">홈으로</span>
+            </a>
+        </div>
 
         <!-- 헤더 영역 -->
-        <header class="pt-12 pb-8 px-6 sm:px-10 border-b border-stone-200/60 text-center sm:text-left">
-            <span class="inline-block px-3 py-1 mb-3 text-xs font-serif text-bean border border-bean/30 rounded-full bg-red-50/50">
+        <header class="pt-14 pb-10 px-6 sm:px-12 border-b-2 border-stone-200 text-center sm:text-left bg-white/50">
+            <span class="inline-block px-4 py-1.5 mb-4 text-sm font-bold text-bean border-2 border-bean rounded-full bg-white shadow-sm">
                 초심 공부자를 위한 안내
             </span>
-            <h1 class="text-3xl sm:text-4xl font-serif font-bold tracking-tight leading-relaxed mb-2">
+            <h1 class="text-4xl sm:text-5xl font-serif font-bold tracking-tight leading-snug mb-3 text-ink">
                 태극도 법식(法式)
             </h1>
-            <p class="text-stone-600 font-light text-sm sm:text-base break-keep">
-                국궁, 배례, 봉심, 강식 등 도인으로서 갖추어야 할 기본 예법을 안내합니다.
+            <p class="text-stone-700 font-medium text-lg sm:text-xl break-keep leading-relaxed">
+                국궁, 배례, 봉심, 강식 등 도인으로서 갖추어야 할<br class="sm:hidden"> 기본 예법을 안내합니다.
             </p>
         </header>
 
-        <!-- 탭 네비게이션 -->
-        <nav class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-stone-200 px-4 sm:px-8 py-3 overflow-x-auto">
-            <div class="flex gap-2 min-w-max sm:justify-start" id="category-container">
+        <!-- 탭 네비게이션 (가시성 높임) -->
+        <nav class="sticky top-0 z-10 bg-white border-b-2 border-stone-200 px-4 sm:px-8 py-4 overflow-x-auto shadow-sm">
+            <div class="flex gap-3 min-w-max sm:justify-start" id="category-container">
                 <!-- 자바스크립트로 버튼이 생성됩니다 -->
-                <div class="px-4 py-2 text-stone-400 text-sm">카테고리 로딩중...</div>
+                <div class="px-5 py-2.5 text-stone-400 text-base font-bold">카테고리 로딩중...</div>
             </div>
         </nav>
 
         <!-- 컨텐츠 리스트 영역 -->
-        <section id="content-list" class="divide-y divide-stone-100 min-h-[400px]">
+        <section id="content-list" class="p-4 sm:p-8 space-y-6 bg-stone-50 min-h-[500px]">
             <!-- 자바스크립트로 카드가 생성됩니다 -->
-            <div class="py-20 text-center flex flex-col items-center justify-center">
-                <div class="loader mb-4"></div>
-                <p class="text-stone-500 font-serif">데이터를 불러오고 있습니다...</p>
+            <div class="py-32 text-center flex flex-col items-center justify-center">
+                <div class="loader mb-6"></div>
+                <p class="text-stone-600 font-serif text-lg font-bold">데이터를 불러오고 있습니다...</p>
             </div>
         </section>
 
         <!-- 관리자 패널 (숨김 상태) -->
-        <section id="admin-panel" class="hidden border-t-2 border-bean bg-stone-50 p-6 sm:p-8">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="font-serif text-xl font-bold text-ink flex items-center gap-2">
-                    <i data-lucide="settings" class="w-5 h-5 text-bean"></i> 관리자 패널
+        <section id="admin-panel" class="hidden border-t-4 border-bean bg-stone-100 p-6 sm:p-10">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="font-serif text-2xl font-bold text-ink flex items-center gap-3">
+                    <div class="p-2 bg-bean text-white rounded-lg">
+                        <i data-lucide="settings" class="w-6 h-6"></i>
+                    </div>
+                    관리자 패널
                 </h3>
-                <button onclick="window.resetForm()" class="text-xs text-stone-500 hover:text-bean underline">입력 초기화</button>
+                <button onclick="window.resetForm()" class="text-sm font-bold text-stone-500 hover:text-bean underline decoration-2 underline-offset-4">입력 초기화</button>
             </div>
 
             <!-- 카테고리 관리 섹션 -->
-            <div class="mb-8 p-5 bg-white rounded-lg border border-stone-200 shadow-sm">
-                <label class="block text-xs font-bold text-stone-500 mb-3 flex items-center gap-1">
-                    <i data-lucide="tags" class="w-3 h-3"></i> 카테고리 관리
+            <div class="mb-10 p-6 bg-white rounded-xl border-2 border-stone-200 shadow-card">
+                <label class="block text-sm font-bold text-stone-600 mb-4 flex items-center gap-2">
+                    <i data-lucide="tags" class="w-4 h-4 text-bean"></i> 카테고리 관리
                 </label>
-                <div class="flex flex-wrap gap-2 mb-4" id="admin-category-list">
+                <div class="flex flex-wrap gap-3 mb-5" id="admin-category-list">
                     <!-- 카테고리 태그들이 여기에 생성됩니다 -->
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-3 h-12">
                     <input type="text" id="new-category-input" placeholder="새 카테고리 추가" 
-                        class="flex-1 bg-stone-50 border border-stone-200 rounded p-2 text-sm focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean transition-all"
+                        class="flex-1 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-base focus:outline-none focus:border-bean focus:bg-white transition-colors text-ink placeholder-stone-400 font-medium"
                         onkeypress="if(event.key === 'Enter') window.addCategory()">
-                    <button onclick="window.addCategory()" class="px-4 py-2 bg-stone-600 text-white rounded hover:bg-stone-700 text-sm font-medium transition-colors whitespace-nowrap">
+                    <button onclick="window.addCategory()" class="px-6 bg-stone-700 text-white rounded-lg hover:bg-stone-800 text-base font-bold transition-colors whitespace-nowrap shadow-md">
                         추가
                     </button>
                 </div>
             </div>
             
             <!-- 글쓰기 폼 -->
-            <form id="post-form" class="space-y-4">
+            <form id="post-form" class="space-y-6 bg-white p-6 rounded-xl border-2 border-stone-200 shadow-card">
                 <input type="hidden" id="edit-mode-id" value="">
                 
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
                     <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-stone-500 mb-1">카테고리 선택</label>
-                        <select id="input-category" class="w-full bg-white border border-stone-300 rounded p-2 text-sm focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean cursor-pointer">
-                            <!-- JS로 동적 생성 -->
-                        </select>
+                        <label class="block text-sm font-bold text-stone-600 mb-2">카테고리 선택</label>
+                        <div class="relative">
+                            <select id="input-category" class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-3 text-base font-bold text-ink focus:outline-none focus:border-bean cursor-pointer appearance-none">
+                                <!-- JS로 동적 생성 -->
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-3 top-3.5 w-5 h-5 text-stone-500 pointer-events-none"></i>
+                        </div>
                     </div>
                     <div class="sm:col-span-3">
-                        <label class="block text-xs font-bold text-stone-500 mb-1">제목</label>
-                        <input type="text" id="input-title" placeholder="제목을 입력하세요 (예: 국궁의 의미)" class="w-full bg-white border border-stone-300 rounded p-2 text-sm focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean font-serif">
+                        <label class="block text-sm font-bold text-stone-600 mb-2">제목</label>
+                        <input type="text" id="input-title" placeholder="제목을 입력하세요 (예: 국궁의 의미)" class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-lg font-bold text-ink focus:outline-none focus:border-bean focus:bg-white font-serif placeholder-stone-400">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-stone-500 mb-1">내용</label>
-                    <textarea id="input-desc" rows="5" placeholder="상세 내용을 입력하세요." class="w-full bg-white border border-stone-300 rounded p-2 text-sm focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean"></textarea>
+                    <label class="block text-sm font-bold text-stone-600 mb-2">내용</label>
+                    <textarea id="input-desc" rows="6" placeholder="상세 내용을 입력하세요." class="w-full bg-stone-50 border-2 border-stone-300 rounded-lg p-4 text-base text-ink leading-relaxed focus:outline-none focus:border-bean focus:bg-white placeholder-stone-400"></textarea>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-stone-500 mb-1">사진/영상 첨부</label>
-                    <input type="file" id="input-file" accept="image/*,video/*" class="w-full bg-white border border-stone-300 rounded p-2 text-sm focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200 cursor-pointer">
-                    <div id="file-preview-info" class="mt-2 text-xs text-bean font-medium hidden">
-                        <i class="fa-solid fa-check mr-1"></i><span id="file-name-display"></span>
+                <div class="p-4 bg-stone-50 rounded-lg border-2 border-stone-200">
+                    <label class="block text-sm font-bold text-stone-600 mb-2 flex items-center gap-2">
+                        <i data-lucide="image" class="w-4 h-4"></i> 사진/영상 첨부
+                    </label>
+                    <input type="file" id="input-file" accept="image/*,video/*" class="w-full bg-white border-2 border-stone-300 rounded-lg p-2 text-sm focus:outline-none focus:border-bean file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-stone-200 file:text-stone-700 hover:file:bg-stone-300 cursor-pointer">
+                    <div id="file-preview-info" class="mt-3 text-sm text-bean font-bold hidden flex items-center gap-2">
+                        <i class="fa-solid fa-check-circle"></i><span id="file-name-display"></span>
                     </div>
-                    <p class="text-[10px] text-stone-400 mt-1">
-                        * <span class="font-bold text-bean">사진</span>: 고화질 사진은 자동으로 압축되어 업로드됩니다.<br>
-                        * <span class="font-bold text-bean">동영상</span>: 용량이 크므로 YouTube 등에 올린 후 URL을 '이미지/영상 URL' 칸에 입력하는 것을 권장합니다. (직접 업로드는 700KB 이하만 가능)
-                    </p>
+                    <div class="mt-3 text-xs text-stone-500 space-y-1">
+                        <p class="flex items-center gap-1"><i class="fa-solid fa-camera text-stone-400"></i> <span class="font-bold">사진:</span> 고화질 사진은 자동으로 최적화되어 업로드됩니다.</p>
+                        <p class="flex items-center gap-1"><i class="fa-solid fa-video text-stone-400"></i> <span class="font-bold">동영상:</span> 700KB 이하만 가능합니다. (큰 영상은 아래 URL 기능을 이용하세요)</p>
+                    </div>
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-bold text-stone-500 mb-1">이미지/영상 URL (선택)</label>
-                    <input type="text" id="input-image-url" placeholder="https://..." class="w-full bg-white border border-stone-300 rounded p-2 text-sm focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean">
-                    <p class="text-[10px] text-stone-400 mt-1">* YouTube 링크나 외부 이미지 주소가 있다면 여기에 입력하세요.</p>
+                    <label class="block text-sm font-bold text-stone-600 mb-2">이미지/영상 URL (선택)</label>
+                    <input type="text" id="input-image-url" placeholder="https://..." class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-base focus:outline-none focus:border-bean focus:bg-white text-ink font-medium">
+                    <p class="text-xs text-stone-500 mt-2 font-medium">* YouTube 링크나 외부 이미지 주소가 있다면 여기에 입력하세요.</p>
                 </div>
 
-                <div class="pt-2">
-                    <button type="submit" id="submit-btn" class="w-full sm:w-auto px-6 py-2 bg-bean text-white rounded hover:bg-[#6d2b2b] transition-colors text-sm font-medium shadow-sm flex items-center justify-center gap-2">
-                        <i data-lucide="pen-line" class="w-4 h-4"></i>
+                <div class="pt-4">
+                    <button type="submit" id="submit-btn" class="w-full py-4 bg-bean text-white rounded-xl hover:bg-[#7a1e1e] transition-all transform hover:-translate-y-1 text-lg font-bold shadow-lg flex items-center justify-center gap-2">
+                        <i data-lucide="pen-line" class="w-5 h-5"></i>
                         <span id="submit-btn-text">게시글 등록하기</span>
                     </button>
                 </div>
@@ -213,52 +241,57 @@
     </main>
 
     <!-- 푸터 -->
-    <footer class="mt-8 text-center text-stone-400 text-xs font-light">
-        <p class="font-serif">Taegeukdo Guide for Beginners</p>
-        <p class="mt-1">&copy; 2024 태극도 법식 안내. All rights reserved.</p>
+    <footer class="mt-10 mb-20 text-center text-stone-500 text-sm font-medium">
+        <p class="font-serif text-lg text-stone-400 mb-1">Taegeukdo Guide for Beginners</p>
+        <p>&copy; 2024 태극도 법식 안내. All rights reserved.</p>
     </footer>
 
-    <!-- 관리자 모드 토글 스위치 -->
-    <div class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-white pl-4 pr-2 py-2 rounded-full shadow-lg border border-stone-200">
-        <span class="text-xs font-bold text-stone-600">관리자 모드</span>
-        <button id="admin-toggle" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none bg-stone-300 hover:bg-stone-400">
+    <!-- 관리자 모드 토글 스위치 (우측 하단) -->
+    <div class="fixed bottom-8 right-6 z-50 flex items-center gap-3 bg-white pl-5 pr-2 py-2.5 rounded-full shadow-xl border-2 border-stone-200">
+        <span class="text-sm font-bold text-stone-700">관리자 모드</span>
+        <button id="admin-toggle" class="relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none bg-stone-300 hover:bg-stone-400">
             <span class="sr-only">관리자 모드 활성화</span>
-            <span id="toggle-circle" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1"></span>
+            <span id="toggle-circle" class="inline-block h-6 w-6 transform rounded-full bg-white transition-transform translate-x-1 shadow-sm"></span>
         </button>
     </div>
 
     <!-- 커스텀 모달 (비밀번호 확인) -->
-    <div id="password-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-[2px] transition-opacity duration-300">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-80 max-w-[90%] border border-stone-200 animate-in fade-in zoom-in duration-200">
-            <h3 class="font-serif font-bold text-lg mb-2 text-ink flex items-center gap-2">
-                <i data-lucide="lock" class="w-4 h-4 text-bean"></i> 관리자 인증
+    <div id="password-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-96 max-w-[90%] border-2 border-stone-200 animate-in fade-in zoom-in duration-200">
+            <h3 class="font-serif font-bold text-2xl mb-3 text-ink flex items-center gap-2">
+                <i data-lucide="lock" class="w-6 h-6 text-bean"></i> 관리자 인증
             </h3>
-            <p class="text-xs text-stone-500 mb-4">관리자 비밀번호를 입력해주세요.</p>
+            <p class="text-sm font-bold text-stone-500 mb-6">관리자 비밀번호를 입력해주세요.</p>
             
             <input type="password" id="admin-password-input" 
-                class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded text-sm mb-2 focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean transition-all" 
+                class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-lg mb-3 focus:outline-none focus:border-bean focus:bg-white transition-all text-center tracking-widest font-bold text-ink" 
                 placeholder="비밀번호" 
                 onkeypress="if(event.key === 'Enter') window.checkPassword()">
             
-            <p id="password-error" class="text-xs text-red-500 mb-4 h-4 opacity-0 transition-opacity">
-                <i class="fa-solid fa-circle-exclamation mr-1"></i>비밀번호가 올바르지 않습니다.
+            <p id="password-error" class="text-sm font-bold text-red-600 mb-6 h-5 opacity-0 transition-opacity flex items-center justify-center gap-1">
+                <i class="fa-solid fa-circle-exclamation"></i> 비밀번호가 올바르지 않습니다.
             </p>
             
-            <div class="flex justify-end gap-2">
-                <button onclick="window.closePasswordModal()" class="px-3 py-1.5 text-xs font-medium text-stone-500 hover:bg-stone-100 rounded transition-colors">취소</button>
-                <button onclick="window.checkPassword()" class="px-4 py-1.5 text-xs font-medium bg-bean text-white rounded hover:bg-[#6d2b2b] shadow-sm transition-colors">확인</button>
+            <div class="flex justify-end gap-3">
+                <button onclick="window.closePasswordModal()" class="px-5 py-2.5 text-sm font-bold text-stone-500 hover:bg-stone-100 rounded-lg transition-colors">취소</button>
+                <button onclick="window.checkPassword()" class="px-6 py-2.5 text-sm font-bold bg-bean text-white rounded-lg hover:bg-[#7a1e1e] shadow-md transition-colors">확인</button>
             </div>
         </div>
     </div>
 
     <!-- 커스텀 모달 (삭제 확인) -->
-    <div id="delete-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-80 max-w-[90%] border border-stone-200 animate-in fade-in zoom-in duration-200">
-            <h3 class="font-serif font-bold text-lg mb-2 text-ink">게시글 삭제</h3>
-            <p class="text-sm text-stone-600 mb-6">정말로 이 게시글을 삭제하시겠습니까?<br>삭제 후에는 복구할 수 없습니다.</p>
-            <div class="flex justify-end gap-2">
-                <button onclick="window.closeDeleteModal()" class="px-3 py-1.5 text-xs font-medium text-stone-500 hover:bg-stone-100 rounded transition-colors">취소</button>
-                <button id="confirm-delete-btn" class="px-4 py-1.5 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700 shadow-sm transition-colors">삭제하기</button>
+    <div id="delete-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-96 max-w-[90%] border-2 border-stone-200 animate-in fade-in zoom-in duration-200">
+            <div class="flex flex-col items-center text-center mb-6">
+                <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                    <i data-lucide="trash-2" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-serif font-bold text-2xl text-ink mb-2">게시글 삭제</h3>
+                <p class="text-stone-600 font-medium leading-relaxed">정말로 이 게시글을 삭제하시겠습니까?<br>삭제 후에는 복구할 수 없습니다.</p>
+            </div>
+            <div class="flex justify-center gap-3 w-full">
+                <button onclick="window.closeDeleteModal()" class="flex-1 py-3 text-base font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors">취소</button>
+                <button id="confirm-delete-btn" class="flex-1 py-3 text-base font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-md transition-colors">삭제하기</button>
             </div>
         </div>
     </div>
@@ -271,21 +304,19 @@
 
         // ==========================================================================
         // [중요] 깃허브 페이지(외부 배포)에서 실시간 공유를 하려면 아래 설정을 채워주세요.
-        // 파이어베이스 콘솔(https://console.firebase.google.com)에서 프로젝트 생성 후
-        // '웹 앱'을 추가하면 나오는 설정값(apiKey, projectId 등)을 여기에 붙여넣으면 됩니다.
         // ==========================================================================
         const YOUR_FIREBASE_CONFIG = {
-            apiKey: "",
-            authDomain: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
+            apiKey: "AIzaSyAoUdyZJQjcT81_2YKzX1rzMJlNAoHcbAw",
+            authDomain: "taegeuk-rules.firebaseapp.com",
+            projectId: "taegeuk-rules",
+            storageBucket: "taegeuk-rules.firebasestorage.app",
+            messagingSenderId: "388014641769",
+            appId: "1:388014641769:web:f9fd06f30a222663b448f8"
         };
         // ==========================================================================
 
 
-        // --- 전역 변수 설정 (window 객체에 할당하여 HTML onclick 등에서 접근 가능하게 함) ---
+        // --- 전역 변수 설정 ---
         window.isAdminMode = false;
         window.currentCategory = '전체';
         window.editingId = null;
@@ -361,16 +392,16 @@
             try {
                 let firebaseConfig;
 
-                // 1. Canvas 내부 환경 (자동 연결)
+                // 1. Canvas 내부 환경
                 if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
                     firebaseConfig = JSON.parse(__firebase_config);
                     appId = __app_id;
                     console.log("Canvas Firebase 연결");
                 } 
-                // 2. 외부 배포 환경 (수동 설정 연결)
+                // 2. 외부 배포 환경
                 else if (YOUR_FIREBASE_CONFIG && YOUR_FIREBASE_CONFIG.apiKey) {
                     firebaseConfig = YOUR_FIREBASE_CONFIG;
-                    appId = 'tgd-guide-public'; // 공용 경로 ID
+                    appId = 'tgd-guide-public';
                     console.log("외부 Firebase 설정 연결");
                 } 
                 else {
@@ -382,7 +413,6 @@
                 db = getFirestore(app);
                 useFirebase = true;
 
-                // 인증 처리
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
@@ -398,9 +428,51 @@
             }
         }
 
+        // --- NEW 배지 로직 (7일 이내) ---
+        function isNew(dateStr) {
+            if (!dateStr) return false;
+            // dateStr 형식: YYYY.MM.DD
+            try {
+                const parts = dateStr.split('.');
+                if(parts.length < 3) return false;
+                const postDate = new Date(parts[0], parts[1]-1, parts[2]);
+                const now = new Date();
+                const diffTime = Math.abs(now - postDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                return diffDays <= 7;
+            } catch(e) { return false; }
+        }
+
+        // --- 알림 권한 요청 (모바일/데스크탑 공용) ---
+        window.requestNotificationPermission = async () => {
+            if (!("Notification" in window)) {
+                alert("이 브라우저는 알림 기능을 지원하지 않습니다.");
+                return;
+            }
+            const permission = await Notification.requestPermission();
+            if (permission === "granted") {
+                // 테스트 알림
+                new Notification("알림 설정 완료", {
+                    body: "새로운 게시글이 올라오면 알림을 받으실 수 있습니다.",
+                    icon: "https://cdn-icons-png.flaticon.com/512/1828/1828884.png" // 태극 아이콘 예시
+                });
+            } else {
+                alert("알림 권한이 차단되었습니다. 브라우저 설정에서 권한을 허용해주세요.");
+            }
+        }
+
+        // 새 글 등록 시 알림 시뮬레이션
+        function notifyNewPost(title) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("새로운 안내글 등록", {
+                    body: `'${title}' 글이 새로 올라왔습니다.`,
+                    icon: "https://cdn-icons-png.flaticon.com/512/1828/1828884.png"
+                });
+            }
+        }
+
         // --- 데이터 로딩 로직 (분기 처리) ---
 
-        // 1. Firebase 사용 시 (Canvas 환경)
         function subscribeToData() {
             // 게시글 구독
             const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
@@ -431,7 +503,6 @@
             });
         }
 
-        // 2. LocalStorage 사용 시 (외부 배포 환경 - 설정 없을 때)
         function loadLocalData() {
             const savedContents = localStorage.getItem('taegeukdo_posts');
             const savedCategories = localStorage.getItem('taegeukdo_categories');
@@ -464,10 +535,10 @@
             const displayCategories = ['전체', ...localCategories];
             categoryContainerEl.innerHTML = displayCategories.map(cat => `
                 <button onclick="window.setCategory('${cat}')" 
-                    class="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 border ${
+                    class="px-5 py-2.5 rounded-full text-base font-bold transition-all duration-300 border-2 shadow-sm whitespace-nowrap ${
                         window.currentCategory === cat 
-                        ? 'bg-ink text-white border-ink shadow-md' 
-                        : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400 hover:text-stone-700'
+                        ? 'bg-bean text-white border-bean shadow-md transform scale-105' 
+                        : 'bg-white text-stone-500 border-stone-200 hover:border-bean hover:text-bean hover:bg-red-50'
                     }">
                     ${cat}
                 </button>
@@ -488,11 +559,11 @@
             adminCategoryListEl.innerHTML = displayCategories.map(cat => {
                 const isAll = cat === '전체';
                 return `
-                <div class="flex items-center gap-1 px-3 py-1 bg-stone-100 border border-stone-200 rounded-full text-xs text-stone-600">
+                <div class="flex items-center gap-1 px-4 py-2 bg-stone-100 border-2 border-stone-200 rounded-full text-sm font-bold text-stone-600 shadow-sm">
                     <span>${cat}</span>
                     ${!isAll ? `
-                    <button onclick="window.deleteCategory('${cat}')" class="ml-1 text-stone-400 hover:text-red-500 p-0.5 rounded-full hover:bg-stone-200 transition-colors">
-                        <i data-lucide="x" class="w-3 h-3"></i>
+                    <button onclick="window.deleteCategory('${cat}')" class="ml-2 text-stone-400 hover:text-red-600 p-0.5 rounded-full hover:bg-stone-200 transition-colors">
+                        <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                     ` : ''}
                 </div>
@@ -508,9 +579,9 @@
 
             if (filtered.length === 0) {
                 contentListEl.innerHTML = `
-                    <div class="py-20 text-center">
-                        <i data-lucide="scroll" class="w-12 h-12 text-stone-300 mx-auto mb-3"></i>
-                        <p class="text-stone-500 font-serif">등록된 안내글이 없습니다.</p>
+                    <div class="py-32 text-center rounded-xl border-2 border-dashed border-stone-300">
+                        <i data-lucide="scroll" class="w-16 h-16 text-stone-300 mx-auto mb-4"></i>
+                        <p class="text-stone-500 font-serif text-xl font-bold">등록된 안내글이 없습니다.</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -519,14 +590,14 @@
 
             filtered.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'p-6 sm:p-8 hover:bg-stone-50/50 transition-colors group relative border-b border-stone-100 last:border-0';
+                div.className = 'p-6 sm:p-8 bg-white border-2 border-stone-200 rounded-xl shadow-card transition-all duration-300 group relative mb-6 transform hover:-translate-y-1 hover:border-bean hover:bg-red-50/20';
                 
                 let mediaHtml = '';
                 if (item.image) {
                     if (item.image.startsWith('data:video')) {
                         mediaHtml = `
-                            <div class="mt-4 rounded-lg overflow-hidden shadow-sm w-full bg-black">
-                                <video src="${item.image}" controls class="w-full max-h-[400px] mx-auto"></video>
+                            <div class="mt-6 rounded-xl overflow-hidden shadow-md w-full bg-black border border-stone-200">
+                                <video src="${item.image}" controls class="w-full max-h-[450px] mx-auto"></video>
                             </div>`;
                     } else if (item.image.includes('youtube.com') || item.image.includes('youtu.be')) {
                         let embedUrl = item.image;
@@ -539,35 +610,46 @@
                         }
                         
                         mediaHtml = `
-                            <div class="mt-4 aspect-video rounded overflow-hidden bg-black/5 shadow-inner">
+                            <div class="mt-6 aspect-video rounded-xl overflow-hidden bg-black/5 shadow-md border border-stone-200">
                                 <iframe src="${embedUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
                             </div>`;
                     } else {
                         mediaHtml = `
-                            <div class="mt-4 rounded-lg overflow-hidden shadow-sm max-h-[500px] w-full bg-stone-100 flex justify-center">
+                            <div class="mt-6 rounded-xl overflow-hidden shadow-md max-h-[500px] w-full bg-stone-50 flex justify-center border border-stone-200">
                                 <img src="${item.image}" alt="${item.title}" class="max-w-full max-h-[500px] object-contain">
                             </div>`;
                     }
                 }
 
+                // NEW 배지
+                let newBadge = '';
+                if (isNew(item.date)) {
+                    newBadge = `<span class="inline-flex items-center justify-center px-2 py-0.5 ml-2 text-xs font-bold text-white bg-red-600 rounded-md new-badge shadow-sm">NEW</span>`;
+                }
+
                 const adminButtons = window.isAdminMode ? `
-                    <div class="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onclick="window.editPost('${item.id}')" class="p-1.5 bg-white border border-stone-200 rounded text-stone-500 hover:text-bean hover:border-bean shadow-sm">
-                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                    <div class="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <button onclick="window.editPost('${item.id}')" class="p-2 bg-white border-2 border-stone-200 rounded-lg text-stone-500 hover:text-bean hover:border-bean shadow-sm transition-colors">
+                            <i data-lucide="edit-2" class="w-5 h-5"></i>
                         </button>
-                        <button onclick="window.openDeleteModal('${item.id}')" class="p-1.5 bg-white border border-stone-200 rounded text-stone-500 hover:text-red-600 hover:border-red-600 shadow-sm">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <button onclick="window.openDeleteModal('${item.id}')" class="p-2 bg-white border-2 border-stone-200 rounded-lg text-stone-500 hover:text-red-600 hover:border-red-600 shadow-sm transition-colors">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i>
                         </button>
                     </div>
                 ` : '';
 
                 div.innerHTML = `
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="text-xs font-bold text-bean bg-red-50 px-2 py-0.5 rounded border border-red-100">${item.category}</span>
-                        <span class="text-xs text-stone-400">${item.date || ''}</span>
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-sm font-bold text-bean bg-bean/10 px-3 py-1 rounded-full border border-bean/20">${item.category}</span>
+                        <span class="text-sm font-bold text-stone-400 flex items-center gap-1">
+                            <i class="fa-regular fa-calendar"></i> ${item.date || ''}
+                        </span>
+                        ${newBadge}
                     </div>
-                    <h2 class="text-2xl font-serif font-bold mb-3 text-ink leading-tight group-hover:text-bean transition-colors duration-300 cursor-pointer" onclick="window.editPost('${item.id}')">${item.title}</h2>
-                    <p class="text-stone-600 leading-relaxed text-sm sm:text-base whitespace-pre-line">${item.desc}</p>
+                    <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-4 text-ink leading-snug group-hover:text-bean transition-colors duration-300 cursor-pointer break-keep" onclick="window.editPost('${item.id}')">
+                        ${item.title}
+                    </h2>
+                    <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line break-keep">${item.desc}</p>
                     ${mediaHtml}
                     ${adminButtons}
                 `;
@@ -770,14 +852,14 @@
                 window.closePasswordModal();
             } else {
                 passwordError.classList.remove('opacity-0');
-                passwordInput.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                passwordInput.classList.add('border-red-600', 'ring-2', 'ring-red-600');
             }
         };
 
         window.closePasswordModal = () => {
             passwordModal.classList.add('hidden');
             passwordInput.value = '';
-            passwordInput.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+            passwordInput.classList.remove('border-red-600', 'ring-2', 'ring-red-600');
         };
 
         function toggleAdminState(enable) {
@@ -785,14 +867,14 @@
             if (enable) {
                 adminToggleBtn.classList.remove('bg-stone-300');
                 adminToggleBtn.classList.add('bg-bean');
-                toggleCircle.classList.add('translate-x-6');
+                toggleCircle.classList.add('translate-x-7');
                 toggleCircle.classList.remove('translate-x-1');
                 adminPanelEl.classList.remove('hidden');
                 setTimeout(() => adminPanelEl.scrollIntoView({ behavior: 'smooth' }), 100);
             } else {
                 adminToggleBtn.classList.add('bg-stone-300');
                 adminToggleBtn.classList.remove('bg-bean');
-                toggleCircle.classList.remove('translate-x-6');
+                toggleCircle.classList.remove('translate-x-7');
                 toggleCircle.classList.add('translate-x-1');
                 adminPanelEl.classList.add('hidden');
                 window.resetForm();
@@ -870,6 +952,7 @@
                             saveLocalData();
                             renderContents();
                         }
+                        notifyNewPost(title); // 새 글 알림
                         alert("등록되었습니다.");
                     }
                     window.resetForm();
@@ -901,6 +984,11 @@
         // 시작
         initialize();
         lucide.createIcons();
+
+        // 폰트 로딩 시 아이콘 리프레시 (가끔 깨지는 문제 방지)
+        document.fonts.ready.then(() => {
+            lucide.createIcons();
+        });
 
     </script>
 </body>
