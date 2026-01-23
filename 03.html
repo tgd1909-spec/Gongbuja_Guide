@@ -18,20 +18,20 @@
 
     <!-- Firebase SDK (Version 11.6.1) -->
     <script type="module">
+        // Firebase 로딩 상태 추적
+        window.isFirebaseLoaded = false;
+        
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 전역 변수로 할당하여 app 객체에서 접근 가능하게 함
+        // 전역 변수로 할당
         window.firebaseModules = {
             initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken,
             getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp
         };
-        
-        // 초기화 트리거
-        if (window.app && window.app.initFirebase) {
-            window.app.initFirebase();
-        }
+        window.isFirebaseLoaded = true;
+        console.log("Firebase Modules Loaded");
     </script>
 
     <style>
@@ -56,11 +56,6 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-            20%, 40%, 60%, 80% { transform: translateX(4px); }
-        }
         @keyframes pulse-red {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
@@ -68,14 +63,10 @@
 
         .animate-slide-down { animation: slideDown 0.4s ease-out forwards; }
         .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-        .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
         .animate-pulse-red { animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         
         textarea { resize: none; }
-        
-        .shadow-card {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        }
+        .shadow-card { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
         
         /* 로딩 스피너 */
         .loader {
@@ -87,6 +78,12 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 진단 로그 스타일 */
+        .log-item { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 4px; }
+        .log-success { color: #166534; }
+        .log-error { color: #dc2626; font-weight: bold; }
+        .log-waiting { color: #854d0e; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center py-6 px-4 relative">
@@ -126,30 +123,23 @@
 
     <!-- 메인 콘텐츠 영역 -->
     <main id="main-content" class="w-full max-w-4xl bg-white/60 backdrop-blur-md rounded-2xl min-h-[500px] flex flex-col transition-all duration-300 p-4 md:p-6 relative">
-        <!-- 초기 로딩 상태 (개선됨) -->
+        <!-- 초기 로딩 상태 (진단 모드) -->
         <div id="initial-loader" class="absolute inset-0 flex items-center justify-center bg-white/95 z-10 rounded-2xl">
-            <div class="flex flex-col items-center gap-4 p-6 text-center max-w-sm w-full">
-                <div id="loader-spinner" class="loader w-10 h-10 border-4"></div>
+            <div class="flex flex-col gap-4 p-6 max-w-sm w-full">
+                <h3 class="text-lg font-bold text-[#1a1a1a] flex items-center gap-2 border-b pb-2">
+                    <div class="loader w-5 h-5 border-2"></div>
+                    시스템 연결 진단 중...
+                </h3>
                 
-                <div class="space-y-2">
-                    <p id="loading-text" class="text-stone-800 font-bold text-lg animate-pulse">시스템 접속 중...</p>
-                    <p id="loading-detail" class="text-sm text-stone-500 font-sans-kr">잠시만 기다려주세요.</p>
+                <div id="diagnostic-logs" class="bg-stone-50 p-4 rounded-lg border border-stone-200 min-h-[150px] font-mono text-sm space-y-2">
+                    <!-- 로그가 여기에 쌓입니다 -->
+                    <div class="log-item text-stone-500">대기 중...</div>
                 </div>
 
-                <!-- 10초 이상 지연 시 표시될 도움말 -->
-                <div id="loading-help" class="hidden mt-6 bg-stone-50 p-5 rounded-xl text-left text-stone-600 border border-stone-200 w-full shadow-sm">
-                    <div class="flex items-center gap-2 mb-3 text-red-600 font-bold text-sm">
-                        <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                        <span>연결이 지연되고 있습니다.</span>
-                    </div>
-                    <ul class="list-disc pl-4 space-y-2 text-xs mb-4">
-                        <li>인터넷 연결 상태를 확인해주세요.</li>
-                        <li><strong>Firebase 익명 로그인</strong>이 켜져 있나요?</li>
-                        <li><strong>Firestore 규칙</strong>이 설정되어 있나요?</li>
-                    </ul>
-                    <button onclick="window.location.reload()" class="w-full py-2.5 bg-[#1a1a1a] text-white rounded-lg font-bold hover:bg-[#333] transition text-sm flex items-center justify-center gap-2">
-                        <i data-lucide="refresh-cw" class="w-3 h-3"></i> 페이지 새로고침
-                    </button>
+                <div id="error-guide" class="hidden mt-2 bg-red-50 p-4 rounded-lg border border-red-100">
+                    <p class="text-red-700 font-bold mb-2 text-sm">💡 해결 방법</p>
+                    <p id="guide-text" class="text-xs text-red-600 leading-relaxed"></p>
+                    <button onclick="window.location.reload()" class="mt-3 w-full py-2 bg-red-600 text-white rounded text-sm font-bold">다시 시도</button>
                 </div>
             </div>
         </div>
@@ -174,18 +164,11 @@
 
     <script>
         /**
-         * ------------------------------------------------------------------
-         * Constants
-         * ------------------------------------------------------------------
+         * Constants & State
          */
         const ADMIN_PASSWORD = "taegeuk1909#";
-        const COLLECTION_NAME = "posts"; // Firestore 컬렉션 이름
+        const COLLECTION_NAME = "posts";
 
-        /**
-         * ------------------------------------------------------------------
-         * State Management
-         * ------------------------------------------------------------------
-         */
         const state = {
             isAdmin: false,
             viewMode: 'current',
@@ -195,48 +178,75 @@
             posts: [],
             isLoading: true,
             user: null,
-            db: null, // Firestore instance
+            db: null,
             appId: null
         };
 
         /**
-         * ------------------------------------------------------------------
          * Application Logic
-         * ------------------------------------------------------------------
          */
         const app = {
-            // Firebase 초기화
-            initFirebase: async function() {
-                this.updateLoadingStatus("Firebase 모듈 로드 중...", "필수 파일을 불러오고 있습니다.");
+            // 로거 헬퍼
+            log: function(msg, type = 'normal') {
+                const container = document.getElementById('diagnostic-logs');
+                if (!container) return;
+                
+                // "대기 중..." 메시지 삭제
+                if (container.children.length === 1 && container.children[0].innerText === "대기 중...") {
+                    container.innerHTML = '';
+                }
 
-                // 모듈 로드 대기
+                const div = document.createElement('div');
+                div.className = 'log-item';
+                
+                let icon = '';
+                let colorClass = '';
+                
+                if (type === 'success') { icon = '✅'; colorClass = 'log-success'; }
+                else if (type === 'error') { icon = '❌'; colorClass = 'log-error'; }
+                else if (type === 'waiting') { icon = '⏳'; colorClass = 'log-waiting'; }
+                else { icon = '🔹'; colorClass = 'text-stone-600'; }
+
+                div.innerHTML = `<span>${icon}</span><span class="${colorClass}">${msg}</span>`;
+                container.appendChild(div);
+                container.scrollTop = container.scrollHeight;
+            },
+
+            // 에러 가이드 표시
+            showGuide: function(msg) {
+                const guideBox = document.getElementById('error-guide');
+                const guideText = document.getElementById('guide-text');
+                if (guideBox && guideText) {
+                    guideBox.classList.remove('hidden');
+                    guideText.innerHTML = msg;
+                    document.querySelector('.loader').classList.add('hidden'); // 로더 숨김
+                }
+            },
+
+            // Firebase 초기화 (진단 모드)
+            initFirebase: async function() {
+                this.log("1. Firebase 라이브러리 확인 중...", "normal");
+
+                // 모듈 로드 대기 (최대 5초)
+                let retryCount = 0;
+                while (!window.isFirebaseLoaded && retryCount < 10) {
+                    await new Promise(r => setTimeout(r, 500));
+                    retryCount++;
+                }
+
                 if (!window.firebaseModules) {
-                    setTimeout(() => this.initFirebase(), 500); // 0.5초 간격으로 재시도
+                    this.log("라이브러리 로드 실패!", "error");
+                    this.showGuide("인터넷 연결을 확인하거나 브라우저를 새로고침해주세요.<br>방화벽이 차단하고 있을 수도 있습니다.");
                     return;
                 }
 
-                // 타임아웃 타이머 설정 (10초)
-                const timeoutId = setTimeout(() => {
-                    if (state.isLoading) {
-                        document.getElementById('loader-spinner').classList.add('hidden'); // 스피너 숨김
-                        document.getElementById('loading-text').innerText = "연결 실패";
-                        document.getElementById('loading-text').classList.remove('animate-pulse');
-                        document.getElementById('loading-text').classList.add('text-red-600');
-                        document.getElementById('loading-detail').innerText = "서버 응답이 없습니다.";
-                        const helpBox = document.getElementById('loading-help');
-                        if(helpBox) {
-                            helpBox.classList.remove('hidden');
-                            lucide.createIcons();
-                        }
-                    }
-                }, 10000);
-
-                const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, onSnapshot, query, orderBy } = window.firebaseModules;
+                this.log("라이브러리 로드 완료", "success");
+                const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, onSnapshot, query, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } = window.firebaseModules;
 
                 try {
-                    this.updateLoadingStatus("설정 초기화 중...", "앱 정보를 확인하고 있습니다.");
-
-                    // 사용자분께서 제공해주신 Config 정보를 코드에 직접 입력
+                    this.log("2. 앱 설정 초기화 중...", "normal");
+                    
+                    // 제공해주신 Config
                     const firebaseConfig = {
                         apiKey: "AIzaSyDe1mpaPcDfiNG63peU7EFNXXNJQmKc2rM",
                         authDomain: "taegukdo-notice.firebaseapp.com",
@@ -251,108 +261,69 @@
                     const firebaseApp = initializeApp(firebaseConfig);
                     const auth = getAuth(firebaseApp);
                     state.db = getFirestore(firebaseApp);
+                    this.log("앱 설정 완료", "success");
 
                     // 인증 시도
-                    this.updateLoadingStatus("사용자 인증 중...", "보안 접속을 시도합니다.");
+                    this.log("3. 익명 로그인 시도 중...", "waiting");
                     try {
-                        // [수정] 이 환경에서 제공하는 기본 인증 토큰(__initial_auth_token)은 
-                        // 선생님의 개인 프로젝트와 맞지 않아 오류를 일으킵니다.
-                        // 따라서 토큰 확인 과정을 건너뛰고, 바로 '익명 로그인'을 시도하도록 변경했습니다.
                         await signInAnonymously(auth);
+                        this.log("로그인 성공!", "success");
                     } catch (authError) {
-                        clearTimeout(timeoutId); // 타임아웃 해제
-                        console.error("Auth Failed:", authError);
-                        this.stopLoading();
-                        
+                        this.log("로그인 실패: " + authError.code, "error");
                         if (authError.code === 'auth/operation-not-allowed') {
-                            this.showErrorModal(
-                                "인증 설정 오류", 
-                                "Firebase 콘솔에서 '익명 로그인'이 꺼져 있습니다.<br><br>Authentication > Sign-in method 탭에서<br>Anonymous를 <strong>Enable</strong>로 설정해주세요."
-                            );
+                            this.showGuide("<strong>[중요] Firebase 설정 필요</strong><br>1. Firebase 콘솔 > Authentication 이동<br>2. Sign-in method 탭 클릭<br>3. 'Anonymous(익명)' 항목을 찾아 <strong>사용 설정(Enable)</strong>을 켜주세요.");
                         } else {
-                            this.showToast("인증 실패: " + authError.message, 'error');
+                            this.showGuide("인증 오류가 발생했습니다.<br>Firebase 설정을 다시 확인해주세요.");
                         }
-                        this.renderApp(); 
                         return;
                     }
 
-                    // 인증 상태 감지
-                    onAuthStateChanged(auth, (user) => {
-                        if (user) {
-                            state.user = user;
-                            this.updateLoadingStatus("데이터 동기화 중...", "최신 공지사항을 가져오고 있습니다.");
-                            this.subscribeToPosts();
-                        } else {
-                             // 로그아웃 상태 등
-                             this.updateLoadingStatus("인증 대기 중...", "사용자 정보를 확인하고 있습니다.");
-                        }
-                    });
+                    // 데이터 연결
+                    this.log("4. 데이터베이스 연결 중...", "waiting");
+                    this.subscribeToPosts();
 
                 } catch (error) {
-                    clearTimeout(timeoutId);
-                    console.error("Firebase Init Error:", error);
-                    this.stopLoading();
-                    this.showErrorModal("초기화 오류", error.message);
+                    console.error("Init Error:", error);
+                    this.log("초기화 중 오류 발생", "error");
+                    this.showGuide("알 수 없는 오류: " + error.message);
                 }
             },
-            
-            // 로딩 상태 텍스트 업데이트 헬퍼
-            updateLoadingStatus: function(title, detail) {
-                const titleEl = document.getElementById('loading-text');
-                const detailEl = document.getElementById('loading-detail');
-                if (titleEl) titleEl.innerText = title;
-                if (detailEl) detailEl.innerText = detail;
-            },
 
-            stopLoading: function() {
-                state.isLoading = false;
-                const loader = document.getElementById('initial-loader');
-                if (loader) loader.classList.add('hidden');
-            },
-            
-            // 에러 전용 모달 (토스트보다 강력하게 경고)
-            showErrorModal: function(title, message) {
-                state.modalType = 'error_alert';
-                const container = document.getElementById('modal-container');
-                const content = document.getElementById('modal-content');
-                
-                container.classList.remove('hidden');
-                requestAnimationFrame(() => {
-                    content.classList.remove('scale-95', 'opacity-0');
-                    content.classList.add('scale-100', 'opacity-100');
-                });
-
-                content.innerHTML = `
-                    <div class="p-8 text-center font-sans-kr bg-white">
-                        <div class="mx-auto w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-5 border-2 border-red-200">
-                            <i data-lucide="alert-triangle" class="w-8 h-8"></i>
-                        </div>
-                        <h3 class="font-bold text-2xl mb-3 text-[#1a1a1a]">${title}</h3>
-                        <div class="text-base text-stone-600 mb-8 break-keep leading-relaxed bg-stone-50 p-4 rounded-xl border border-stone-200">
-                            ${message}
-                        </div>
-                        <button onclick="window.location.reload()" class="w-full py-4 bg-[#1a1a1a] text-white rounded-xl font-bold hover:bg-[#333] transition shadow-md hover:-translate-y-1 flex items-center justify-center gap-2 text-lg">
-                            <i data-lucide="refresh-cw" class="w-5 h-5"></i> 페이지 새로고침
-                        </button>
-                    </div>
-                `;
-                lucide.createIcons();
-            },
-
+            // Firestore 리스너 (성공/실패 판별)
             subscribeToPosts: function() {
-                const { collection, onSnapshot, query, orderBy } = window.firebaseModules;
+                const { collection, onSnapshot, query } = window.firebaseModules;
                 
-                if (!state.user || !state.db) return;
+                if (!state.db) return;
 
                 const postsRef = collection(state.db, COLLECTION_NAME);
                 const q = query(postsRef);
 
+                // 타임아웃 설정 (5초 안에 응답 없으면 경고)
+                const connectionTimeout = setTimeout(() => {
+                    if (state.isLoading) {
+                        this.log("데이터 응답 없음 (타임아웃)", "error");
+                        this.showGuide("데이터베이스가 응답하지 않습니다.<br><strong>[중요] 보안 규칙(Rules) 확인</strong><br>Firestore Database > Rules 탭에서<br><code>allow read, write: if true;</code><br>코드가 적용되었는지 확인해주세요.");
+                    }
+                }, 5000);
+
                 onSnapshot(q, (snapshot) => {
+                    clearTimeout(connectionTimeout); // 성공하면 타임아웃 해제
+                    
+                    if (state.isLoading) {
+                        this.log("데이터 수신 성공!", "success");
+                        // 0.5초 뒤 화면 전환 (사용자가 성공 메시지를 볼 틈을 줌)
+                        setTimeout(() => {
+                            this.stopLoading();
+                            this.renderApp();
+                        }, 500);
+                    }
+
                     const loadedPosts = [];
                     snapshot.forEach((doc) => {
                         loadedPosts.push({ id: doc.id, ...doc.data() });
                     });
 
+                    // 날짜 정렬
                     loadedPosts.sort((a, b) => {
                         const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (new Date(a.date).getTime() || 0);
                         const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (new Date(b.date).getTime() || 0);
@@ -364,25 +335,29 @@
                     }
 
                     state.posts = loadedPosts;
-                    this.stopLoading(); // 성공 시 로딩 종료
-                    this.renderApp();
+                    if (!state.isLoading) this.renderApp();
 
                 }, (error) => {
-                    console.error("Firestore Listen Error:", error);
-                    this.stopLoading(); // 에러 발생 시 로딩 종료 후 모달
+                    clearTimeout(connectionTimeout);
+                    console.error("Firestore Error:", error);
                     
                     if (error.code === 'permission-denied') {
-                        this.showErrorModal(
-                            "데이터 접근 권한 오류", 
-                            "Firestore 보안 규칙(Rules)이 설정되지 않아<br>데이터를 읽을 수 없습니다.<br><br>Firestore Database > Rules 탭에서 규칙을<br><code class='bg-stone-200 px-2 py-0.5 rounded text-red-600 font-bold'>allow read, write: if true;</code><br>로 수정하고 [게시]를 눌러주세요."
-                        );
+                        this.log("권한 거부됨 (Permission Denied)", "error");
+                        this.showGuide("<strong>[필수] 보안 규칙 설정 필요</strong><br>Firebase 콘솔 > Firestore > Rules 탭<br>기존 코드를 지우고 아래 코드를 붙여넣으세요:<br><code>allow read, write: if true;</code>");
                     } else {
-                        this.showToast("데이터 불러오기 실패: " + error.message, 'error');
+                        this.log("연결 오류: " + error.message, "error");
                     }
-                    
-                    this.renderMainContent(); 
                 });
             },
+
+            stopLoading: function() {
+                state.isLoading = false;
+                const loader = document.getElementById('initial-loader');
+                if (loader) loader.classList.add('hidden');
+            },
+
+            // --- 기존 기능 유지 ---
+            // (UI 렌더링, 글쓰기, 삭제 등)
 
             submitPost: async function() {
                 const { addDoc, collection, serverTimestamp } = window.firebaseModules;
@@ -417,54 +392,39 @@
 
                 } catch (e) {
                     console.error(e);
-                    if (e.code === 'permission-denied') {
-                        this.showToast("글쓰기 권한이 없습니다. (Rules 확인)", 'error');
-                    } else {
-                        this.showToast("저장 실패: " + e.message, 'error');
-                    }
+                    this.showToast("저장 실패: " + e.message, 'error');
                 }
             },
 
             confirmDelete: async function() {
                 const { deleteDoc, doc } = window.firebaseModules;
-                
                 if (!state.deleteTargetId) return;
-
                 try {
                     const postRef = doc(state.db, COLLECTION_NAME, state.deleteTargetId);
                     await deleteDoc(postRef);
-
                     if (state.selectedPostId === state.deleteTargetId) state.selectedPostId = null;
                     this.showToast("게시글이 삭제되었습니다.");
                     this.closeModal();
                 } catch (e) {
                     console.error(e);
-                    this.showToast("삭제 중 오류가 발생했습니다.", 'error');
+                    this.showToast("삭제 실패", 'error');
                 }
             },
 
             toggleArchive: async function(id) {
                 const { updateDoc, doc } = window.firebaseModules;
-                
                 const post = state.posts.find(p => p.id === id);
                 if (!post) return;
-
                 const newStatus = !post.isArchived;
-
                 try {
                     const postRef = doc(state.db, COLLECTION_NAME, id);
-                    await updateDoc(postRef, {
-                        isArchived: newStatus
-                    });
-
-                    this.showToast(newStatus ? "게시글이 보관함으로 이동되었습니다." : "게시글이 공지사항으로 복원되었습니다.");
-                    
+                    await updateDoc(postRef, { isArchived: newStatus });
+                    this.showToast(newStatus ? "보관함으로 이동됨" : "공지사항으로 복원됨");
                     if (newStatus && state.viewMode === 'current' && state.selectedPostId) state.selectedPostId = null;
                     if (!newStatus && state.viewMode === 'archived' && state.selectedPostId) state.selectedPostId = null;
-
                 } catch (e) {
                     console.error(e);
-                    this.showToast("상태 변경 중 오류가 발생했습니다.", 'error');
+                    this.showToast("상태 변경 실패", 'error');
                 }
             },
 
@@ -479,18 +439,18 @@
                 return diff < (3 * 24 * 60 * 60 * 1000); 
             },
 
-            // --- UI Rendering & Actions (복구된 함수들) ---
+            // --- Render Logic ---
 
             init: function() {
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && state.modalType) this.closeModal();
                 });
-                
                 document.addEventListener('keydown', (e) => {
                     if (e.ctrlKey && e.key === 'q') this.toggleAdmin();
                 });
                 
-                this.renderApp();
+                // 진단 시작
+                this.initFirebase();
             },
 
             renderApp: function() {
@@ -502,7 +462,7 @@
 
             renderMainContent: function() {
                 const mainEl = document.getElementById('main-content');
-                if (state.isLoading) return;
+                if (state.isLoading) return; // 로딩중이면 덮어쓰지 않음
 
                 if (state.selectedPostId !== null) {
                     this.renderDetailView(mainEl);
@@ -517,21 +477,15 @@
                 
                 container.innerHTML = `
                     <div class="bg-white rounded-2xl border-2 border-stone-200 shadow-card p-6 md:p-10 animate-fade-in h-full relative overflow-hidden">
-                        
-                        <!-- 툴바 -->
                         <div class="flex justify-between items-center mb-8 border-b-2 border-stone-100 pb-6">
                             <button onclick="app.goList()" class="group flex items-center gap-2 text-stone-500 hover:text-[#1a1a1a] transition font-sans-kr font-bold text-lg">
-                                <span class="bg-stone-100 group-hover:bg-stone-200 p-2 rounded-full transition-colors border border-stone-200">
-                                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                                </span>
+                                <span class="bg-stone-100 group-hover:bg-stone-200 p-2 rounded-full transition-colors border border-stone-200"><i data-lucide="arrow-left" class="w-5 h-5"></i></span>
                                 목록으로 돌아가기
                             </button>
-                            
                             ${state.isAdmin ? `
                                 <div class="flex gap-3">
                                     <button onclick="app.toggleArchive('${post.id}')" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-lg transition font-bold flex items-center gap-2">
-                                        <i data-lucide="${post.isArchived ? 'refresh-ccw' : 'archive'}" class="w-4 h-4"></i>
-                                        ${post.isArchived ? "복원" : "보관"}
+                                        <i data-lucide="${post.isArchived ? 'refresh-ccw' : 'archive'}" class="w-4 h-4"></i> ${post.isArchived ? "복원" : "보관"}
                                     </button>
                                     <button onclick="app.requestDelete('${post.id}')" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition font-bold flex items-center gap-2">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i> 삭제
@@ -539,24 +493,15 @@
                                 </div>
                             ` : ''}
                         </div>
-
                         <div class="mb-8">
                             <div class="flex flex-wrap items-center gap-2 mb-4">
-                                ${post.isMustRead && !post.isArchived ? 
-                                    `<span class="bg-[#9d2424]/10 text-[#9d2424] px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                                        <i data-lucide="megaphone" class="w-4 h-4 fill-current"></i> 필독 공지
-                                     </span>` : ''}
+                                ${post.isMustRead && !post.isArchived ? `<span class="bg-[#9d2424]/10 text-[#9d2424] px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1"><i data-lucide="megaphone" class="w-4 h-4 fill-current"></i> 필독 공지</span>` : ''}
                                 ${post.isArchived ? `<span class="bg-stone-100 text-stone-500 px-3 py-1 rounded-full text-sm font-bold">보관됨</span>` : ''}
-                                <span class="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                                    <i data-lucide="calendar" class="w-4 h-4"></i> ${post.date}
-                                </span>
+                                <span class="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1"><i data-lucide="calendar" class="w-4 h-4"></i> ${post.date}</span>
                             </div>
                             <h2 class="text-3xl md:text-4xl font-serif-kr font-bold text-[#1a1a1a] leading-tight break-keep mb-6">${post.title}</h2>
                         </div>
-
-                        <div class="font-sans-kr text-[#1a1a1a] text-lg md:text-xl leading-relaxed whitespace-pre-wrap break-keep min-h-[300px] bg-stone-50/50 p-6 rounded-xl border border-stone-100">
-${post.content}
-                        </div>
+                        <div class="font-sans-kr text-[#1a1a1a] text-lg md:text-xl leading-relaxed whitespace-pre-wrap break-keep min-h-[300px] bg-stone-50/50 p-6 rounded-xl border border-stone-100">${post.content}</div>
                     </div>
                 `;
             },
@@ -564,23 +509,13 @@ ${post.content}
             renderListView: function(container) {
                 let html = `
                     <div class="flex gap-2 mb-6 px-1">
-                        <button onclick="app.changeViewMode('current')" class="flex-1 py-4 text-center rounded-xl font-serif-kr text-lg transition-all duration-300 border-2 ${state.viewMode === 'current' ? 'bg-white border-[#1a1a1a] text-[#1a1a1a] font-bold shadow-card transform -translate-y-1' : 'bg-white/50 border-transparent text-stone-400 hover:bg-white hover:text-stone-600'}">
-                            진행 중인 공지
-                        </button>
-                        <button onclick="app.changeViewMode('archived')" class="flex-1 py-4 text-center rounded-xl font-serif-kr text-lg transition-all duration-300 border-2 ${state.viewMode === 'archived' ? 'bg-stone-100 border-stone-400 text-stone-600 font-bold shadow-card transform -translate-y-1' : 'bg-white/50 border-transparent text-stone-400 hover:bg-white hover:text-stone-600'}">
-                            지난 공지 보관함
-                        </button>
+                        <button onclick="app.changeViewMode('current')" class="flex-1 py-4 text-center rounded-xl font-serif-kr text-lg transition-all duration-300 border-2 ${state.viewMode === 'current' ? 'bg-white border-[#1a1a1a] text-[#1a1a1a] font-bold shadow-card transform -translate-y-1' : 'bg-white/50 border-transparent text-stone-400 hover:bg-white hover:text-stone-600'}">진행 중인 공지</button>
+                        <button onclick="app.changeViewMode('archived')" class="flex-1 py-4 text-center rounded-xl font-serif-kr text-lg transition-all duration-300 border-2 ${state.viewMode === 'archived' ? 'bg-stone-100 border-stone-400 text-stone-600 font-bold shadow-card transform -translate-y-1' : 'bg-white/50 border-transparent text-stone-400 hover:bg-white hover:text-stone-600'}">지난 공지 보관함</button>
                     </div>
                 `;
 
                 if (state.isAdmin && state.viewMode === 'current') {
-                    html += `
-                        <div class="flex justify-end mb-6 animate-fade-in px-1">
-                            <button onclick="app.openModal('write')" class="flex items-center gap-2 bg-[#1a1a1a] text-white px-5 py-3 rounded-xl hover:bg-[#333] transition-all shadow-lg hover:-translate-y-1 font-bold text-base">
-                                <i data-lucide="pen-line" class="w-5 h-5"></i> 새 공지사항 작성
-                            </button>
-                        </div>
-                    `;
+                    html += `<div class="flex justify-end mb-6 animate-fade-in px-1"><button onclick="app.openModal('write')" class="flex items-center gap-2 bg-[#1a1a1a] text-white px-5 py-3 rounded-xl hover:bg-[#333] transition-all shadow-lg hover:-translate-y-1 font-bold text-base"><i data-lucide="pen-line" class="w-5 h-5"></i> 새 공지사항 작성</button></div>`;
                 }
 
                 const filteredPosts = state.posts
@@ -596,53 +531,27 @@ ${post.content}
                 html += `<ul class="space-y-4 pb-4">`;
                 
                 if (filteredPosts.length === 0) {
-                    html += `
-                        <li class="bg-white rounded-2xl border-2 border-stone-200 p-12 text-center flex flex-col items-center justify-center text-stone-400 font-sans-kr h-64 gap-4 animate-fade-in shadow-card">
-                            <i data-lucide="clipboard-x" class="w-16 h-16 stroke-[1.5] text-stone-300"></i>
-                            <p class="text-lg font-medium">${state.viewMode === 'current' ? '현재 등록된 공지사항이 없습니다.' : '보관함이 비어있습니다.'}</p>
-                        </li>
-                    `;
+                    html += `<li class="bg-white rounded-2xl border-2 border-stone-200 p-12 text-center flex flex-col items-center justify-center text-stone-400 font-sans-kr h-64 gap-4 animate-fade-in shadow-card"><i data-lucide="clipboard-x" class="w-16 h-16 stroke-[1.5] text-stone-300"></i><p class="text-lg font-medium">${state.viewMode === 'current' ? '현재 등록된 공지사항이 없습니다.' : '보관함이 비어있습니다.'}</p></li>`;
                 } else {
                     filteredPosts.forEach((post, index) => {
                         const isHighlighted = post.isMustRead && state.viewMode === 'current';
                         const isNew = this.isNewPost(post);
-                        
                         const delayClass = index < 5 ? `animate-fade-in` : '';
                         const styleDelay = index < 5 ? `animation-delay: ${index * 0.05}s` : '';
                         
                         html += `
-                            <li onclick="app.selectPost('${post.id}')" 
-                                class="group bg-white rounded-2xl border-2 ${isHighlighted ? 'border-[#9d2424]/30 bg-red-50/10' : 'border-stone-200'} p-6 md:p-8 cursor-pointer shadow-card transition-all duration-300 hover:border-[#9d2424] hover:bg-red-50/30 hover:-translate-y-1 ${delayClass}" 
-                                style="${styleDelay}">
-                                
+                            <li onclick="app.selectPost('${post.id}')" class="group bg-white rounded-2xl border-2 ${isHighlighted ? 'border-[#9d2424]/30 bg-red-50/10' : 'border-stone-200'} p-6 md:p-8 cursor-pointer shadow-card transition-all duration-300 hover:border-[#9d2424] hover:bg-red-50/30 hover:-translate-y-1 ${delayClass}" style="${styleDelay}">
                                 <div class="flex flex-col md:flex-row gap-4 items-start md:items-center">
-                                    <div class="flex-shrink-0">
-                                        <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-bold bg-stone-100 text-stone-600 group-hover:bg-[#9d2424]/10 group-hover:text-[#9d2424] transition-colors">
-                                            ${post.date}
-                                        </span>
-                                    </div>
-                                    
+                                    <div class="flex-shrink-0"><span class="inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-bold bg-stone-100 text-stone-600 group-hover:bg-[#9d2424]/10 group-hover:text-[#9d2424] transition-colors">${post.date}</span></div>
                                     <div class="flex-grow min-w-0 w-full">
                                         <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                            ${isHighlighted ? 
-                                                `<span class="bg-[#9d2424]/10 text-[#9d2424] text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                                                    <i data-lucide="megaphone" class="w-3.5 h-3.5 fill-current"></i> 필독
-                                                 </span>` : ''}
-                                            
-                                            ${isNew && !post.isArchived ? 
-                                                `<span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse-red shadow-sm">NEW</span>` : ''}
+                                            ${isHighlighted ? `<span class="bg-[#9d2424]/10 text-[#9d2424] text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1"><i data-lucide="megaphone" class="w-3.5 h-3.5 fill-current"></i> 필독</span>` : ''}
+                                            ${isNew && !post.isArchived ? `<span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse-red shadow-sm">NEW</span>` : ''}
                                         </div>
-                                        <h3 class="text-xl md:text-2xl font-serif-kr font-bold text-[#1a1a1a] group-hover:text-[#9d2424] transition-colors break-keep leading-snug">
-                                            ${post.title}
-                                        </h3>
-                                        <p class="text-stone-500 font-sans-kr text-base mt-2 line-clamp-1 group-hover:text-stone-700 transition-colors break-keep">
-                                            ${post.content}
-                                        </p>
+                                        <h3 class="text-xl md:text-2xl font-serif-kr font-bold text-[#1a1a1a] group-hover:text-[#9d2424] transition-colors break-keep leading-snug">${post.title}</h3>
+                                        <p class="text-stone-500 font-sans-kr text-base mt-2 line-clamp-1 group-hover:text-stone-700 transition-colors break-keep">${post.content}</p>
                                     </div>
-
-                                    <div class="hidden md:flex text-stone-300 group-hover:text-[#9d2424] transition-colors">
-                                        <i data-lucide="chevron-right" class="w-6 h-6"></i>
-                                    </div>
+                                    <div class="hidden md:flex text-stone-300 group-hover:text-[#9d2424] transition-colors"><i data-lucide="chevron-right" class="w-6 h-6"></i></div>
                                 </div>
                             </li>
                         `;
@@ -655,139 +564,90 @@ ${post.content}
             renderFooterIcon: function() {
                 const iconWrapper = document.getElementById('admin-icon-wrapper');
                 const textEl = document.getElementById('admin-text');
-                
-                iconWrapper.innerHTML = state.isAdmin 
-                    ? `<i data-lucide="unlock" class="w-4 h-4 text-[#9d2424]"></i>` 
-                    : `<i data-lucide="lock" class="w-4 h-4"></i>`;
-                
+                iconWrapper.innerHTML = state.isAdmin ? `<i data-lucide="unlock" class="w-4 h-4 text-[#9d2424]"></i>` : `<i data-lucide="lock" class="w-4 h-4"></i>`;
                 textEl.innerText = state.isAdmin ? '관리자 모드 종료' : '관리자 모드';
-                
                 const btn = textEl.parentElement;
-                if(state.isAdmin) {
-                    btn.classList.add('bg-stone-100', 'text-[#9d2424]', 'border-stone-200');
-                    btn.classList.remove('text-stone-400');
-                } else {
-                    btn.classList.remove('bg-stone-100', 'text-[#9d2424]', 'border-stone-200');
-                    btn.classList.add('text-stone-400');
-                }
+                if(state.isAdmin) { btn.classList.add('bg-stone-100', 'text-[#9d2424]', 'border-stone-200'); btn.classList.remove('text-stone-400'); } 
+                else { btn.classList.remove('bg-stone-100', 'text-[#9d2424]', 'border-stone-200'); btn.classList.add('text-stone-400'); }
             },
 
             renderModal: function() {
                 const container = document.getElementById('modal-container');
                 const content = document.getElementById('modal-content');
-                
                 if (!state.modalType) {
                     container.classList.add('hidden');
-                    content.classList.remove('scale-100', 'opacity-100');
-                    content.classList.add('scale-95', 'opacity-0');
                     return;
                 }
-                
                 container.classList.remove('hidden');
-                requestAnimationFrame(() => {
-                    content.classList.remove('scale-95', 'opacity-0');
-                    content.classList.add('scale-100', 'opacity-100');
-                });
+                requestAnimationFrame(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); });
 
                 let html = '';
-
                 if (state.modalType === 'login') {
                     html = `
                         <div class="p-8 text-center font-sans-kr relative bg-white">
                             <button onclick="app.closeModal()" class="absolute top-4 right-4 text-stone-400 hover:text-[#1a1a1a]"><i data-lucide="x" class="w-6 h-6"></i></button>
-                            <div class="w-14 h-14 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-5 text-[#1a1a1a] border-2 border-stone-200">
-                                <i data-lucide="shield-check" class="w-7 h-7"></i>
-                            </div>
+                            <div class="w-14 h-14 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-5 text-[#1a1a1a] border-2 border-stone-200"><i data-lucide="shield-check" class="w-7 h-7"></i></div>
                             <h3 class="font-serif-kr font-bold text-2xl mb-2 text-[#1a1a1a]">관리자 로그인</h3>
                             <p class="text-stone-500 mb-8 break-keep font-medium">관리자 권한으로 접근하려면 비밀번호를 입력하세요.</p>
-                            
-                            <div class="relative mb-8 group">
-                                <input type="password" id="pw-input" placeholder="비밀번호"
-                                    class="w-full border-b-2 border-stone-300 p-3 text-center focus:outline-none focus:border-[#9d2424] bg-transparent transition-colors text-[#1a1a1a] text-xl font-bold placeholder-stone-300"
-                                    onkeydown="if(event.key === 'Enter') app.submitLogin()">
-                            </div>
-                            
+                            <div class="relative mb-8 group"><input type="password" id="pw-input" placeholder="비밀번호" class="w-full border-b-2 border-stone-300 p-3 text-center focus:outline-none focus:border-[#9d2424] bg-transparent transition-colors text-[#1a1a1a] text-xl font-bold placeholder-stone-300" onkeydown="if(event.key === 'Enter') app.submitLogin()"></div>
                             <button onclick="app.submitLogin()" class="w-full py-4 bg-[#1a1a1a] text-white rounded-xl hover:bg-[#333] transition font-bold shadow-md hover:-translate-y-1 text-lg">확인</button>
                         </div>
                     `;
                 } else if (state.modalType === 'write') {
                     html = `
                         <div class="bg-white px-6 py-5 flex justify-between items-center border-b-2 border-stone-100">
-                            <h3 class="font-serif-kr font-bold text-xl flex items-center gap-2 text-[#1a1a1a]">
-                                <span class="bg-[#9d2424]/10 text-[#9d2424] p-2 rounded-full"><i data-lucide="pen-tool" class="w-5 h-5"></i></span>
-                                새 공지사항 작성
-                            </h3>
+                            <h3 class="font-serif-kr font-bold text-xl flex items-center gap-2 text-[#1a1a1a]"><span class="bg-[#9d2424]/10 text-[#9d2424] p-2 rounded-full"><i data-lucide="pen-tool" class="w-5 h-5"></i></span> 새 공지사항 작성</h3>
                             <button onclick="app.closeModal()" class="hover:bg-stone-100 p-2 rounded-full transition text-[#1a1a1a]"><i data-lucide="x" class="w-6 h-6"></i></button>
                         </div>
                         <div class="p-8 font-sans-kr bg-white">
                             <div class="mb-6 bg-red-50/50 p-4 rounded-xl border-2 border-red-100 hover:border-[#9d2424]/30 transition-colors">
-                                <label class="flex items-center gap-3 cursor-pointer select-none">
-                                    <div class="relative flex items-center">
-                                        <input type="checkbox" id="must-read-check" class="peer sr-only">
-                                        <div class="w-11 h-6 bg-stone-300 rounded-full peer peer-checked:bg-[#9d2424] transition-all"></div>
-                                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-sm"></div>
-                                    </div>
-                                    <span class="text-base font-bold text-[#9d2424] flex items-center gap-2">
-                                        <i data-lucide="megaphone" class="w-4 h-4"></i> 중요 필독 공지로 설정
-                                    </span>
-                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer select-none"><input type="checkbox" id="must-read-check" class="peer sr-only"><div class="w-11 h-6 bg-stone-300 rounded-full peer peer-checked:bg-[#9d2424] transition-all"></div><span class="text-base font-bold text-[#9d2424] flex items-center gap-2"><i data-lucide="megaphone" class="w-4 h-4"></i> 중요 필독 공지로 설정</span></label>
                             </div>
-                            
-                            <div class="mb-6">
-                                <label class="block text-base font-bold text-[#1a1a1a] mb-2 flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 bg-[#9d2424] rounded-full"></span> 제목
-                                </label>
-                                <input type="text" id="title-input" class="w-full border-2 border-stone-200 p-4 rounded-xl focus:outline-none focus:border-[#9d2424] transition-all text-lg font-medium placeholder-stone-400" placeholder="제목을 입력하세요">
-                            </div>
-                            
-                            <div class="mb-8">
-                                <label class="block text-base font-bold text-[#1a1a1a] mb-2 flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 bg-[#9d2424] rounded-full"></span> 내용
-                                </label>
-                                <textarea id="content-input" class="w-full border-2 border-stone-200 p-4 rounded-xl h-48 resize-none focus:outline-none focus:border-[#9d2424] transition-all leading-relaxed text-lg font-medium placeholder-stone-400" placeholder="공지 내용을 입력하세요"></textarea>
-                            </div>
-                            
-                            <div class="flex gap-3">
-                                <button onclick="app.closeModal()" class="flex-1 py-4 text-stone-500 hover:bg-stone-100 rounded-xl transition font-bold text-lg border-2 border-transparent">취소</button>
-                                <button onclick="app.submitPost()" class="flex-[2] py-4 bg-[#1a1a1a] text-white rounded-xl font-bold hover:bg-[#333] transition shadow-lg hover:-translate-y-1 flex items-center justify-center gap-2 text-lg">
-                                    <i data-lucide="send" class="w-5 h-5"></i> 등록하기
-                                </button>
-                            </div>
+                            <div class="mb-6"><label class="block text-base font-bold text-[#1a1a1a] mb-2">제목</label><input type="text" id="title-input" class="w-full border-2 border-stone-200 p-4 rounded-xl focus:outline-none focus:border-[#9d2424] transition-all text-lg font-medium placeholder-stone-400" placeholder="제목을 입력하세요"></div>
+                            <div class="mb-8"><label class="block text-base font-bold text-[#1a1a1a] mb-2">내용</label><textarea id="content-input" class="w-full border-2 border-stone-200 p-4 rounded-xl h-48 resize-none focus:outline-none focus:border-[#9d2424] transition-all leading-relaxed text-lg font-medium placeholder-stone-400" placeholder="공지 내용을 입력하세요"></textarea></div>
+                            <div class="flex gap-3"><button onclick="app.closeModal()" class="flex-1 py-4 text-stone-500 hover:bg-stone-100 rounded-xl transition font-bold text-lg border-2 border-transparent">취소</button><button onclick="app.submitPost()" class="flex-[2] py-4 bg-[#1a1a1a] text-white rounded-xl font-bold hover:bg-[#333] transition shadow-lg hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"><i data-lucide="send" class="w-5 h-5"></i> 등록하기</button></div>
                         </div>
                     `;
                 } else if (state.modalType === 'delete') {
                     html = `
                         <div class="p-10 text-center font-sans-kr bg-white">
-                            <div class="mx-auto w-20 h-20 bg-red-50 text-[#9d2424] rounded-full flex items-center justify-center mb-6 border-2 border-red-100">
-                                <i data-lucide="alert-triangle" class="w-10 h-10"></i>
-                            </div>
+                            <div class="mx-auto w-20 h-20 bg-red-50 text-[#9d2424] rounded-full flex items-center justify-center mb-6 border-2 border-red-100"><i data-lucide="alert-triangle" class="w-10 h-10"></i></div>
                             <h3 class="font-bold text-2xl mb-3 text-[#1a1a1a]">게시글을 삭제하시겠습니까?</h3>
-                            <p class="text-base text-stone-500 mb-10 break-keep font-medium leading-relaxed">
-                                삭제된 게시글은 영구적으로 제거되며<br>다시 복구할 수 없습니다.
-                            </p>
-                            <div class="flex gap-3 justify-center">
-                                <button onclick="app.closeModal()" class="flex-1 py-3.5 border-2 border-stone-200 rounded-xl hover:bg-stone-50 text-stone-600 font-bold transition text-lg">취소</button>
-                                <button onclick="app.confirmDelete()" class="flex-[2] py-3.5 bg-[#9d2424] text-white rounded-xl hover:bg-[#7a1c1c] font-bold shadow-md hover:-translate-y-1 transition flex items-center justify-center gap-2 text-lg">
-                                    <i data-lucide="trash-2" class="w-5 h-5"></i> 삭제하기
-                                </button>
-                            </div>
+                            <p class="text-base text-stone-500 mb-10 break-keep font-medium leading-relaxed">삭제된 게시글은 영구적으로 제거되며<br>다시 복구할 수 없습니다.</p>
+                            <div class="flex gap-3 justify-center"><button onclick="app.closeModal()" class="flex-1 py-3.5 border-2 border-stone-200 rounded-xl hover:bg-stone-50 text-stone-600 font-bold transition text-lg">취소</button><button onclick="app.confirmDelete()" class="flex-[2] py-3.5 bg-[#9d2424] text-white rounded-xl hover:bg-[#7a1c1c] font-bold shadow-md hover:-translate-y-1 transition flex items-center justify-center gap-2 text-lg"><i data-lucide="trash-2" class="w-5 h-5"></i> 삭제하기</button></div>
                         </div>
                     `;
-                } else if (state.modalType === 'error_alert') {
-                    // (에러 모달 HTML은 initFirebase 내부 로직에서 처리하지만 혹시 renderModal 호출될 경우 대비)
-                    // 내용은 동적으로 채워짐
                 }
-                
-                if (state.modalType !== 'error_alert') {
-                    content.innerHTML = html;
-                }
-                
+                content.innerHTML = html;
                 if(state.modalType === 'login') setTimeout(() => document.getElementById('pw-input').focus(), 100);
             },
-            
-            requestDelete: function(id) {
-                state.deleteTargetId = id;
-                this.openModal('delete');
+
+            showToast: function(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                const bgColor = type === 'error' ? 'bg-[#9d2424]' : 'bg-[#1a1a1a]';
+                const icon = type === 'error' ? 'alert-circle' : 'check-circle-2';
+                toast.className = "fixed top-8 left-1/2 transform -translate-x-1/2 z-[100] animate-slide-down shadow-2xl w-[90%] md:w-auto text-center";
+                toast.innerHTML = `<div class="${bgColor} text-white px-6 py-4 rounded-full inline-flex items-center justify-center gap-3 font-sans-kr text-base font-bold border-2 border-white/20 shadow-lg"><i data-lucide="${icon}" class="w-5 h-5 text-white flex-shrink-0"></i><span class="break-keep">${message}</span></div>`;
+                container.appendChild(toast);
+                lucide.createIcons();
+                setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translate(-50%, -20px)'; toast.style.transition = 'all 0.3s ease-out'; setTimeout(() => toast.remove(), 300); }, 4000);
+            },
+
+            // Action Handlers
+            goHome: function() { state.selectedPostId = null; this.renderApp(); window.scrollTo({top: 0, behavior: 'smooth'}); },
+            goList: function() { state.selectedPostId = null; this.renderApp(); },
+            selectPost: function(id) { state.selectedPostId = id; this.renderApp(); window.scrollTo({top: 0, behavior: 'smooth'}); },
+            changeViewMode: function(mode) { state.viewMode = mode; this.renderApp(); },
+            toggleAdmin: function() { if (state.isAdmin) { state.isAdmin = false; this.showToast("관리자 모드가 종료되었습니다."); this.renderApp(); } else { this.openModal('login'); } },
+            openModal: function(type) { state.modalType = type; this.renderApp(); },
+            closeModal: function() { state.modalType = null; state.deleteTargetId = null; this.renderApp(); },
+            requestDelete: function(id) { state.deleteTargetId = id; this.openModal('delete'); },
+            submitLogin: function() {
+                const input = document.getElementById('pw-input');
+                const container = input.parentElement;
+                if (input.value === ADMIN_PASSWORD) { state.isAdmin = true; this.showToast("관리자 모드로 전환되었습니다."); this.closeModal(); } 
+                else { container.classList.remove('animate-shake'); void container.offsetWidth; container.classList.add('animate-shake'); input.classList.add('border-[#9d2424]', 'text-[#9d2424]'); this.showToast("비밀번호가 일치하지 않습니다.", 'error'); setTimeout(() => { input.classList.remove('border-[#9d2424]', 'text-[#9d2424]'); input.value = ''; input.focus(); }, 1000); }
             }
         };
 
