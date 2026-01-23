@@ -16,24 +16,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK (Version 11.6.1) -->
-    <script type="module">
-        // Firebase 로딩 상태 추적
-        window.isFirebaseLoaded = false;
-        
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // 전역 변수로 할당
-        window.firebaseModules = {
-            initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken,
-            getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp
-        };
-        window.isFirebaseLoaded = true;
-        console.log("Firebase Modules Loaded");
-    </script>
-
     <style>
         /* 기본 설정 */
         body {
@@ -56,6 +38,11 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
         @keyframes pulse-red {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
@@ -63,6 +50,7 @@
 
         .animate-slide-down { animation: slideDown 0.4s ease-out forwards; }
         .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
         .animate-pulse-red { animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         
         textarea { resize: none; }
@@ -78,13 +66,25 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* 진단 로그 스타일 */
-        .log-item { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 4px; }
-        .log-success { color: #166534; }
-        .log-error { color: #dc2626; font-weight: bold; }
-        .log-waiting { color: #854d0e; }
     </style>
+
+    <!-- Firebase SDK (Version 11.6.1) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 전역 변수로 할당
+        window.firebaseModules = {
+            initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken,
+            getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp
+        };
+        
+        // 초기화 트리거
+        if (window.app && window.app.initFirebase) {
+            window.app.initFirebase();
+        }
+    </script>
 </head>
 <body class="min-h-screen flex flex-col items-center py-6 px-4 relative">
 
@@ -123,24 +123,11 @@
 
     <!-- 메인 콘텐츠 영역 -->
     <main id="main-content" class="w-full max-w-4xl bg-white/60 backdrop-blur-md rounded-2xl min-h-[500px] flex flex-col transition-all duration-300 p-4 md:p-6 relative">
-        <!-- 초기 로딩 상태 (진단 모드) -->
-        <div id="initial-loader" class="absolute inset-0 flex items-center justify-center bg-white/95 z-10 rounded-2xl">
-            <div class="flex flex-col gap-4 p-6 max-w-sm w-full">
-                <h3 class="text-lg font-bold text-[#1a1a1a] flex items-center gap-2 border-b pb-2">
-                    <div class="loader w-5 h-5 border-2"></div>
-                    시스템 연결 진단 중...
-                </h3>
-                
-                <div id="diagnostic-logs" class="bg-stone-50 p-4 rounded-lg border border-stone-200 min-h-[150px] font-mono text-sm space-y-2">
-                    <!-- 로그가 여기에 쌓입니다 -->
-                    <div class="log-item text-stone-500">대기 중...</div>
-                </div>
-
-                <div id="error-guide" class="hidden mt-2 bg-red-50 p-4 rounded-lg border border-red-100">
-                    <p class="text-red-700 font-bold mb-2 text-sm">💡 해결 방법</p>
-                    <p id="guide-text" class="text-xs text-red-600 leading-relaxed"></p>
-                    <button onclick="window.location.reload()" class="mt-3 w-full py-2 bg-red-600 text-white rounded text-sm font-bold">다시 시도</button>
-                </div>
+        <!-- 초기 로딩 상태 (깔끔한 버전) -->
+        <div id="initial-loader" class="absolute inset-0 flex items-center justify-center bg-white/90 z-10 rounded-2xl">
+            <div class="flex flex-col items-center gap-3 p-4 text-center">
+                <div class="loader w-8 h-8 border-4"></div>
+                <p class="text-stone-500 font-sans-kr text-sm animate-pulse">데이터를 불러오는 중...</p>
             </div>
         </div>
         <!-- JS Render Target -->
@@ -186,66 +173,17 @@
          * Application Logic
          */
         const app = {
-            // 로거 헬퍼
-            log: function(msg, type = 'normal') {
-                const container = document.getElementById('diagnostic-logs');
-                if (!container) return;
-                
-                // "대기 중..." 메시지 삭제
-                if (container.children.length === 1 && container.children[0].innerText === "대기 중...") {
-                    container.innerHTML = '';
-                }
-
-                const div = document.createElement('div');
-                div.className = 'log-item';
-                
-                let icon = '';
-                let colorClass = '';
-                
-                if (type === 'success') { icon = '✅'; colorClass = 'log-success'; }
-                else if (type === 'error') { icon = '❌'; colorClass = 'log-error'; }
-                else if (type === 'waiting') { icon = '⏳'; colorClass = 'log-waiting'; }
-                else { icon = '🔹'; colorClass = 'text-stone-600'; }
-
-                div.innerHTML = `<span>${icon}</span><span class="${colorClass}">${msg}</span>`;
-                container.appendChild(div);
-                container.scrollTop = container.scrollHeight;
-            },
-
-            // 에러 가이드 표시
-            showGuide: function(msg) {
-                const guideBox = document.getElementById('error-guide');
-                const guideText = document.getElementById('guide-text');
-                if (guideBox && guideText) {
-                    guideBox.classList.remove('hidden');
-                    guideText.innerHTML = msg;
-                    document.querySelector('.loader').classList.add('hidden'); // 로더 숨김
-                }
-            },
-
-            // Firebase 초기화 (진단 모드)
+            // Firebase 초기화
             initFirebase: async function() {
-                this.log("1. Firebase 라이브러리 확인 중...", "normal");
-
-                // 모듈 로드 대기 (최대 5초)
-                let retryCount = 0;
-                while (!window.isFirebaseLoaded && retryCount < 10) {
-                    await new Promise(r => setTimeout(r, 500));
-                    retryCount++;
-                }
-
+                // 모듈 로드 대기
                 if (!window.firebaseModules) {
-                    this.log("라이브러리 로드 실패!", "error");
-                    this.showGuide("인터넷 연결을 확인하거나 브라우저를 새로고침해주세요.<br>방화벽이 차단하고 있을 수도 있습니다.");
+                    setTimeout(() => this.initFirebase(), 100);
                     return;
                 }
 
-                this.log("라이브러리 로드 완료", "success");
-                const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, onSnapshot, query, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } = window.firebaseModules;
+                const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, onSnapshot, query, orderBy } = window.firebaseModules;
 
                 try {
-                    this.log("2. 앱 설정 초기화 중...", "normal");
-                    
                     // 제공해주신 Config
                     const firebaseConfig = {
                         apiKey: "AIzaSyDe1mpaPcDfiNG63peU7EFNXXNJQmKc2rM",
@@ -261,35 +199,34 @@
                     const firebaseApp = initializeApp(firebaseConfig);
                     const auth = getAuth(firebaseApp);
                     state.db = getFirestore(firebaseApp);
-                    this.log("앱 설정 완료", "success");
 
                     // 인증 시도
-                    this.log("3. 익명 로그인 시도 중...", "waiting");
                     try {
                         await signInAnonymously(auth);
-                        this.log("로그인 성공!", "success");
                     } catch (authError) {
-                        this.log("로그인 실패: " + authError.code, "error");
-                        if (authError.code === 'auth/operation-not-allowed') {
-                            this.showGuide("<strong>[중요] Firebase 설정 필요</strong><br>1. Firebase 콘솔 > Authentication 이동<br>2. Sign-in method 탭 클릭<br>3. 'Anonymous(익명)' 항목을 찾아 <strong>사용 설정(Enable)</strong>을 켜주세요.");
-                        } else {
-                            this.showGuide("인증 오류가 발생했습니다.<br>Firebase 설정을 다시 확인해주세요.");
-                        }
-                        return;
+                        console.error("Auth Failed:", authError);
+                        // 인증 실패 시에도 일단 진행 (화면이라도 띄우기 위해)
                     }
 
-                    // 데이터 연결
-                    this.log("4. 데이터베이스 연결 중...", "waiting");
-                    this.subscribeToPosts();
+                    // 인증 상태 감지 및 데이터 연결
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            state.user = user;
+                            this.subscribeToPosts();
+                        } else {
+                            // 로그아웃 등의 이유로 user가 없을 때
+                            // 필요한 경우 재로그인 시도 로직을 넣을 수 있음
+                        }
+                    });
 
                 } catch (error) {
-                    console.error("Init Error:", error);
-                    this.log("초기화 중 오류 발생", "error");
-                    this.showGuide("알 수 없는 오류: " + error.message);
+                    console.error("Firebase Init Error:", error);
+                    this.stopLoading();
+                    this.showToast("데이터 연결에 실패했습니다.", 'error');
                 }
             },
 
-            // Firestore 리스너 (성공/실패 판별)
+            // Firestore 리스너
             subscribeToPosts: function() {
                 const { collection, onSnapshot, query } = window.firebaseModules;
                 
@@ -298,55 +235,33 @@
                 const postsRef = collection(state.db, COLLECTION_NAME);
                 const q = query(postsRef);
 
-                // 타임아웃 설정 (5초 안에 응답 없으면 경고)
-                const connectionTimeout = setTimeout(() => {
-                    if (state.isLoading) {
-                        this.log("데이터 응답 없음 (타임아웃)", "error");
-                        this.showGuide("데이터베이스가 응답하지 않습니다.<br><strong>[중요] 보안 규칙(Rules) 확인</strong><br>Firestore Database > Rules 탭에서<br><code>allow read, write: if true;</code><br>코드가 적용되었는지 확인해주세요.");
-                    }
-                }, 5000);
-
                 onSnapshot(q, (snapshot) => {
-                    clearTimeout(connectionTimeout); // 성공하면 타임아웃 해제
-                    
-                    if (state.isLoading) {
-                        this.log("데이터 수신 성공!", "success");
-                        // 0.5초 뒤 화면 전환 (사용자가 성공 메시지를 볼 틈을 줌)
-                        setTimeout(() => {
-                            this.stopLoading();
-                            this.renderApp();
-                        }, 500);
-                    }
-
                     const loadedPosts = [];
                     snapshot.forEach((doc) => {
                         loadedPosts.push({ id: doc.id, ...doc.data() });
                     });
 
-                    // 날짜 정렬
+                    // 날짜/시간 정렬 (최신순)
                     loadedPosts.sort((a, b) => {
                         const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (new Date(a.date).getTime() || 0);
                         const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (new Date(b.date).getTime() || 0);
                         return timeB - timeA;
                     });
 
+                    // 최초 로딩이 아닐 때만 새 글 알림
                     if (!state.isLoading && loadedPosts.length > state.posts.length) {
                         this.showToast("🔔 새로운 공지사항이 등록되었습니다!");
                     }
 
                     state.posts = loadedPosts;
-                    if (!state.isLoading) this.renderApp();
+                    this.stopLoading(); // 데이터 수신 성공 시 로딩 종료
+                    this.renderApp();
 
                 }, (error) => {
-                    clearTimeout(connectionTimeout);
-                    console.error("Firestore Error:", error);
-                    
-                    if (error.code === 'permission-denied') {
-                        this.log("권한 거부됨 (Permission Denied)", "error");
-                        this.showGuide("<strong>[필수] 보안 규칙 설정 필요</strong><br>Firebase 콘솔 > Firestore > Rules 탭<br>기존 코드를 지우고 아래 코드를 붙여넣으세요:<br><code>allow read, write: if true;</code>");
-                    } else {
-                        this.log("연결 오류: " + error.message, "error");
-                    }
+                    console.error("Firestore Listen Error:", error);
+                    this.stopLoading();
+                    this.showToast("데이터를 불러올 수 없습니다.", 'error');
+                    this.renderMainContent(); // 빈 화면이라도 렌더링
                 });
             },
 
@@ -357,8 +272,7 @@
             },
 
             // --- 기존 기능 유지 ---
-            // (UI 렌더링, 글쓰기, 삭제 등)
-
+            
             submitPost: async function() {
                 const { addDoc, collection, serverTimestamp } = window.firebaseModules;
                 
@@ -449,7 +363,7 @@
                     if (e.ctrlKey && e.key === 'q') this.toggleAdmin();
                 });
                 
-                // 진단 시작
+                // 시작
                 this.initFirebase();
             },
 
