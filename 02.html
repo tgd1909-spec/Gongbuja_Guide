@@ -7,79 +7,98 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Config: Korean Traditional Minimalist Palette -->
+    <!-- Config: High Contrast Korean Minimalism -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        // Point Color: Deep Red Bean
+                        // Point Color: Strong Red Bean (가시성 높은 팥색)
                         point: {
-                            DEFAULT: '#8b3a3a', 
-                            light: '#a65d5d',
-                            dark: '#6d2b2b'
+                            DEFAULT: '#9d2424', 
+                            light: '#c13b3b',
+                            dark: '#7a1b1b',
+                            bg: 'rgba(157, 36, 36, 0.08)' // 연한 붉은 배경
                         },
-                        // Text Color: Deep Charcoal
-                        ink: '#2c2c2c',
-                        // Background Color: Light Off-White
-                        paper: '#fdfbf7',
-                        // Role Colors (Muted Traditional Tones)
-                        member: '#d97706',   // Warm Amber
-                        oesu: '#2563eb',     // Clear Blue
-                        naesu: '#dc2626',    // Clear Red
+                        // Text Color: Deep Black (흐릿하지 않은 진한 검정)
+                        ink: '#1a1a1a',
+                        // Sub Text: Dark Gray
+                        sub: '#4a4a4a',
+                        // Background: Light Warm Gray
+                        paper: '#f5f5f4', // stone-100
+                        
+                        // Roles
+                        member: '#d97706',
+                        oesu: '#2563eb',
+                        naesu: '#dc2626',
                     },
                     fontFamily: {
                         sans: ['Noto Sans KR', 'sans-serif'],
                         serif: ['Noto Serif KR', 'serif'],
                     },
                     backgroundImage: {
-                        'hanji-texture': 'radial-gradient(#e6e2d3 1px, transparent 1px)',
+                        'hanji-texture': 'radial-gradient(#d6d3d1 1px, transparent 1px)',
                     },
                     backgroundSize: {
                         'hanji-size': '24px 24px',
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'floating': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Import Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;700&display=swap');
         
         body { 
             font-family: 'Noto Sans KR', sans-serif; 
-            background-color: #fdfbf7; 
-            color: #2c2c2c;
-            /* Hanji Pattern */
-            background-image: radial-gradient(#e6e2d3 1px, transparent 1px);
+            background-color: #f5f5f4; 
+            color: #1a1a1a;
+            background-image: radial-gradient(#d6d3d1 1px, transparent 1px);
             background-size: 24px 24px;
+            word-break: keep-all; /* break-keep 기본 적용 */
         }
         
         h1, h2, h3, h4, h5, h6, .font-serif { font-family: 'Noto Serif KR', serif; }
 
-        /* Clean Tab Styling */
-        .tab-btn {
-            position: relative;
-            color: #78716c; /* Stone-500 */
-            transition: color 0.3s ease;
-            font-family: 'Noto Sans KR', sans-serif;
-            font-weight: 500;
+        /* Custom Utilities */
+        .break-keep { word-break: keep-all; }
+        
+        /* Card Style */
+        .card-box {
+            background-color: #ffffff;
+            border: 2px solid #e7e5e4; /* stone-200 */
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
-        .tab-active {
-            color: #8b3a3a; /* Point Color */
+
+        /* Interactive Element Style */
+        .interactive-card {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            background-color: #ffffff;
+            border: 2px solid #e7e5e4;
+        }
+        .interactive-card:hover {
+            border-color: #9d2424;
+            background-color: #fff1f2; /* red-50 */
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(157, 36, 36, 0.1);
+        }
+
+        /* Badge Style */
+        .badge-point {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(157, 36, 36, 0.1);
+            color: #9d2424;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
             font-weight: 700;
-        }
-        .tab-active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background-color: #8b3a3a;
-        }
-        .tab-inactive:hover {
-            color: #57534e; /* Stone-600 */
+            font-size: 0.875rem;
         }
 
         /* Timeline Line */
@@ -88,26 +107,34 @@
             position: absolute;
             top: 24px;
             bottom: 24px;
-            left: 15px;
-            width: 1px;
-            background-color: #d6d3d1; /* Stone-300 */
+            left: 20px; /* Adjusted for larger dots */
+            width: 2px;
+            background-color: #d6d3d1;
             z-index: 0;
         }
 
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Nav Button */
+        .nav-btn {
+            background-color: #ffffff;
+            border: 2px solid #e7e5e4;
+            color: #57534e;
+            font-weight: 500;
+            transition: all 0.2s;
         }
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out;
+        .nav-active {
+            border-color: #9d2424;
+            background-color: #9d2424;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgba(157, 36, 36, 0.3);
         }
-
+        
         /* Current Item Highlight */
         .current-item {
-            border-left: 4px solid #8b3a3a !important;
+            border: 2px solid #9d2424 !important;
             background-color: #ffffff !important;
-            box-shadow: 0 4px 12px rgba(139, 58, 58, 0.1);
+            box-shadow: 0 8px 20px rgba(157, 36, 36, 0.15) !important;
+            transform: scale(1.01);
         }
 
         input[type=number]::-webkit-inner-spin-button, 
@@ -120,246 +147,257 @@
 <body class="antialiased min-h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="bg-white/80 backdrop-blur-sm border-b-4 border-double border-stone-200 sticky top-0 z-50">
-        <div class="container mx-auto max-w-3xl px-6 py-5 flex justify-between items-center">
+    <header class="bg-white border-b-2 border-stone-200 sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto max-w-4xl px-4 py-4 flex justify-between items-center">
             <div class="flex flex-col">
-                <h1 class="text-2xl font-bold font-serif text-ink flex items-center gap-2">
+                <h1 class="text-2xl md:text-3xl font-bold font-serif text-ink flex items-center gap-2">
                     <span class="text-point">❖</span> 공부자 가이드
                 </h1>
-                <span class="text-xs text-stone-500 mt-1 tracking-widest">오늘의 마음가짐: 정성(精誠)</span>
+                <span class="text-sm text-sub mt-1 tracking-wide font-medium">오늘의 마음가짐: 정성(精誠)</span>
             </div>
             
             <!-- Home Button -->
-            <a href="index.html" class="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors duration-300 group">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:scale-105 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <a href="index.html" class="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-stone-200 hover:border-point hover:bg-point/5 hover:text-point transition-all duration-200 group bg-stone-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
-                <span class="hidden sm:inline font-serif text-sm font-semibold tracking-wide">홈으로</span>
+                <span class="hidden sm:inline font-bold break-keep">홈으로</span>
             </a>
         </div>
     </header>
 
-    <!-- Navigation -->
-    <nav class="bg-white/60 backdrop-blur-sm border-b border-stone-200 sticky top-[85px] z-40">
-        <div class="container mx-auto max-w-3xl flex">
-            <button onclick="switchTab('schedule')" id="nav-schedule" class="flex-1 py-4 text-center tab-btn tab-active text-base md:text-lg">일과표</button>
-            <button onclick="switchTab('practice')" id="nav-practice" class="flex-1 py-4 text-center tab-btn tab-inactive text-base md:text-lg">개별 공부 및 역할</button>
-            <button onclick="switchTab('simulator')" id="nav-simulator" class="flex-1 py-4 text-center tab-btn tab-inactive text-base md:text-lg">입실 시뮬레이터</button>
-        </div>
-    </nav>
+    <!-- Main Container -->
+    <div class="flex-grow w-full max-w-4xl mx-auto bg-white/80 backdrop-blur-md shadow-2xl border-x-2 border-white/50 min-h-screen">
+        
+        <!-- Navigation -->
+        <nav class="sticky top-[73px] z-40 bg-white/90 backdrop-blur border-b-2 border-stone-200 p-4">
+            <div class="flex gap-3 overflow-x-auto pb-1 md:pb-0">
+                <button onclick="switchTab('schedule')" id="nav-schedule" class="flex-1 py-3 px-4 rounded-xl text-center nav-btn nav-active text-lg whitespace-nowrap">일과표</button>
+                <button onclick="switchTab('practice')" id="nav-practice" class="flex-1 py-3 px-4 rounded-xl text-center nav-btn text-lg whitespace-nowrap">공부 및 역할</button>
+                <button onclick="switchTab('simulator')" id="nav-simulator" class="flex-1 py-3 px-4 rounded-xl text-center nav-btn text-lg whitespace-nowrap">시뮬레이터</button>
+            </div>
+        </nav>
 
-    <!-- Main Content -->
-    <main class="container mx-auto max-w-3xl px-4 md:px-6 py-8 md:py-12 flex-grow">
+        <!-- Main Content Area -->
+        <main class="px-4 md:px-8 py-8 md:py-12">
 
-        <!-- SECTION 1: DAILY SCHEDULE -->
-        <section id="view-schedule" class="space-y-8 animate-fade-in">
-            
-            <div class="bg-white/60 backdrop-blur-sm border border-stone-200 rounded-lg p-6 shadow-sm flex flex-col gap-4">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-ink font-serif">하루의 흐름</h2>
-                        <p class="text-stone-600 mt-3 leading-relaxed">
-                            모든 집합 시간 <span class="font-bold text-point border-b border-point/30">10~20분 전 도착</span>을 원칙으로 합니다.
-                        </p>
-                    </div>
-                </div>
+            <!-- SECTION 1: DAILY SCHEDULE -->
+            <section id="view-schedule" class="space-y-8 animate-fade-in">
                 
-                <div class="flex flex-wrap gap-4 mt-2 pt-4 border-t border-stone-200">
-                    <!-- Sunday Toggle (Auto-checked via JS) -->
-                    <label class="flex items-center gap-3 cursor-pointer select-none group bg-white px-4 py-3 rounded border border-stone-300 shadow-sm hover:border-point transition-colors">
-                        <input type="checkbox" id="sunday-toggle" onchange="toggleSundayMode(this.checked)" class="w-5 h-5 text-point rounded border-stone-400 focus:ring-point accent-point">
-                        <span class="text-base font-medium text-stone-700 group-hover:text-point">주일 일정 보기</span>
-                    </label>
-
-                    <!-- Sasu Toggle -->
-                    <label class="flex items-center gap-3 cursor-pointer select-none group bg-white px-4 py-3 rounded border border-stone-300 shadow-sm hover:border-point transition-colors">
-                        <input type="checkbox" id="sasu-toggle" onchange="renderSchedule()" class="w-5 h-5 text-point rounded border-stone-400 focus:ring-point accent-point">
-                        <span class="text-base font-medium text-stone-700 group-hover:text-point">사수 역할 포함하기</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Timeline -->
-            <div class="relative timeline-line pl-0 md:pl-4" id="timeline-container">
-                <!-- Javascript will populate this -->
-            </div>
-        </section>
-
-        <!-- SECTION 2: PRACTICE & ROLES -->
-        <section id="view-practice" class="hidden space-y-8 animate-fade-in">
-            
-            <div class="bg-white/60 backdrop-blur-sm border-b border-stone-200 pb-6 mb-8 rounded-lg p-6 shadow-sm">
-                <h2 class="text-2xl font-bold text-ink font-serif mb-3">나의 공부 및 역할</h2>
-                <p class="text-stone-600 leading-relaxed">시간 흐름에 따른 구체적인 임무와 절차를 확인하세요.<br><strong class="text-red-600">모든 행동은 회원을 중심으로 맞추는 것이 중요합니다.</strong></p>
-            </div>
-
-            <!-- Inputs Wrapper -->
-            <div class="bg-white/60 backdrop-blur-sm border border-stone-200 rounded-lg p-8 md:p-10 flex flex-col items-center gap-10 shadow-sm">
-                
-                <!-- Added Sunday Toggle for Practice Section -->
-                <div class="w-full flex justify-end mb-4">
-                    <label class="flex items-center gap-2 cursor-pointer select-none group">
-                        <input type="checkbox" id="practice-sunday-toggle" onchange="toggleSundayMode(this.checked)" class="w-4 h-4 text-point rounded border-stone-400 focus:ring-point accent-point">
-                        <span class="text-sm font-medium text-stone-600 group-hover:text-point">주일 일정 반영</span>
-                    </label>
-                </div>
-
-                <!-- Time Input -->
-                <div class="flex flex-col md:flex-row items-center justify-center gap-6 w-full border-b border-stone-200 pb-8 border-dashed">
-                    <span class="text-xl text-stone-700 font-serif font-bold">나는</span>
-                    <div class="relative">
-                        <input type="number" id="practice-hour" min="1" max="12" value="3" onchange="generateRitualTimeline()" 
-                            class="text-5xl font-bold text-center w-28 border-b-2 border-stone-400 focus:border-point focus:outline-none bg-transparent transition-colors font-serif text-ink p-2">
-                    </div>
-                    <span class="text-xl text-stone-700 font-serif font-bold">시 공부자입니다.</span>
-                </div>
-
-                <!-- Role Filter -->
-                <div class="w-full max-w-2xl">
-                    <p class="text-center text-sm text-stone-500 mb-4 tracking-widest font-bold">▼ 직책 선택</p>
-                    <div class="grid grid-cols-4 gap-3 md:gap-4">
-                        <button onclick="setRoleFilter('all')" id="btn-role-all" class="py-3 text-base rounded transition-all border border-stone-300 bg-ink text-white font-medium shadow-sm hover:opacity-90">전체</button>
-                        <button onclick="setRoleFilter('member')" id="btn-role-member" class="py-3 text-base rounded transition-all border border-stone-300 hover:bg-stone-50 text-stone-600 hover:text-point">회원</button>
-                        <button onclick="setRoleFilter('oesu')" id="btn-role-oesu" class="py-3 text-base rounded transition-all border border-stone-300 hover:bg-stone-50 text-stone-600 hover:text-point">외수</button>
-                        <button onclick="setRoleFilter('naesu')" id="btn-role-naesu" class="py-3 text-base rounded transition-all border border-stone-300 hover:bg-stone-50 text-stone-600 hover:text-point">내수</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Steps Timeline -->
-            <div id="ritual-steps" class="space-y-6 relative mt-10">
-                <!-- Javascript will populate this -->
-            </div>
-
-            <!-- Core Rules -->
-            <div class="mt-12 pt-8 border-t border-stone-200 space-y-10">
-                
-                <!-- 1. Daegangjeon Precautions (Separated) -->
-                <section>
-                    <h3 class="font-bold text-xl text-ink mb-4 font-serif flex items-center gap-2">
-                        <span class="text-point">🏛️</span> 대강전 내 주의사항
-                    </h3>
-                    <div class="bg-[#f5f5f4] border border-stone-300 p-6 rounded-lg shadow-sm">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
-                            <div class="flex flex-col gap-1 text-stone-700 font-medium">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-point"></span> 면수
-                                </div>
-                                <p class="text-xs text-stone-500 pl-4 font-normal leading-snug break-keep">바르게 서서 턱을 살짝 당겨 시선을 아래쪽으로 처리한 자세</p>
-                            </div>
-                            <div class="flex flex-col gap-1 text-stone-700 font-medium">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-point"></span> 양수교지
-                                </div>
-                                <p class="text-xs text-stone-500 pl-4 font-normal leading-snug break-keep">엄지 손가락을 교차하여 손을 모으고 있는 자세</p>
-                            </div>
-                            <div class="flex items-center gap-2 text-stone-700 font-medium h-fit self-start sm:mt-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-point"></span> 큰소리 내지 않기
-                            </div>
-                            <div class="flex items-center gap-2 text-stone-700 font-medium h-fit self-start">
-                                <span class="w-1.5 h-1.5 rounded-full bg-point"></span> 뛰지 않기
-                            </div>
-                            <div class="flex items-center gap-2 text-stone-700 font-medium h-fit self-start">
-                                <span class="w-1.5 h-1.5 rounded-full bg-point"></span> 잡담하지 않기
-                            </div>
+                <div class="card-box p-6 md:p-8">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b-2 border-stone-100 pb-6 mb-6">
+                        <div>
+                            <span class="badge-point mb-2">안내</span>
+                            <h2 class="text-3xl font-bold text-ink font-serif mb-2">하루의 흐름</h2>
+                            <p class="text-lg text-sub font-medium leading-relaxed break-keep">
+                                모든 집합 시간 <span class="text-point font-bold border-b-2 border-point/30">10~20분 전</span>까지 미리 도착하여 마음을 정돈해 주세요.
+                            </p>
                         </div>
                     </div>
-                </section>
-
-                <!-- 2. Bongsim Major Precautions (Renamed) -->
-                <section>
-                    <h3 class="font-bold text-xl text-ink mb-6 font-serif flex items-center gap-2">
-                        <span class="text-point">⚠️</span> 봉심 주요 주의 사항
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
-                            <span class="text-point text-xl font-bold">✔</span>
-                            <div>
-                                <span class="font-bold text-ink block mb-1">시간 엄수</span>
-                                <span class="text-sm text-stone-500">모든 집합 10~20분 전 도착</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
-                            <span class="text-point text-xl font-bold">✔</span>
-                            <div>
-                                <span class="font-bold text-ink block mb-1">왼발 먼저</span>
-                                <span class="text-sm text-stone-500">계단, 문턱 넘을 때 항상 왼발부터</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
-                            <span class="text-point text-xl font-bold">✔</span>
-                            <div>
-                                <span class="font-bold text-ink block mb-1">정숙 (묵언)</span>
-                                <span class="text-sm text-stone-500">대기 중 잡담 금지</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-4 items-center p-5 rounded-lg bg-white border border-stone-200 shadow-sm">
-                            <span class="text-point text-xl font-bold">✔</span>
-                            <div>
-                                <span class="font-bold text-ink block mb-1">국궁 유지</span>
-                                <span class="text-sm text-stone-500">이동 완료 시까지 허리 숙인 자세</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-4 items-center p-5 rounded-lg bg-[#fff5f5] border border-red-100 shadow-sm md:col-span-2">
-                            <span class="text-point text-xl">📢</span>
-                            <div>
-                                <span class="font-bold text-point block mb-1">주문 연결</span>
-                                <span class="text-sm text-stone-600">주문이 끊기지 않도록 앞 시간 공부자의 주성에 귀 기울여 주세요.</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-        </section>
-
-        <!-- SECTION 3: SIMULATOR -->
-        <section id="view-simulator" class="hidden space-y-8 animate-fade-in">
-            <div class="bg-white/60 backdrop-blur-sm border-b border-stone-200 pb-6 mb-8 rounded-lg p-6 shadow-sm">
-                <h2 class="text-2xl font-bold text-ink font-serif mb-3">공부방 입실 시뮬레이터</h2>
-                <div class="space-y-4">
-                    <p class="text-stone-600 leading-relaxed">복잡한 입실 동선을 시각적으로 익혀보세요. 회원과 내수는 뒤로 물러나고, 들어오는 사람은 기존 사람들의 뒤로 돌아갑니다.</p>
                     
-                    <!-- Added Detailed Instructions Box -->
-                    <div class="bg-stone-50 border border-stone-200 rounded p-4 text-sm text-stone-700">
-                        <ul class="list-disc pl-4 space-y-2">
-                            <li><strong class="text-ink">과한 인사 지양:</strong> 입실 후에는 너무 과한 인사를 하지 않습니다. 좌배(坐拜)로 시작해서 좌배로 끝날 수 있도록 과한 부복(엎드려 절함)은 하지 않습니다.</li>
-                            <li><strong class="text-ink">회원에게 속도 맞춤:</strong> 옆의 회원이 자리에 앉으면 청소를 멈추고 정돈합니다. 모든 행동의 속도는 회원에게 맞춰야 합니다.</li>
-                            <li><strong class="text-ink">교대 시 거리 확보:</strong> 회원과 내수가 엉덩이를 뒤로 물릴 때, 다음 공부자가 지나갈 수 있는 거리를 확보하고 물러나야 합니다. 너무 뒤로 물러나면 벽과의 공간이 없어 통행이 어렵습니다.</li>
-                        </ul>
+                    <div class="flex flex-wrap gap-4">
+                        <!-- Sunday Toggle -->
+                        <label class="interactive-card flex items-center gap-3 px-5 py-4 rounded-xl w-full md:w-auto">
+                            <input type="checkbox" id="sunday-toggle" onchange="toggleSundayMode(this.checked)" class="w-6 h-6 text-point rounded border-stone-300 focus:ring-point accent-point">
+                            <span class="text-lg font-bold text-ink">주일 일정 보기</span>
+                        </label>
+
+                        <!-- Sasu Toggle -->
+                        <label class="interactive-card flex items-center gap-3 px-5 py-4 rounded-xl w-full md:w-auto">
+                            <input type="checkbox" id="sasu-toggle" onchange="renderSchedule()" class="w-6 h-6 text-point rounded border-stone-300 focus:ring-point accent-point">
+                            <span class="text-lg font-bold text-ink">사수 역할 포함하기</span>
+                        </label>
                     </div>
                 </div>
-            </div>
 
-            <div class="bg-white border border-stone-200 rounded-lg p-4 shadow-sm flex flex-col items-center">
-                <div class="relative w-full max-w-[500px] aspect-square bg-[#F5F5DC] border-4 border-[#8D6E63] rounded-sm mb-6 overflow-hidden">
-                    <!-- Adjusted Table Position to Right Room Center (60%) -->
-                    <div class="absolute top-0 left-[60%] -translate-x-1/2 w-1/3 h-2 bg-[#5D4037]"></div>
-                    <div class="absolute top-2 left-[60%] -translate-x-1/2 text-[#5D4037] text-xs font-bold">향 탁자 (앞)</div>
-                    <div class="absolute top-1/2 left-0 -translate-y-1/2 w-2 h-16 bg-[#3E2723] rounded-r"></div>
-                    <div class="absolute top-1/2 left-4 -translate-y-1/2 text-[#3E2723] text-xs font-bold -rotate-90">출입문</div>
-                    <canvas id="simCanvas" width="500" height="500" class="w-full h-full"></canvas>
+                <!-- Timeline -->
+                <div class="relative timeline-line pl-4 md:pl-6" id="timeline-container">
+                    <!-- Javascript will populate this -->
+                </div>
+            </section>
+
+            <!-- SECTION 2: PRACTICE & ROLES -->
+            <section id="view-practice" class="hidden space-y-8 animate-fade-in">
+                
+                <div class="card-box p-6 md:p-8 border-l-8 border-l-point">
+                    <span class="badge-point mb-3">중요</span>
+                    <h2 class="text-3xl font-bold text-ink font-serif mb-4">나의 공부 및 역할</h2>
+                    <p class="text-lg text-sub font-medium leading-relaxed break-keep">
+                        시간 흐름에 따른 구체적인 임무와 절차를 확인하세요.<br>
+                        <strong class="text-point text-xl block mt-2">모든 행동은 회원을 중심으로 맞추는 것이 중요합니다.</strong>
+                    </p>
                 </div>
 
-                <div class="w-full max-w-[500px] flex flex-col gap-4">
-                    <div class="bg-stone-50 p-4 rounded border border-stone-200 min-h-[80px] flex items-center justify-center text-center">
-                        <p id="step-description" class="text-lg font-bold text-ink transition-all">시뮬레이션을 시작하려면 아래 버튼을 누르세요.</p>
+                <!-- Inputs Wrapper -->
+                <div class="card-box p-8 md:p-10 flex flex-col items-center gap-8">
+                    
+                    <div class="w-full flex justify-end">
+                        <label class="interactive-card inline-flex items-center gap-2 px-4 py-2 rounded-lg">
+                            <input type="checkbox" id="practice-sunday-toggle" onchange="toggleSundayMode(this.checked)" class="w-5 h-5 text-point rounded border-stone-300 focus:ring-point accent-point">
+                            <span class="text-base font-bold text-sub">주일 일정 반영</span>
+                        </label>
                     </div>
 
-                    <div class="flex justify-between gap-2">
-                        <button onclick="simController.prev()" class="flex-1 py-3 bg-white border border-stone-300 text-stone-700 rounded hover:bg-stone-50 font-bold">◀ 이전</button>
-                        <button onclick="simController.play()" class="flex-1 py-3 bg-point text-white rounded hover:bg-red-800 font-bold shadow-sm">▶ 재생/정지</button>
-                        <button onclick="simController.next()" class="flex-1 py-3 bg-white border border-stone-300 text-stone-700 rounded hover:bg-stone-50 font-bold">다음 ▶</button>
+                    <!-- Time Input -->
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4 w-full bg-stone-50 p-6 rounded-2xl border-2 border-stone-200">
+                        <span class="text-2xl text-ink font-serif font-bold">나는</span>
+                        <div class="relative">
+                            <input type="number" id="practice-hour" min="1" max="12" value="3" onchange="generateRitualTimeline()" 
+                                class="text-5xl font-bold text-center w-32 border-b-4 border-stone-300 focus:border-point focus:outline-none bg-transparent transition-colors font-serif text-ink p-2 mx-2">
+                        </div>
+                        <span class="text-2xl text-ink font-serif font-bold">시 공부자입니다.</span>
                     </div>
-                    <button onclick="simController.reset()" class="w-full py-2 text-stone-500 hover:text-stone-800 text-sm">↺ 처음으로 리셋</button>
+
+                    <!-- Role Filter -->
+                    <div class="w-full max-w-2xl">
+                        <div class="text-center mb-4">
+                            <span class="badge-point">직책 선택</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-3 md:gap-4">
+                            <button onclick="setRoleFilter('all')" id="btn-role-all" class="py-4 text-lg rounded-xl transition-all border-2 border-ink bg-ink text-white font-bold shadow-md hover:opacity-90">전체</button>
+                            <button onclick="setRoleFilter('member')" id="btn-role-member" class="interactive-card py-4 text-lg rounded-xl text-stone-600 font-bold hover:text-point">회원</button>
+                            <button onclick="setRoleFilter('oesu')" id="btn-role-oesu" class="interactive-card py-4 text-lg rounded-xl text-stone-600 font-bold hover:text-point">외수</button>
+                            <button onclick="setRoleFilter('naesu')" id="btn-role-naesu" class="interactive-card py-4 text-lg rounded-xl text-stone-600 font-bold hover:text-point">내수</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </section>
 
-    </main>
+                <!-- Steps Timeline -->
+                <div id="ritual-steps" class="space-y-6 relative mt-12">
+                    <!-- Javascript will populate this -->
+                </div>
 
-    <footer class="border-t border-stone-200 py-10 mt-12 text-center bg-white/60 backdrop-blur-sm">
-        <p class="font-bold font-serif mb-2 text-ink text-lg">부산 태극도</p>
-        <p class="text-sm text-stone-500">초심자를 위한 수련 가이드</p>
+                <!-- Core Rules -->
+                <div class="mt-16 pt-10 border-t-2 border-stone-200 space-y-12">
+                    
+                    <!-- 1. Daegangjeon Precautions -->
+                    <section>
+                        <h3 class="font-bold text-2xl text-ink mb-6 font-serif flex items-center gap-3">
+                            <span class="text-3xl">🏛️</span> 대강전 내 주의사항
+                        </h3>
+                        <div class="bg-stone-50 border-2 border-stone-200 p-6 md:p-8 rounded-2xl shadow-sm">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6">
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="badge-point">면수</span>
+                                    </div>
+                                    <p class="text-base text-sub font-medium leading-relaxed pl-1">바르게 서서 턱을 살짝 당겨 시선을 아래쪽으로 처리한 자세</p>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="badge-point">양수교지</span>
+                                    </div>
+                                    <p class="text-base text-sub font-medium leading-relaxed pl-1">엄지 손가락을 교차하여 손을 모으고 있는 자세</p>
+                                </div>
+                                <div class="flex items-center gap-3 text-lg text-ink font-bold h-fit self-start sm:mt-1 bg-white px-4 py-3 rounded-xl border border-stone-200 shadow-sm w-full">
+                                    <span class="text-point">●</span> 큰소리 내지 않기
+                                </div>
+                                <div class="flex items-center gap-3 text-lg text-ink font-bold h-fit self-start bg-white px-4 py-3 rounded-xl border border-stone-200 shadow-sm w-full">
+                                    <span class="text-point">●</span> 뛰지 않기
+                                </div>
+                                <div class="flex items-center gap-3 text-lg text-ink font-bold h-fit self-start bg-white px-4 py-3 rounded-xl border border-stone-200 shadow-sm w-full">
+                                    <span class="text-point">●</span> 잡담하지 않기
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 2. Bongsim Major Precautions -->
+                    <section>
+                        <h3 class="font-bold text-2xl text-ink mb-6 font-serif flex items-center gap-3">
+                            <span class="text-3xl">⚠️</span> 봉심 주요 주의 사항
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="card-box p-6 flex gap-5 items-start">
+                                <span class="text-point text-2xl font-bold mt-1">✔</span>
+                                <div>
+                                    <span class="font-bold text-xl text-ink block mb-2">시간 엄수</span>
+                                    <span class="text-base text-sub font-medium">모든 집합 10~20분 전 도착</span>
+                                </div>
+                            </div>
+                            <div class="card-box p-6 flex gap-5 items-start">
+                                <span class="text-point text-2xl font-bold mt-1">✔</span>
+                                <div>
+                                    <span class="font-bold text-xl text-ink block mb-2">왼발 먼저</span>
+                                    <span class="text-base text-sub font-medium">계단, 문턱 넘을 때 항상 왼발부터</span>
+                                </div>
+                            </div>
+                            <div class="card-box p-6 flex gap-5 items-start">
+                                <span class="text-point text-2xl font-bold mt-1">✔</span>
+                                <div>
+                                    <span class="font-bold text-xl text-ink block mb-2">정숙 (묵언)</span>
+                                    <span class="text-base text-sub font-medium">대기 중 잡담 금지</span>
+                                </div>
+                            </div>
+                            <div class="card-box p-6 flex gap-5 items-start">
+                                <span class="text-point text-2xl font-bold mt-1">✔</span>
+                                <div>
+                                    <span class="font-bold text-xl text-ink block mb-2">국궁 유지</span>
+                                    <span class="text-base text-sub font-medium">이동 완료 시까지 허리 숙인 자세</span>
+                                </div>
+                            </div>
+                            <div class="card-box p-6 flex gap-5 items-start md:col-span-2 bg-red-50 border-red-100">
+                                <span class="text-point text-2xl mt-1">📢</span>
+                                <div>
+                                    <span class="font-bold text-xl text-point block mb-2">주문 연결</span>
+                                    <span class="text-base text-ink font-medium">주문이 끊기지 않도록 앞 시간 공부자의 주성에 귀 기울여 주세요.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <!-- SECTION 3: SIMULATOR -->
+            <section id="view-simulator" class="hidden space-y-8 animate-fade-in">
+                <div class="card-box p-6 md:p-8">
+                    <span class="badge-point mb-3">교육</span>
+                    <h2 class="text-3xl font-bold text-ink font-serif mb-4">공부방 입실 시뮬레이터</h2>
+                    <div class="space-y-6">
+                        <p class="text-lg text-sub font-medium leading-relaxed">복잡한 입실 동선을 시각적으로 익혀보세요.<br>회원과 내수는 뒤로 물러나고, 들어오는 사람은 기존 사람들의 뒤로 돌아갑니다.</p>
+                        
+                        <!-- Detailed Instructions Box -->
+                        <div class="bg-stone-50 border-2 border-stone-200 rounded-xl p-6 text-base text-ink font-medium leading-loose">
+                            <ul class="list-disc pl-5 space-y-3">
+                                <li><strong class="text-point bg-red-50 px-2 py-0.5 rounded">과한 인사 지양</strong> 입실 후에는 너무 과한 인사를 하지 않습니다. 좌배(坐拜)로 시작해서 좌배로 끝날 수 있도록 과한 부복(엎드려 절함)은 하지 않습니다.</li>
+                                <li><strong class="text-point bg-red-50 px-2 py-0.5 rounded">회원에게 속도 맞춤</strong> 옆의 회원이 자리에 앉으면 청소를 멈추고 정돈합니다. 모든 행동의 속도는 회원에게 맞춰야 합니다.</li>
+                                <li><strong class="text-point bg-red-50 px-2 py-0.5 rounded">교대 시 거리 확보</strong> 회원과 내수가 엉덩이를 뒤로 물릴 때, 다음 공부자가 지나갈 수 있는 거리를 확보하고 물러나야 합니다. 너무 뒤로 물러나면 벽과의 공간이 없어 통행이 어렵습니다.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-box p-4 shadow-lg flex flex-col items-center">
+                    <div class="relative w-full max-w-[500px] aspect-square bg-[#F5F5DC] border-4 border-[#8D6E63] rounded-lg mb-6 overflow-hidden shadow-inner">
+                        <!-- Adjusted Table Position -->
+                        <div class="absolute top-0 left-[60%] -translate-x-1/2 w-1/3 h-3 bg-[#5D4037] rounded-b-md shadow-sm"></div>
+                        <div class="absolute top-4 left-[60%] -translate-x-1/2 text-[#5D4037] text-sm font-bold bg-[#F5F5DC]/80 px-2 rounded">향 탁자 (앞)</div>
+                        <div class="absolute top-1/2 left-0 -translate-y-1/2 w-3 h-20 bg-[#3E2723] rounded-r shadow-md"></div>
+                        <div class="absolute top-1/2 left-5 -translate-y-1/2 text-[#3E2723] text-sm font-bold -rotate-90">출입문</div>
+                        <canvas id="simCanvas" width="500" height="500" class="w-full h-full"></canvas>
+                    </div>
+
+                    <div class="w-full max-w-[500px] flex flex-col gap-4">
+                        <div class="bg-stone-50 p-6 rounded-xl border-2 border-stone-200 min-h-[100px] flex items-center justify-center text-center shadow-sm">
+                            <p id="step-description" class="text-xl font-bold text-ink transition-all break-keep leading-relaxed">시뮬레이션을 시작하려면 아래 버튼을 누르세요.</p>
+                        </div>
+
+                        <div class="flex justify-between gap-3">
+                            <button onclick="simController.prev()" class="interactive-card flex-1 py-4 text-lg text-ink rounded-xl font-bold bg-white">◀ 이전</button>
+                            <button onclick="simController.play()" class="interactive-card flex-1 py-4 text-lg text-white rounded-xl font-bold bg-point border-point hover:bg-red-800">▶ 재생/정지</button>
+                            <button onclick="simController.next()" class="interactive-card flex-1 py-4 text-lg text-ink rounded-xl font-bold bg-white">다음 ▶</button>
+                        </div>
+                        <button onclick="simController.reset()" class="w-full py-3 text-sub font-medium hover:text-ink text-base underline decoration-stone-300 underline-offset-4">↺ 처음으로 리셋</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <footer class="border-t-2 border-stone-200 py-12 mt-0 text-center bg-white">
+        <p class="font-bold font-serif mb-2 text-ink text-xl">태극도</p>
+        <p class="text-base text-sub font-medium">공부 초심자를 위한 수련 가이드</p>
     </footer>
 
     <!-- Logic -->
@@ -448,15 +486,13 @@
                 const nav = document.getElementById(`nav-${id}`);
                 if(view) view.classList.add('hidden');
                 if(nav) {
-                    nav.classList.remove('tab-active');
-                    nav.classList.add('tab-inactive');
+                    nav.classList.remove('nav-active');
                 }
             });
 
             document.getElementById(`view-${tabId}`).classList.remove('hidden');
             const activeNav = document.getElementById(`nav-${tabId}`);
-            activeNav.classList.add('tab-active');
-            activeNav.classList.remove('tab-inactive');
+            activeNav.classList.add('nav-active');
             
             // Auto scroll to top on tab switch
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -543,30 +579,29 @@
                 const isSasuItem = item.role === 'sasu';
                 const isActive = (index === activeIndex);
                 
-                let activeClass = isActive ? 'current-item' : 'bg-white/70 border-l-4 border-transparent';
-                let activeBadge = isActive ? `<div class="mb-2 text-xs font-bold text-point bg-red-50 inline-block px-2 py-1 rounded border border-red-100">⏰ 현재 진행중</div>` : '';
-                let titleColor = isActive ? 'text-ink' : 'text-stone-700';
+                let activeClass = isActive ? 'current-item' : 'bg-white border-l-4 border-transparent opacity-80 hover:opacity-100';
+                let activeBadge = isActive ? `<div class="mb-2 text-sm font-bold text-point bg-red-50 inline-block px-3 py-1 rounded-full border border-red-100 animate-pulse">⏰ 현재 진행중</div>` : '';
+                let titleColor = isActive ? 'text-ink' : 'text-sub';
                 
                 // Override for Sasu
                 if (isSasuItem && !isActive) {
-                    activeClass = 'bg-[#fff5f5] border-l-4 border-red-200';
+                    activeClass = 'bg-[#fff1f2] border-l-4 border-red-200';
                 }
 
                 return `
-                <div class="relative pl-10 md:pl-12 py-2 animate-fade-in group" id="schedule-item-${index}">
+                <div class="relative pl-8 md:pl-10 py-3 animate-fade-in group" id="schedule-item-${index}">
                     <!-- Dot -->
-                    <div class="absolute left-[8px] top-6 w-6 h-6 rounded-full ${isActive ? 'bg-point scale-110' : (isSasuItem ? 'bg-red-300' : 'bg-stone-300')} border-4 border-[#fdfbf7] shadow-sm z-10 transition-all flex items-center justify-center">
-                        ${isActive ? '<div class="w-2 h-2 bg-white rounded-full"></div>' : ''}
+                    <div class="absolute left-[13px] top-7 w-4 h-4 rounded-full ${isActive ? 'bg-point scale-125 ring-4 ring-red-100' : (isSasuItem ? 'bg-red-300' : 'bg-stone-300')} shadow-sm z-10 transition-all">
                     </div>
                     
                     <!-- Content Card -->
-                    <div class="${activeClass} p-5 rounded-lg border border-stone-200 transition-all shadow-sm">
+                    <div class="${activeClass} card-box p-5 md:p-6 transition-all">
                         ${activeBadge}
                         <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
                             <div>
-                                <div class="flex items-baseline gap-3 mb-1">
-                                    <span class="font-bold text-2xl ${isActive ? 'text-point' : 'text-stone-600'} font-serif">${item.time}</span>
-                                    ${item.loc !== '-' ? `<span class="text-sm font-medium text-stone-500 bg-stone-100 px-2 py-1 rounded">${item.loc}</span>` : ''}
+                                <div class="flex items-center flex-wrap gap-2 mb-2">
+                                    <span class="font-bold text-2xl ${isActive ? 'text-point' : 'text-stone-500'} font-serif tracking-tight">${item.time}</span>
+                                    ${item.loc !== '-' ? `<span class="text-xs font-bold text-stone-500 bg-stone-100 px-2 py-1 rounded-full border border-stone-200">${item.loc}</span>` : ''}
                                 </div>
                                 <h3 class="text-xl font-bold ${titleColor} ${isSasuItem ? 'text-point' : ''}">
                                     ${item.title}
@@ -574,7 +609,7 @@
                                 </h3>
                             </div>
                         </div>
-                        ${item.note ? `<p class="text-base text-stone-600 mt-3 p-3 bg-stone-50 rounded border border-stone-100">💡 ${item.note}</p>` : ''}
+                        ${item.note ? `<p class="text-base text-sub font-medium mt-3 p-3 bg-stone-50 rounded-lg border border-stone-100 break-keep">💡 ${item.note}</p>` : ''}
                     </div>
                 </div>
             `}).join('');
@@ -595,22 +630,22 @@
             currentRoleFilter = role;
             
             // Minimal button styles
-            const defaultStyle = "bg-white text-stone-500 border border-stone-200 hover:bg-stone-50 hover:text-stone-700 hover:border-stone-300";
+            const defaultStyle = "interactive-card text-lg rounded-xl text-stone-600 font-bold bg-white hover:text-point";
             
             // Custom role specific active colors
             const styles = {
-                all: "bg-ink text-white border-ink shadow-md font-bold",
-                member: "bg-member text-white border-member shadow-md font-bold",
-                oesu: "bg-oesu text-white border-oesu shadow-md font-bold",
-                naesu: "bg-naesu text-white border-naesu shadow-md font-bold"
+                all: "text-lg rounded-xl transition-all border-2 border-ink bg-ink text-white font-bold shadow-md hover:opacity-90",
+                member: "text-lg rounded-xl transition-all border-2 border-member bg-member text-white font-bold shadow-md",
+                oesu: "text-lg rounded-xl transition-all border-2 border-oesu bg-oesu text-white font-bold shadow-md",
+                naesu: "text-lg rounded-xl transition-all border-2 border-naesu bg-naesu text-white font-bold shadow-md"
             };
 
             ['all', 'member', 'oesu', 'naesu'].forEach(r => {
                 const btn = document.getElementById(`btn-role-${r}`);
                 if (r === role) {
-                    btn.className = `py-3 text-sm md:text-base rounded transition-all ${styles[r]}`;
+                    btn.className = `py-4 ${styles[r]}`;
                 } else {
-                    btn.className = `py-3 text-sm md:text-base rounded transition-all ${defaultStyle}`;
+                    btn.className = `py-4 ${defaultStyle}`;
                 }
             });
 
@@ -747,35 +782,35 @@
                         if(currentRoleFilter === 'oesu') colorClass = 'bg-blue-50 text-blue-900 border-l-4 border-oesu';
                         if(currentRoleFilter === 'naesu') colorClass = 'bg-red-50 text-red-900 border-l-4 border-naesu';
 
-                        roleHTML = `<div class="mt-4 p-4 rounded-r-lg text-lg font-bold shadow-sm ${colorClass}">${info}</div>`;
+                        roleHTML = `<div class="mt-4 p-5 rounded-r-xl border-l-4 text-lg font-bold shadow-sm ${colorClass}">${info}</div>`;
                     }
                 } else if (currentRoleFilter === 'all' && step.roleInfo) {
                     roleHTML = `
                         <div class="mt-4 space-y-3 text-base">
-                            <div class="flex gap-3 items-start"><span class="shrink-0 w-12 text-center bg-member text-white font-bold text-sm px-1 py-0.5 rounded">회원</span> <span class="text-stone-700 font-medium">${step.roleInfo.member}</span></div>
-                            <div class="flex gap-3 items-start"><span class="shrink-0 w-12 text-center bg-oesu text-white font-bold text-sm px-1 py-0.5 rounded">외수</span> <span class="text-stone-700 font-medium">${step.roleInfo.oesu}</span></div>
-                            <div class="flex gap-3 items-start"><span class="shrink-0 w-12 text-center bg-naesu text-white font-bold text-sm px-1 py-0.5 rounded">내수</span> <span class="text-stone-700 font-medium">${step.roleInfo.naesu}</span></div>
+                            <div class="flex gap-3 items-start"><span class="shrink-0 w-14 text-center bg-member text-white font-bold text-sm px-1 py-1 rounded">회원</span> <span class="text-stone-700 font-medium pt-0.5">${step.roleInfo.member}</span></div>
+                            <div class="flex gap-3 items-start"><span class="shrink-0 w-14 text-center bg-oesu text-white font-bold text-sm px-1 py-1 rounded">외수</span> <span class="text-stone-700 font-medium pt-0.5">${step.roleInfo.oesu}</span></div>
+                            <div class="flex gap-3 items-start"><span class="shrink-0 w-14 text-center bg-naesu text-white font-bold text-sm px-1 py-1 rounded">내수</span> <span class="text-stone-700 font-medium pt-0.5">${step.roleInfo.naesu}</span></div>
                         </div>
                     `;
                 }
 
                 // Highlight special added steps
                 let borderClass = step.special ? 'border-l-4 border-point' : 'border-l-4 border-stone-200';
-                let dotClass = step.special ? 'bg-point' : 'bg-stone-300';
+                let dotClass = step.special ? 'bg-point ring-4 ring-red-100' : 'bg-stone-300';
 
                 return `
-                <div class="flex gap-4 group mb-2">
+                <div class="flex gap-4 group mb-4">
                     <div class="w-20 text-right pt-2 hidden md:block">
-                        <span class="font-bold text-stone-500 font-serif text-2xl">${step.time}</span>
+                        <span class="font-bold text-stone-500 font-serif text-2xl tracking-tighter">${step.time}</span>
                     </div>
-                    <div class="relative flex-grow ${borderClass} pl-6 pb-10 last:pb-0">
+                    <div class="relative flex-grow ${borderClass} pl-6 pb-12 last:pb-0">
                         <!-- Dot -->
-                        <div class="absolute -left-[10px] top-3 w-4 h-4 rounded-full ${dotClass} border-2 border-stone-100 group-hover:bg-point transition-colors"></div>
+                        <div class="absolute -left-[10px] top-3 w-5 h-5 rounded-full ${dotClass} border-2 border-white shadow-sm transition-colors"></div>
                         
-                        <div class="bg-white/70 backdrop-blur-sm p-6 rounded-lg border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="card-box p-6 hover:border-point transition-colors">
                             <div class="md:hidden font-bold text-stone-500 font-serif text-xl mb-1">${step.time}</div>
                             <h4 class="font-bold text-ink text-xl font-serif mb-2">${step.title}</h4>
-                            <p class="text-lg text-stone-600 leading-relaxed">${step.desc}</p>
+                            <p class="text-lg text-sub font-medium leading-relaxed break-keep">${step.desc}</p>
                             ${roleHTML}
                         </div>
                     </div>
@@ -972,7 +1007,7 @@
             updateText: function() {
                 const el = document.getElementById('step-description');
                 const step = simSteps[this.stepIndex];
-                el.innerHTML = `<span class="block text-sm text-point mb-1">STEP ${this.stepIndex}</span>${step.text}<br><span class="text-sm font-normal text-stone-500">${step.desc || ''}</span>`;
+                el.innerHTML = `<span class="block text-sm text-point font-bold mb-2">STEP ${this.stepIndex}</span>${step.text}<br><span class="text-base font-normal text-sub">${step.desc || ''}</span>`;
             },
             
             loop: function(timestamp) {
@@ -1002,12 +1037,12 @@
                 ctx.clearRect(0, 0, 500, 500);
                 
                 // Draw Corridor Area (Left 100px)
-                ctx.fillStyle = '#EFEBE9'; // Light corridor color
+                ctx.fillStyle = '#f5f5f4'; // Light corridor color (stone-100)
                 ctx.fillRect(0, 0, 100, 500);
                 
                 // Draw Room Area (Right 400px)
                 // Grid
-                ctx.strokeStyle = '#D7CCC8';
+                ctx.strokeStyle = '#e7e5e4'; // stone-200
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 for(let i=100; i<500; i+=50) {
@@ -1019,7 +1054,7 @@
                 ctx.stroke();
                 
                 // Wall separator
-                ctx.strokeStyle = '#5D4037';
+                ctx.strokeStyle = '#57534e'; // stone-600 (darker for clarity)
                 ctx.lineWidth = 4;
                 ctx.beginPath();
                 ctx.moveTo(100, 0); ctx.lineTo(100, 230); // Top wall
@@ -1038,16 +1073,16 @@
                     ctx.arc(obj.x, obj.y, 22, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.strokeStyle = '#fff';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 3; // Thicker border for contrast
                     ctx.stroke();
                     ctx.fillStyle = '#fff';
-                    ctx.font = '10px Noto Sans KR';
+                    ctx.font = 'bold 11px Noto Sans KR'; // Bold font
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     let short = obj.label.includes('회원') ? '회' : (obj.label.includes('외수') ? '외' : '내');
                     // Changed Labels to Korean
-                    ctx.fillText(obj.label.includes('다음') ? '다음' : '기존', obj.x, obj.y - 8);
-                    ctx.fillText(short, obj.x, obj.y + 6);
+                    ctx.fillText(obj.label.includes('다음') ? '다음' : '기존', obj.x, obj.y - 9);
+                    ctx.fillText(short, obj.x, obj.y + 7);
                     ctx.globalAlpha = 1;
                 };
 
