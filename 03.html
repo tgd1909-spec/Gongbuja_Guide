@@ -236,6 +236,7 @@
                 try {
                     this.updateLoadingStatus("설정 초기화 중...", "앱 정보를 확인하고 있습니다.");
 
+                    // 사용자분께서 제공해주신 Config 정보를 코드에 직접 입력
                     const firebaseConfig = {
                         apiKey: "AIzaSyDe1mpaPcDfiNG63peU7EFNXXNJQmKc2rM",
                         authDomain: "taegukdo-notice.firebaseapp.com",
@@ -254,11 +255,10 @@
                     // 인증 시도
                     this.updateLoadingStatus("사용자 인증 중...", "보안 접속을 시도합니다.");
                     try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
+                        // [수정] 이 환경에서 제공하는 기본 인증 토큰(__initial_auth_token)은 
+                        // 선생님의 개인 프로젝트와 맞지 않아 오류를 일으킵니다.
+                        // 따라서 토큰 확인 과정을 건너뛰고, 바로 '익명 로그인'을 시도하도록 변경했습니다.
+                        await signInAnonymously(auth);
                     } catch (authError) {
                         clearTimeout(timeoutId); // 타임아웃 해제
                         console.error("Auth Failed:", authError);
