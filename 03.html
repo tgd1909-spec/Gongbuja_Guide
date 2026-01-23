@@ -5,96 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>태극도 공지사항</title>
     
-    <!-- Tailwind CSS (스타일링) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons (아이콘) -->
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Google Fonts (폰트) -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK (Version 11.6.1) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 전역 변수로 할당하여 app 객체에서 접근 가능하게 함
+        window.firebaseModules = {
+            initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken,
+            getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp
+        };
+        
+        // 초기화 트리거
+        if (window.app && window.app.initFirebase) {
+            window.app.initFirebase();
+        }
+    </script>
 
     <style>
-        /* 커스텀 스타일 정의 */
+        /* 기본 설정 */
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            color: #2c2c2c;
+            color: #1a1a1a;
+            background-color: #f8f6f2;
+            background-image: radial-gradient(#e8e4da 1px, transparent 1px);
+            background-size: 24px 24px;
         }
         
         .font-serif-kr { font-family: 'Noto Serif KR', serif; }
         .font-sans-kr { font-family: 'Noto Sans KR', sans-serif; }
+        .break-keep { word-break: keep-all; }
 
-        /* 한지 질감 배경 */
-        .bg-texture {
-            background-color: #fdfbf7;
-            background-image: radial-gradient(#e6e2d3 1px, transparent 1px);
-            background-size: 24px 24px;
-        }
-
-        /* 애니메이션 */
         @keyframes slideDown {
-            from { transform: translateY(-20px) translateX(-50%); opacity: 0; }
-            to { transform: translateY(0) translateX(-50%); opacity: 1; }
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-        
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
-        .animate-slide-down { animation: slideDown 0.3s ease-out forwards; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .animate-slide-down { animation: slideDown 0.4s ease-out forwards; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        .animate-pulse-red { animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         
-        /* 스크롤바 커스텀 (선택사항) */
         textarea { resize: none; }
+        
+        .shadow-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        
+        /* 로딩 스피너 */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #9d2424;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-texture min-h-screen flex flex-col items-center py-8 px-4 relative">
+<body class="min-h-screen flex flex-col items-center py-6 px-4 relative">
+
+    <!-- 홈 버튼 -->
+    <a href="index.html" class="fixed top-6 right-6 z-50 bg-white border-2 border-stone-200 text-stone-600 hover:text-[#9d2424] hover:border-[#9d2424] hover:bg-red-50 rounded-full px-4 py-2 flex items-center gap-2 shadow-card transition-all duration-300 font-bold text-sm md:text-base group">
+        <i data-lucide="home" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+        <span class="hidden md:inline">홈으로</span>
+    </a>
 
     <!-- 토스트 알림 컨테이너 -->
     <div id="toast-container"></div>
 
     <!-- 헤더 영역 -->
-    <div class="w-full max-w-3xl relative mb-8">
-        <a href="index.html" class="absolute top-0 right-0 flex items-center gap-1 text-stone-600 hover:text-stone-900 transition-colors text-sm md:text-base cursor-pointer no-underline">
-            <i data-lucide="home" class="w-4 h-4 md:w-5 md:h-5"></i>
-            <span class="font-serif-kr hidden md:inline">홈으로</span>
-        </a>
-
-        <header class="text-center pt-8 border-b-4 border-double border-stone-300 pb-8 cursor-pointer" onclick="app.goHome()">
-            <div class="flex justify-center mb-2">
-                <div class="w-8 h-8 rounded-full border-2 border-stone-800 flex items-center justify-center">
-                    <div class="w-4 h-4 bg-stone-800 rounded-full"></div>
+    <div class="w-full max-w-4xl relative mb-10 animate-fade-in text-center">
+        <header class="pt-8 pb-4 cursor-pointer select-none inline-block" onclick="app.goHome()">
+            <div class="flex justify-center mb-4">
+                <div class="w-12 h-12 rounded-full border-2 border-[#1a1a1a] flex items-center justify-center bg-white shadow-md">
+                    <div class="relative w-7 h-7">
+                        <div class="absolute top-0 left-0 w-7 h-3.5 bg-[#b93636] rounded-t-full"></div>
+                        <div class="absolute bottom-0 left-0 w-7 h-3.5 bg-[#2d3a66] rounded-b-full"></div>
+                        <div class="absolute top-1/2 left-0 w-3.5 h-3.5 bg-[#b93636] rounded-full transform -translate-y-1/2"></div>
+                        <div class="absolute top-1/2 right-0 w-3.5 h-3.5 bg-[#2d3a66] rounded-full transform -translate-y-1/2"></div>
+                    </div>
                 </div>
             </div>
-            <h1 class="text-3xl md:text-4xl font-serif-kr font-bold text-stone-800 tracking-wide mb-2">
+            <h1 class="text-3xl md:text-4xl font-serif-kr font-bold text-[#1a1a1a] tracking-widest mb-3 break-keep">
                 太極道 공지사항
             </h1>
-            <p class="text-stone-500 font-sans-kr text-sm md:text-base">
-                도인 여러분께 소식을 전합니다
-            </p>
+            <div class="flex justify-center">
+                <span class="bg-[#9d2424]/10 text-[#9d2424] px-3 py-1 rounded-full text-sm font-bold font-sans-kr">
+                    도인 여러분께 소식을 전합니다
+                </span>
+            </div>
         </header>
     </div>
 
-    <!-- 메인 콘텐츠 영역 (여기에 JS로 내용이 그려짐) -->
-    <main id="main-content" class="w-full max-w-3xl bg-white/60 backdrop-blur-sm border border-stone-200 shadow-sm rounded-lg overflow-hidden min-h-[500px] flex flex-col">
+    <!-- 메인 콘텐츠 영역 -->
+    <main id="main-content" class="w-full max-w-4xl bg-white/60 backdrop-blur-md rounded-2xl min-h-[500px] flex flex-col transition-all duration-300 p-4 md:p-6 relative">
+        <!-- 초기 로딩 상태 -->
+        <div id="initial-loader" class="absolute inset-0 flex items-center justify-center bg-white/80 z-10 rounded-2xl">
+            <div class="flex flex-col items-center gap-3">
+                <div class="loader w-10 h-10 border-4"></div>
+                <p class="text-stone-500 font-sans-kr animate-pulse">데이터를 불러오는 중...</p>
+            </div>
+        </div>
         <!-- JS Render Target -->
     </main>
 
-    <!-- 푸터 / 관리자 토글 -->
-    <footer class="mt-12 text-center pb-8">
-        <button onclick="app.toggleAdmin()" class="text-xs text-stone-400 hover:text-stone-600 flex items-center justify-center gap-1 mx-auto transition-colors px-4 py-2">
-            <span id="admin-icon-wrapper"></span>
-            <span id="admin-text">관리자 모드</span>
+    <!-- 푸터 -->
+    <footer class="mt-12 text-center pb-8 animate-fade-in">
+        <button onclick="app.toggleAdmin()" class="group text-sm text-stone-400 hover:text-[#9d2424] flex items-center justify-center gap-2 mx-auto transition-colors px-5 py-2.5 rounded-full hover:bg-white border border-transparent hover:border-stone-200 hover:shadow-sm">
+            <span id="admin-icon-wrapper" class="transition-transform group-hover:scale-110"></span>
+            <span id="admin-text" class="font-bold">관리자 모드</span>
         </button>
-        <p class="text-[10px] text-stone-300 mt-2 font-sans-kr">&copy; 2026 Taegukdo. All rights reserved.</p>
+        <p class="text-xs text-stone-400 mt-4 font-sans-kr tracking-wider">&copy; 2026 Taegukdo. All rights reserved.</p>
     </footer>
 
-    <!-- 모달 컨테이너 (기본 숨김) -->
-    <div id="modal-container" class="hidden fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="app.closeModal()">
-        <div id="modal-content" class="bg-[#fdfbf7] w-full max-w-md rounded-lg shadow-2xl border border-stone-200 overflow-hidden" onclick="event.stopPropagation()">
+    <!-- 모달 컨테이너 -->
+    <div id="modal-container" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 transition-opacity duration-300" onclick="app.closeModal()">
+        <div id="modal-content" class="bg-white w-full max-w-md rounded-2xl shadow-2xl border-2 border-stone-200 overflow-hidden transform transition-all scale-95 opacity-0" onclick="event.stopPropagation()">
             <!-- JS Render Target -->
         </div>
     </div>
@@ -102,300 +155,535 @@
     <script>
         /**
          * ------------------------------------------------------------------
-         * State Management (상태 관리)
+         * Constants
+         * ------------------------------------------------------------------
+         */
+        const ADMIN_PASSWORD = "taegeuk1909#";
+        const COLLECTION_NAME = "posts"; // Firestore 컬렉션 이름
+
+        /**
+         * ------------------------------------------------------------------
+         * State Management
          * ------------------------------------------------------------------
          */
         const state = {
             isAdmin: false,
-            viewMode: 'current', // 'current' | 'archived'
+            viewMode: 'current',
             selectedPostId: null,
-            modalType: null, // 'login' | 'write' | 'delete' | null
+            modalType: null,
             deleteTargetId: null,
-            
-            // 입력 폼 데이터
-            inputs: {
-                title: '',
-                content: '',
-                isMustRead: false,
-                password: ''
-            },
-
-            // 게시글 데이터
-            posts: [
-                {
-                    id: 4,
-                    title: '[중요] 도장 내 정숙 및 예절 준수 안내',
-                    date: '2026.05.22',
-                    content: '도장은 수도를 하는 신성한 공간입니다.\n참배 및 기도 시 정숙을 유지해주시고, 복장을 단정히 하여 주시길 당부드립니다.',
-                    isNew: true,
-                    isArchived: false,
-                    isMustRead: true, 
-                },
-                {
-                    id: 3,
-                    title: '임원 정기 회의 일정 안내',
-                    date: '2026.05.20',
-                    content: '금월 임원 정기 회의가 대강전 회의실에서 진행됩니다.\n\n일시: 2026년 5월 25일 오전 10시\n장소: 대강전 2층 회의실\n안건: 하반기 주요 행사 일정 논의\n\n임원 분들의 많은 참석 바랍니다.',
-                    isNew: true,
-                    isArchived: false,
-                    isMustRead: false,
-                },
-                {
-                    id: 2,
-                    title: '경내 조경 공사 협조 요청',
-                    date: '2026.05.15',
-                    content: '경내 소나무 전지 작업으로 인한 통행 제한이 있을 수 있습니다.\n\n작업 기간 동안 안전을 위해 우회로를 이용해 주시면 감사하겠습니다.\n불편을 드려 죄송합니다.',
-                    isNew: false,
-                    isArchived: false,
-                    isMustRead: false,
-                },
-                {
-                    id: 1,
-                    title: '2025년 동지 치성 결과 보고',
-                    date: '2025.12.22',
-                    content: '지난 동지 치성이 경건한 분위기 속에서 봉행되었습니다.',
-                    isNew: false,
-                    isArchived: true,
-                    isMustRead: false,
-                },
-            ]
+            posts: [],
+            isLoading: true,
+            user: null,
+            db: null, // Firestore instance
+            appId: null
         };
-
-        const ADMIN_PASSWORD = "taegeuk1909#";
 
         /**
          * ------------------------------------------------------------------
-         * Application Logic (기능 구현)
+         * Application Logic
          * ------------------------------------------------------------------
          */
         const app = {
-            // 초기화
+            // Firebase 초기화 (window.firebaseModules가 로드된 후 실행됨)
+            initFirebase: async function() {
+                // 모듈 대기
+                if (!window.firebaseModules) {
+                    setTimeout(() => this.initFirebase(), 100);
+                    return;
+                }
+
+                const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, onSnapshot, query, orderBy } = window.firebaseModules;
+
+                try {
+                    // [수정됨] 사용자분의 Firebase 설정값을 여기에 직접 입력합니다.
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyDe1mpaPcDfiNG63peU7EFNXXNJQmKc2rM",
+                        authDomain: "taegukdo-notice.firebaseapp.com",
+                        projectId: "taegukdo-notice",
+                        storageBucket: "taegukdo-notice.firebasestorage.app",
+                        messagingSenderId: "322790351041",
+                        appId: "1:322790351041:web:aa43db9559a99792d3f440"
+                    };
+                    
+                    // [수정됨] 데이터가 저장될 경로(ID)를 프로젝트 ID로 고정합니다.
+                    state.appId = 'taegukdo-notice'; 
+
+                    // Firebase 앱 시작
+                    const firebaseApp = initializeApp(firebaseConfig);
+                    const auth = getAuth(firebaseApp);
+                    state.db = getFirestore(firebaseApp);
+
+                    // 인증 처리
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    // 인증 상태 감지 및 데이터 리스너 연결
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            state.user = user;
+                            this.subscribeToPosts();
+                        }
+                    });
+
+                } catch (error) {
+                    console.error("Firebase Init Error:", error);
+                    this.showToast("데이터 연결에 실패했습니다.", 'error');
+                }
+            },
+
+            // Firestore 실시간 리스너
+            subscribeToPosts: function() {
+                const { collection, onSnapshot, query, orderBy } = window.firebaseModules;
+                
+                if (!state.user || !state.db) return;
+
+                // RULE 1 준수: /artifacts/{appId}/public/data/{collectionName}
+                const postsRef = collection(state.db, 'artifacts', state.appId, 'public', 'data', COLLECTION_NAME);
+                
+                // 생성일 기준 내림차순 정렬 (최신글 위로)
+                // RULE 2: 복합 쿼리 지양. 여기서는 orderBy 하나만 사용.
+                // 메모리 내 정렬을 수행하기 위해 일단 다 가져오고 JS에서 정렬하는게 안전할 수 있으나, 
+                // 간단한 orderBy는 인덱스 없이도 동작하는 경우가 많음. 만약 에러나면 JS 정렬로 전환.
+                const q = query(postsRef);
+
+                onSnapshot(q, (snapshot) => {
+                    const loadedPosts = [];
+                    snapshot.forEach((doc) => {
+                        loadedPosts.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    // JS에서 날짜/시간 순 정렬 (timestamp 기준)
+                    loadedPosts.sort((a, b) => {
+                        const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (new Date(a.date).getTime() || 0);
+                        const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (new Date(b.date).getTime() || 0);
+                        
+                        // 공지사항 로직: 필독(MustRead) 우선, 그 다음 최신순
+                        // 뷰 모드에 따라 정렬 로직이 달라지므로, 여기선 최신순만 기본으로 잡음
+                        return timeB - timeA;
+                    });
+
+                    // 이전 포스트 개수와 비교하여 새로운 글 알림
+                    if (!state.isLoading && loadedPosts.length > state.posts.length) {
+                        // 내가 쓴 글이 아닐때만 (이건 로직상 구분하기 힘드므로 일단 띄움)
+                        this.showToast("🔔 새로운 공지사항이 등록되었습니다!");
+                    }
+
+                    state.posts = loadedPosts;
+                    state.isLoading = false;
+                    
+                    const loader = document.getElementById('initial-loader');
+                    if (loader) loader.classList.add('hidden');
+                    
+                    this.renderApp();
+                }, (error) => {
+                    console.error("Firestore Listen Error:", error);
+                    state.isLoading = false;
+                    this.renderMainContent(); // 에러 시 빈 화면이라도 렌더링
+                });
+            },
+
+            // 글 작성 (Firestore 저장)
+            submitPost: async function() {
+                const { addDoc, collection, serverTimestamp } = window.firebaseModules;
+                
+                const title = document.getElementById('title-input').value;
+                const content = document.getElementById('content-input').value;
+                const isMustRead = document.getElementById('must-read-check').checked;
+
+                if (!title.trim() || !content.trim()) {
+                    this.showToast("제목과 내용을 모두 입력해주세요.", 'error');
+                    return;
+                }
+
+                // 날짜 문자열 생성
+                const today = new Date();
+                const dateString = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+
+                try {
+                    const postsRef = collection(state.db, 'artifacts', state.appId, 'public', 'data', COLLECTION_NAME);
+                    await addDoc(postsRef, {
+                        title: title,
+                        content: content,
+                        date: dateString,
+                        timestamp: serverTimestamp(), // 서버 시간
+                        isArchived: false,
+                        isMustRead: isMustRead
+                    });
+
+                    this.showToast(isMustRead ? "필독 공지가 등록되었습니다." : "새로운 공지사항이 등록되었습니다.");
+                    state.viewMode = 'current';
+                    this.closeModal();
+
+                } catch (e) {
+                    console.error(e);
+                    this.showToast("저장 중 오류가 발생했습니다.", 'error');
+                }
+            },
+
+            // 글 삭제 (Firestore 삭제)
+            confirmDelete: async function() {
+                const { deleteDoc, doc } = window.firebaseModules;
+                
+                if (!state.deleteTargetId) return;
+
+                try {
+                    const postRef = doc(state.db, 'artifacts', state.appId, 'public', 'data', COLLECTION_NAME, state.deleteTargetId);
+                    await deleteDoc(postRef);
+
+                    if (state.selectedPostId === state.deleteTargetId) state.selectedPostId = null;
+                    this.showToast("게시글이 삭제되었습니다.");
+                    this.closeModal();
+                } catch (e) {
+                    console.error(e);
+                    this.showToast("삭제 중 오류가 발생했습니다.", 'error');
+                }
+            },
+
+            // 아카이브 토글 (Firestore 업데이트)
+            toggleArchive: async function(id) {
+                const { updateDoc, doc } = window.firebaseModules;
+                
+                const post = state.posts.find(p => p.id === id);
+                if (!post) return;
+
+                const newStatus = !post.isArchived;
+
+                try {
+                    const postRef = doc(state.db, 'artifacts', state.appId, 'public', 'data', COLLECTION_NAME, id);
+                    await updateDoc(postRef, {
+                        isArchived: newStatus
+                    });
+
+                    this.showToast(newStatus ? "게시글이 보관함으로 이동되었습니다." : "게시글이 공지사항으로 복원되었습니다.");
+                    
+                    // 뷰 상태 정리
+                    if (newStatus && state.viewMode === 'current' && state.selectedPostId) state.selectedPostId = null;
+                    if (!newStatus && state.viewMode === 'archived' && state.selectedPostId) state.selectedPostId = null;
+
+                } catch (e) {
+                    console.error(e);
+                    this.showToast("상태 변경 중 오류가 발생했습니다.", 'error');
+                }
+            },
+
+            // 헬퍼: 최근 3일 이내인지 확인 (NEW 뱃지용)
+            isNewPost: function(post) {
+                if (!post.timestamp) {
+                    // timestamp가 없는 레거시 데이터나 로컬 데이터의 경우 날짜 문자열로 비교
+                    const postDate = new Date(post.date);
+                    const diff = Date.now() - postDate.getTime();
+                    return diff < (3 * 24 * 60 * 60 * 1000); // 3일
+                }
+                // Firestore Timestamp 객체 처리
+                const postMillis = post.timestamp.toMillis ? post.timestamp.toMillis() : Date.now();
+                const diff = Date.now() - postMillis;
+                return diff < (3 * 24 * 60 * 60 * 1000); // 3일
+            },
+
+
+            // --- UI Rendering & Actions (기존 유지 및 일부 수정) ---
+
             init: function() {
+                // Firebase Init은 스크립트 로드 후 자동 실행됨
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && state.modalType) this.closeModal();
+                });
+                
+                // ESC 키로 관리자 모드 시크릿 종료 (이스터 에그?)
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'q') this.toggleAdmin();
+                });
+                
                 this.renderApp();
             },
 
-            // 화면 전체 렌더링
             renderApp: function() {
                 this.renderMainContent();
                 this.renderFooterIcon();
                 this.renderModal();
-                lucide.createIcons(); // 아이콘 새로고침
+                lucide.createIcons();
             },
 
-            // 메인 콘텐츠 영역 렌더링 (리스트 vs 상세)
             renderMainContent: function() {
                 const mainEl = document.getElementById('main-content');
                 
+                // 로딩 중이면 콘텐츠 렌더링 스킵 (로더가 보여짐)
+                if (state.isLoading) return;
+
                 if (state.selectedPostId !== null) {
-                    // 상세 보기 모드
-                    const post = state.posts.find(p => p.id === state.selectedPostId);
-                    if (!post) { state.selectedPostId = null; return this.renderApp(); }
-                    
-                    mainEl.innerHTML = `
-                        <div class="p-6 md:p-10 animate-fade-in flex-grow">
-                            <!-- 툴바 -->
-                            <div class="flex justify-between items-center mb-6 border-b border-stone-200 pb-4">
-                                <button onclick="app.goList()" class="flex items-center gap-1 text-stone-500 hover:text-stone-800 transition font-sans-kr text-sm">
-                                    <i data-lucide="arrow-left" class="w-4 h-4"></i> 목록으로
-                                </button>
-                                
-                                ${state.isAdmin ? `
-                                    <div class="flex gap-3">
-                                        <button onclick="app.toggleArchive(${post.id})" class="text-stone-500 hover:text-stone-800 transition flex items-center gap-1 text-sm">
-                                            <i data-lucide="${post.isArchived ? 'refresh-ccw' : 'archive'}" class="w-4 h-4"></i>
-                                            ${post.isArchived ? "복원" : "보관"}
-                                        </button>
-                                        <div class="w-px h-4 bg-stone-300 my-auto"></div>
-                                        <button onclick="app.requestDelete(${post.id})" class="text-stone-400 hover:text-red-600 transition flex items-center gap-1 text-sm">
-                                            <i data-lucide="trash-2" class="w-4 h-4"></i> 삭제
-                                        </button>
-                                    </div>
-                                ` : ''}
-                            </div>
-
-                            <!-- 제목 및 날짜 -->
-                            <div class="mb-8">
-                                <div class="flex flex-wrap items-center gap-2 mb-2">
-                                    ${post.isMustRead && !post.isArchived ? 
-                                        `<span class="bg-[#8b3a3a] text-white text-xs px-2 py-0.5 rounded font-sans-kr flex items-center gap-1">
-                                            <i data-lucide="megaphone" class="w-3 h-3 fill-current"></i> 필독
-                                         </span>` : ''}
-                                    ${post.isArchived ? `<span class="bg-stone-500 text-white text-xs px-2 py-0.5 rounded font-sans-kr">보관됨</span>` : ''}
-                                    <span class="text-stone-400 font-sans-kr text-sm">${post.date}</span>
-                                </div>
-                                <h2 class="text-2xl md:text-3xl font-serif-kr font-bold text-stone-800 leading-tight">${post.title}</h2>
-                            </div>
-
-                            <!-- 본문 -->
-                            <div class="font-sans-kr text-stone-700 leading-relaxed whitespace-pre-wrap min-h-[200px]">${post.content}</div>
-                        </div>
-                    `;
+                    this.renderDetailView(mainEl);
                 } else {
-                    // 리스트 모드
-                    // 1. 탭 메뉴
-                    let html = `
-                        <div class="flex border-b border-stone-200">
-                            <button onclick="app.changeViewMode('current')" class="flex-1 py-4 text-center font-serif-kr text-sm md:text-base transition-colors ${state.viewMode === 'current' ? 'font-bold text-stone-800 border-b-2 border-stone-800 bg-white/50' : 'text-stone-400 hover:text-stone-600'}">
-                                진행 중인 공지
-                            </button>
-                            <button onclick="app.changeViewMode('archived')" class="flex-1 py-4 text-center font-serif-kr text-sm md:text-base transition-colors ${state.viewMode === 'archived' ? 'font-bold text-stone-800 border-b-2 border-stone-800 bg-white/50' : 'text-stone-400 hover:text-stone-600'}">
-                                지난 공지 보관함
-                            </button>
-                        </div>
-                    `;
-
-                    // 2. 글쓰기 버튼 (관리자 & 현재공지 탭)
-                    if (state.isAdmin && state.viewMode === 'current') {
-                        html += `
-                            <div class="bg-stone-100 p-3 flex justify-end border-b border-stone-200">
-                                <button onclick="app.openModal('write')" class="flex items-center gap-2 bg-stone-800 text-white px-4 py-2 rounded hover:bg-stone-700 transition font-sans-kr text-sm">
-                                    <i data-lucide="plus" class="w-4 h-4"></i> 새 글 작성
-                                </button>
-                            </div>
-                        `;
-                    }
-
-                    // 3. 리스트 아이템 생성
-                    const filteredPosts = state.posts
-                        .filter(p => state.viewMode === 'current' ? !p.isArchived : p.isArchived)
-                        .sort((a, b) => {
-                            if (state.viewMode === 'current') {
-                                if (a.isMustRead && !b.isMustRead) return -1;
-                                if (!a.isMustRead && b.isMustRead) return 1;
-                            }
-                            return b.id - a.id;
-                        });
-
-                    html += `<ul class="divide-y divide-stone-200 flex-grow">`;
-                    
-                    if (filteredPosts.length === 0) {
-                        html += `
-                            <li class="p-12 text-center text-stone-400 font-sans-kr h-40 flex items-center justify-center">
-                                ${state.viewMode === 'current' ? '등록된 공지사항이 없습니다.' : '보관된 공지사항이 없습니다.'}
-                            </li>
-                        `;
-                    } else {
-                        filteredPosts.forEach(post => {
-                            const isHighlighted = post.isMustRead && state.viewMode === 'current';
-                            html += `
-                                <li onclick="app.selectPost(${post.id})" class="group hover:bg-stone-50 transition-colors duration-200 cursor-pointer ${isHighlighted ? 'bg-[#fdf3f3]/50' : ''}">
-                                    <div class="p-6 md:p-8 flex flex-col md:flex-row gap-4 relative">
-                                        ${isHighlighted ? `<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#8b3a3a]"></div>` : ''}
-                                        
-                                        <div class="flex-shrink-0 md:w-24 text-stone-400 font-sans-kr text-sm pt-1">${post.date}</div>
-                                        
-                                        <div class="flex-grow">
-                                            <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                                ${isHighlighted ? 
-                                                    `<span class="bg-[#8b3a3a] text-white text-[10px] font-bold px-1.5 py-0.5 rounded font-sans-kr flex items-center gap-1">
-                                                        <i data-lucide="megaphone" class="w-3 h-3 fill-current"></i> 필독
-                                                     </span>` : ''}
-                                                ${post.isNew && !post.isArchived ? 
-                                                    `<span class="bg-stone-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded font-sans-kr animate-pulse">NEW</span>` : ''}
-                                                ${post.isArchived ? 
-                                                    `<span class="bg-stone-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded font-sans-kr">보관됨</span>` : ''}
-                                                
-                                                <h3 class="text-lg md:text-xl font-serif-kr font-semibold group-hover:underline decoration-stone-400 underline-offset-4 ${isHighlighted ? 'text-[#8b3a3a]' : 'text-stone-800'}">
-                                                    ${post.title}
-                                                </h3>
-                                            </div>
-                                            <p class="text-stone-600 font-sans-kr text-sm md:text-base leading-relaxed line-clamp-2">${post.content}</p>
-                                        </div>
-
-                                        ${state.isAdmin ? `
-                                            <div class="flex items-start justify-end gap-2 md:w-16" onclick="event.stopPropagation()">
-                                                <button onclick="event.stopPropagation(); app.toggleArchive(${post.id})" class="text-stone-300 hover:text-stone-600 transition p-2 hover:bg-stone-100 rounded-full" title="${post.isArchived ? '복원' : '보관'}">
-                                                    <i data-lucide="${post.isArchived ? 'refresh-ccw' : 'archive'}" class="w-5 h-5"></i>
-                                                </button>
-                                            </div>
-                                        ` : ''}
-                                    </div>
-                                </li>
-                            `;
-                        });
-                    }
-                    html += `</ul>`;
-                    mainEl.innerHTML = html;
+                    this.renderListView(mainEl);
                 }
             },
 
-            // 푸터 아이콘 관리
+            renderDetailView: function(container) {
+                const post = state.posts.find(p => p.id === state.selectedPostId);
+                if (!post) { state.selectedPostId = null; return this.renderApp(); }
+                
+                container.innerHTML = `
+                    <div class="bg-white rounded-2xl border-2 border-stone-200 shadow-card p-6 md:p-10 animate-fade-in h-full relative overflow-hidden">
+                        
+                        <!-- 툴바 -->
+                        <div class="flex justify-between items-center mb-8 border-b-2 border-stone-100 pb-6">
+                            <button onclick="app.goList()" class="group flex items-center gap-2 text-stone-500 hover:text-[#1a1a1a] transition font-sans-kr font-bold text-lg">
+                                <span class="bg-stone-100 group-hover:bg-stone-200 p-2 rounded-full transition-colors border border-stone-200">
+                                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                                </span>
+                                목록으로 돌아가기
+                            </button>
+                            
+                            ${state.isAdmin ? `
+                                <div class="flex gap-3">
+                                    <button onclick="app.toggleArchive('${post.id}')" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-lg transition font-bold flex items-center gap-2">
+                                        <i data-lucide="${post.isArchived ? 'refresh-ccw' : 'archive'}" class="w-4 h-4"></i>
+                                        ${post.isArchived ? "복원" : "보관"}
+                                    </button>
+                                    <button onclick="app.requestDelete('${post.id}')" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition font-bold flex items-center gap-2">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i> 삭제
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- 제목 및 정보 -->
+                        <div class="mb-8">
+                            <div class="flex flex-wrap items-center gap-2 mb-4">
+                                ${post.isMustRead && !post.isArchived ? 
+                                    `<span class="bg-[#9d2424]/10 text-[#9d2424] px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                        <i data-lucide="megaphone" class="w-4 h-4 fill-current"></i> 필독 공지
+                                     </span>` : ''}
+                                ${post.isArchived ? `<span class="bg-stone-100 text-stone-500 px-3 py-1 rounded-full text-sm font-bold">보관됨</span>` : ''}
+                                <span class="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                                    <i data-lucide="calendar" class="w-4 h-4"></i> ${post.date}
+                                </span>
+                            </div>
+                            <h2 class="text-3xl md:text-4xl font-serif-kr font-bold text-[#1a1a1a] leading-tight break-keep mb-6">${post.title}</h2>
+                        </div>
+
+                        <!-- 본문 -->
+                        <div class="font-sans-kr text-[#1a1a1a] text-lg md:text-xl leading-relaxed whitespace-pre-wrap break-keep min-h-[300px] bg-stone-50/50 p-6 rounded-xl border border-stone-100">
+${post.content}
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderListView: function(container) {
+                let html = `
+                    <div class="flex gap-2 mb-6 px-1">
+                        <button onclick="app.changeViewMode('current')" class="flex-1 py-4 text-center rounded-xl font-serif-kr text-lg transition-all duration-300 border-2 ${state.viewMode === 'current' ? 'bg-white border-[#1a1a1a] text-[#1a1a1a] font-bold shadow-card transform -translate-y-1' : 'bg-white/50 border-transparent text-stone-400 hover:bg-white hover:text-stone-600'}">
+                            진행 중인 공지
+                        </button>
+                        <button onclick="app.changeViewMode('archived')" class="flex-1 py-4 text-center rounded-xl font-serif-kr text-lg transition-all duration-300 border-2 ${state.viewMode === 'archived' ? 'bg-stone-100 border-stone-400 text-stone-600 font-bold shadow-card transform -translate-y-1' : 'bg-white/50 border-transparent text-stone-400 hover:bg-white hover:text-stone-600'}">
+                            지난 공지 보관함
+                        </button>
+                    </div>
+                `;
+
+                if (state.isAdmin && state.viewMode === 'current') {
+                    html += `
+                        <div class="flex justify-end mb-6 animate-fade-in px-1">
+                            <button onclick="app.openModal('write')" class="flex items-center gap-2 bg-[#1a1a1a] text-white px-5 py-3 rounded-xl hover:bg-[#333] transition-all shadow-lg hover:-translate-y-1 font-bold text-base">
+                                <i data-lucide="pen-line" class="w-5 h-5"></i> 새 공지사항 작성
+                            </button>
+                        </div>
+                    `;
+                }
+
+                const filteredPosts = state.posts
+                    .filter(p => state.viewMode === 'current' ? !p.isArchived : p.isArchived)
+                    .sort((a, b) => {
+                        if (state.viewMode === 'current') {
+                            if (a.isMustRead && !b.isMustRead) return -1;
+                            if (!a.isMustRead && b.isMustRead) return 1;
+                        }
+                        // 이미 Firebase 로드시 시간순 정렬했으므로 여기선 필독 여부만 처리하면 됨
+                        return 0; 
+                    });
+
+                html += `<ul class="space-y-4 pb-4">`;
+                
+                if (filteredPosts.length === 0) {
+                    html += `
+                        <li class="bg-white rounded-2xl border-2 border-stone-200 p-12 text-center flex flex-col items-center justify-center text-stone-400 font-sans-kr h-64 gap-4 animate-fade-in shadow-card">
+                            <i data-lucide="clipboard-x" class="w-16 h-16 stroke-[1.5] text-stone-300"></i>
+                            <p class="text-lg font-medium">${state.viewMode === 'current' ? '현재 등록된 공지사항이 없습니다.' : '보관함이 비어있습니다.'}</p>
+                        </li>
+                    `;
+                } else {
+                    filteredPosts.forEach((post, index) => {
+                        const isHighlighted = post.isMustRead && state.viewMode === 'current';
+                        const isNew = this.isNewPost(post);
+                        
+                        const delayClass = index < 5 ? `animate-fade-in` : '';
+                        const styleDelay = index < 5 ? `animation-delay: ${index * 0.05}s` : '';
+                        
+                        html += `
+                            <li onclick="app.selectPost('${post.id}')" 
+                                class="group bg-white rounded-2xl border-2 ${isHighlighted ? 'border-[#9d2424]/30 bg-red-50/10' : 'border-stone-200'} p-6 md:p-8 cursor-pointer shadow-card transition-all duration-300 hover:border-[#9d2424] hover:bg-red-50/30 hover:-translate-y-1 ${delayClass}" 
+                                style="${styleDelay}">
+                                
+                                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                                    <div class="flex-shrink-0">
+                                        <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-bold bg-stone-100 text-stone-600 group-hover:bg-[#9d2424]/10 group-hover:text-[#9d2424] transition-colors">
+                                            ${post.date}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="flex-grow min-w-0 w-full">
+                                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                            ${isHighlighted ? 
+                                                `<span class="bg-[#9d2424]/10 text-[#9d2424] text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                                                    <i data-lucide="megaphone" class="w-3.5 h-3.5 fill-current"></i> 필독
+                                                 </span>` : ''}
+                                            
+                                            <!-- NEW 뱃지 구현 (빨간색) -->
+                                            ${isNew && !post.isArchived ? 
+                                                `<span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse-red shadow-sm">NEW</span>` : ''}
+                                        </div>
+                                        <h3 class="text-xl md:text-2xl font-serif-kr font-bold text-[#1a1a1a] group-hover:text-[#9d2424] transition-colors break-keep leading-snug">
+                                            ${post.title}
+                                        </h3>
+                                        <p class="text-stone-500 font-sans-kr text-base mt-2 line-clamp-1 group-hover:text-stone-700 transition-colors break-keep">
+                                            ${post.content}
+                                        </p>
+                                    </div>
+
+                                    <div class="hidden md:flex text-stone-300 group-hover:text-[#9d2424] transition-colors">
+                                        <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                                    </div>
+                                </div>
+                            </li>
+                        `;
+                    });
+                }
+                html += `</ul>`;
+                container.innerHTML = html;
+            },
+
             renderFooterIcon: function() {
                 const iconWrapper = document.getElementById('admin-icon-wrapper');
                 const textEl = document.getElementById('admin-text');
                 
                 iconWrapper.innerHTML = state.isAdmin 
-                    ? `<i data-lucide="unlock" class="w-3 h-3"></i>` 
-                    : `<i data-lucide="lock" class="w-3 h-3"></i>`;
+                    ? `<i data-lucide="unlock" class="w-4 h-4 text-[#9d2424]"></i>` 
+                    : `<i data-lucide="lock" class="w-4 h-4"></i>`;
                 
                 textEl.innerText = state.isAdmin ? '관리자 모드 종료' : '관리자 모드';
+                
+                const btn = textEl.parentElement;
+                if(state.isAdmin) {
+                    btn.classList.add('bg-stone-100', 'text-[#9d2424]', 'border-stone-200');
+                    btn.classList.remove('text-stone-400');
+                } else {
+                    btn.classList.remove('bg-stone-100', 'text-[#9d2424]', 'border-stone-200');
+                    btn.classList.add('text-stone-400');
+                }
             },
 
-            // 모달 렌더링
             renderModal: function() {
                 const container = document.getElementById('modal-container');
                 const content = document.getElementById('modal-content');
                 
                 if (!state.modalType) {
                     container.classList.add('hidden');
+                    content.classList.remove('scale-100', 'opacity-100');
+                    content.classList.add('scale-95', 'opacity-0');
                     return;
                 }
                 
                 container.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                });
+
                 let html = '';
 
                 if (state.modalType === 'login') {
                     html = `
-                        <div class="p-6 text-center font-sans-kr">
-                            <h3 class="font-serif-kr font-bold text-xl mb-4 text-stone-800">관리자 로그인</h3>
-                            <p class="text-sm text-stone-500 mb-4">관리자 비밀번호를 입력해주세요.</p>
-                            <input type="password" id="pw-input" placeholder="비밀번호 입력"
-                                class="w-full border border-stone-300 p-3 rounded mb-4 text-center focus:outline-none focus:border-[#8b3a3a]"
-                                onkeydown="if(event.key === 'Enter') app.submitLogin()">
-                            <div class="flex gap-2 justify-center">
-                                <button onclick="app.closeModal()" class="px-4 py-2 text-stone-500 hover:bg-stone-100 rounded">취소</button>
-                                <button onclick="app.submitLogin()" class="px-6 py-2 bg-stone-800 text-white rounded hover:bg-stone-700">확인</button>
+                        <div class="p-8 text-center font-sans-kr relative bg-white">
+                            <button onclick="app.closeModal()" class="absolute top-4 right-4 text-stone-400 hover:text-[#1a1a1a]"><i data-lucide="x" class="w-6 h-6"></i></button>
+                            <div class="w-14 h-14 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-5 text-[#1a1a1a] border-2 border-stone-200">
+                                <i data-lucide="shield-check" class="w-7 h-7"></i>
                             </div>
+                            <h3 class="font-serif-kr font-bold text-2xl mb-2 text-[#1a1a1a]">관리자 로그인</h3>
+                            <p class="text-stone-500 mb-8 break-keep font-medium">관리자 권한으로 접근하려면 비밀번호를 입력하세요.</p>
+                            
+                            <div class="relative mb-8 group">
+                                <input type="password" id="pw-input" placeholder="비밀번호"
+                                    class="w-full border-b-2 border-stone-300 p-3 text-center focus:outline-none focus:border-[#9d2424] bg-transparent transition-colors text-[#1a1a1a] text-xl font-bold placeholder-stone-300"
+                                    onkeydown="if(event.key === 'Enter') app.submitLogin()">
+                            </div>
+                            
+                            <button onclick="app.submitLogin()" class="w-full py-4 bg-[#1a1a1a] text-white rounded-xl hover:bg-[#333] transition font-bold shadow-md hover:-translate-y-1 text-lg">확인</button>
                         </div>
                     `;
                 } else if (state.modalType === 'write') {
                     html = `
-                        <div class="bg-stone-800 text-white px-6 py-4 flex justify-between items-center">
-                            <h3 class="font-serif-kr font-bold text-lg">새 공지사항</h3>
-                            <button onclick="app.closeModal()"><i data-lucide="x" class="w-5 h-5"></i></button>
+                        <div class="bg-white px-6 py-5 flex justify-between items-center border-b-2 border-stone-100">
+                            <h3 class="font-serif-kr font-bold text-xl flex items-center gap-2 text-[#1a1a1a]">
+                                <span class="bg-[#9d2424]/10 text-[#9d2424] p-2 rounded-full"><i data-lucide="pen-tool" class="w-5 h-5"></i></span>
+                                새 공지사항 작성
+                            </h3>
+                            <button onclick="app.closeModal()" class="hover:bg-stone-100 p-2 rounded-full transition text-[#1a1a1a]"><i data-lucide="x" class="w-6 h-6"></i></button>
                         </div>
-                        <div class="p-6 font-sans-kr">
-                            <div class="mb-4 flex items-center gap-2">
-                                <input type="checkbox" id="must-read-check" class="w-4 h-4 accent-[#8b3a3a]">
-                                <label for="must-read-check" class="text-sm font-bold text-[#8b3a3a] cursor-pointer flex items-center gap-1">
-                                    <i data-lucide="megaphone" class="w-3.5 h-3.5"></i> 중요 필독 공지로 설정
+                        <div class="p-8 font-sans-kr bg-white">
+                            <div class="mb-6 bg-red-50/50 p-4 rounded-xl border-2 border-red-100 hover:border-[#9d2424]/30 transition-colors">
+                                <label class="flex items-center gap-3 cursor-pointer select-none">
+                                    <div class="relative flex items-center">
+                                        <input type="checkbox" id="must-read-check" class="peer sr-only">
+                                        <div class="w-11 h-6 bg-stone-300 rounded-full peer peer-checked:bg-[#9d2424] transition-all"></div>
+                                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-sm"></div>
+                                    </div>
+                                    <span class="text-base font-bold text-[#9d2424] flex items-center gap-2">
+                                        <i data-lucide="megaphone" class="w-4 h-4"></i> 중요 필독 공지로 설정
+                                    </span>
                                 </label>
                             </div>
-                            <div class="mb-4">
-                                <label class="block text-sm font-bold text-stone-600 mb-1">제목</label>
-                                <input type="text" id="title-input" class="w-full border p-2 rounded focus:outline-none focus:border-[#8b3a3a]" placeholder="제목 입력">
-                            </div>
+                            
                             <div class="mb-6">
-                                <label class="block text-sm font-bold text-stone-600 mb-1">내용</label>
-                                <textarea id="content-input" class="w-full border p-2 rounded h-32 resize-none focus:outline-none focus:border-[#8b3a3a]" placeholder="내용 입력"></textarea>
+                                <label class="block text-base font-bold text-[#1a1a1a] mb-2 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 bg-[#9d2424] rounded-full"></span> 제목
+                                </label>
+                                <input type="text" id="title-input" class="w-full border-2 border-stone-200 p-4 rounded-xl focus:outline-none focus:border-[#9d2424] transition-all text-lg font-medium placeholder-stone-400" placeholder="제목을 입력하세요">
                             </div>
-                            <div class="flex justify-end gap-2">
-                                <button onclick="app.closeModal()" class="px-4 py-2 text-stone-500 hover:bg-stone-100 rounded">취소</button>
-                                <button onclick="app.submitPost()" class="px-4 py-2 bg-[#8b3a3a] text-white rounded font-bold hover:bg-[#722f2f]">등록</button>
+                            
+                            <div class="mb-8">
+                                <label class="block text-base font-bold text-[#1a1a1a] mb-2 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 bg-[#9d2424] rounded-full"></span> 내용
+                                </label>
+                                <textarea id="content-input" class="w-full border-2 border-stone-200 p-4 rounded-xl h-48 resize-none focus:outline-none focus:border-[#9d2424] transition-all leading-relaxed text-lg font-medium placeholder-stone-400" placeholder="공지 내용을 입력하세요"></textarea>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="app.closeModal()" class="flex-1 py-4 text-stone-500 hover:bg-stone-100 rounded-xl transition font-bold text-lg border-2 border-transparent">취소</button>
+                                <button onclick="app.submitPost()" class="flex-[2] py-4 bg-[#1a1a1a] text-white rounded-xl font-bold hover:bg-[#333] transition shadow-lg hover:-translate-y-1 flex items-center justify-center gap-2 text-lg">
+                                    <i data-lucide="send" class="w-5 h-5"></i> 등록하기
+                                </button>
                             </div>
                         </div>
                     `;
                 } else if (state.modalType === 'delete') {
                     html = `
-                        <div class="p-6 text-center font-sans-kr">
-                            <div class="mx-auto w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
-                                <i data-lucide="trash-2" class="w-6 h-6"></i>
+                        <div class="p-10 text-center font-sans-kr bg-white">
+                            <div class="mx-auto w-20 h-20 bg-red-50 text-[#9d2424] rounded-full flex items-center justify-center mb-6 border-2 border-red-100">
+                                <i data-lucide="alert-triangle" class="w-10 h-10"></i>
                             </div>
-                            <h3 class="font-bold text-lg mb-2 text-stone-800">삭제하시겠습니까?</h3>
-                            <p class="text-sm text-stone-500 mb-6">삭제된 게시글은 복구할 수 없습니다.</p>
-                            <div class="flex gap-2 justify-center">
-                                <button onclick="app.closeModal()" class="px-4 py-2 border border-stone-300 rounded hover:bg-stone-50 text-stone-600">취소</button>
-                                <button onclick="app.confirmDelete()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">삭제하기</button>
+                            <h3 class="font-bold text-2xl mb-3 text-[#1a1a1a]">게시글을 삭제하시겠습니까?</h3>
+                            <p class="text-base text-stone-500 mb-10 break-keep font-medium leading-relaxed">
+                                삭제된 게시글은 영구적으로 제거되며<br>다시 복구할 수 없습니다.
+                            </p>
+                            <div class="flex gap-3 justify-center">
+                                <button onclick="app.closeModal()" class="flex-1 py-3.5 border-2 border-stone-200 rounded-xl hover:bg-stone-50 text-stone-600 font-bold transition text-lg">취소</button>
+                                <button onclick="app.confirmDelete()" class="flex-[2] py-3.5 bg-[#9d2424] text-white rounded-xl hover:bg-[#7a1c1c] font-bold shadow-md hover:-translate-y-1 transition flex items-center justify-center gap-2 text-lg">
+                                    <i data-lucide="trash-2" class="w-5 h-5"></i> 삭제하기
+                                </button>
                             </div>
                         </div>
                     `;
@@ -403,18 +691,22 @@
                 
                 content.innerHTML = html;
                 
-                // 모달이 열린 후 포커스 처리 등
-                if(state.modalType === 'login') setTimeout(() => document.getElementById('pw-input').focus(), 50);
+                if(state.modalType === 'login') setTimeout(() => document.getElementById('pw-input').focus(), 100);
             },
 
-            // 토스트 알림 표시
-            showToast: function(message) {
+            showToast: function(message, type = 'success') {
                 const container = document.getElementById('toast-container');
                 const toast = document.createElement('div');
-                toast.className = "fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] animate-slide-down";
+                
+                const bgColor = type === 'error' ? 'bg-[#9d2424]' : 'bg-[#1a1a1a]';
+                const icon = type === 'error' ? 'alert-circle' : 'check-circle-2';
+                
+                // 모바일에서도 잘 보이게 z-index 높임 및 스타일 조정
+                toast.className = "fixed top-8 left-1/2 transform -translate-x-1/2 z-[100] animate-slide-down shadow-2xl w-[90%] md:w-auto text-center";
                 toast.innerHTML = `
-                    <div class="bg-stone-800 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 font-sans-kr text-sm">
-                        <i data-lucide="check" class="w-4 h-4 text-green-400"></i> ${message}
+                    <div class="${bgColor} text-white px-6 py-4 rounded-full inline-flex items-center justify-center gap-3 font-sans-kr text-base font-bold border-2 border-white/20 shadow-lg">
+                        <i data-lucide="${icon}" class="w-5 h-5 text-white flex-shrink-0"></i> 
+                        <span class="break-keep">${message}</span>
                     </div>
                 `;
                 
@@ -422,15 +714,17 @@
                 lucide.createIcons();
 
                 setTimeout(() => {
-                    toast.remove();
-                }, 3000);
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translate(-50%, -20px)';
+                    toast.style.transition = 'all 0.3s ease-out';
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000); // 읽을 시간을 위해 조금 더 길게(4초)
             },
 
-            // --- 액션 핸들러 ---
-            
             goHome: function() {
                 state.selectedPostId = null;
                 this.renderApp();
+                window.scrollTo({top: 0, behavior: 'smooth'});
             },
 
             goList: function() {
@@ -441,6 +735,7 @@
             selectPost: function(id) {
                 state.selectedPostId = id;
                 this.renderApp();
+                window.scrollTo({top: 0, behavior: 'smooth'});
             },
 
             changeViewMode: function(mode) {
@@ -471,77 +766,30 @@
 
             submitLogin: function() {
                 const input = document.getElementById('pw-input');
+                const container = input.parentElement;
+                
                 if (input.value === ADMIN_PASSWORD) {
                     state.isAdmin = true;
                     this.showToast("관리자 모드로 전환되었습니다.");
                     this.closeModal();
                 } else {
-                    this.showToast("비밀번호가 일치하지 않습니다.");
+                    container.classList.remove('animate-shake');
+                    void container.offsetWidth;
+                    container.classList.add('animate-shake');
+                    input.classList.add('border-[#9d2424]', 'text-[#9d2424]');
+                    this.showToast("비밀번호가 일치하지 않습니다.", 'error');
+                    
+                    setTimeout(() => {
+                        input.classList.remove('border-[#9d2424]', 'text-[#9d2424]');
+                        input.value = '';
+                        input.focus();
+                    }, 1000);
                 }
             },
-
-            submitPost: function() {
-                const title = document.getElementById('title-input').value;
-                const content = document.getElementById('content-input').value;
-                const isMustRead = document.getElementById('must-read-check').checked;
-
-                if (!title.trim() || !content.trim()) {
-                    this.showToast("제목과 내용을 모두 입력해주세요.");
-                    return;
-                }
-
-                const today = new Date();
-                const dateString = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
-
-                const newPost = {
-                    id: Date.now(),
-                    title: title,
-                    date: dateString,
-                    content: content,
-                    isNew: true,
-                    isArchived: false,
-                    isMustRead: isMustRead
-                };
-
-                state.posts.unshift(newPost);
-                this.showToast(isMustRead ? "필독 공지가 등록되었습니다." : "새로운 공지사항이 등록되었습니다.");
-                
-                state.viewMode = 'current'; // 새 글은 현재 목록으로
-                this.closeModal();
-            },
-
+            
             requestDelete: function(id) {
                 state.deleteTargetId = id;
                 this.openModal('delete');
-            },
-
-            confirmDelete: function() {
-                state.posts = state.posts.filter(p => p.id !== state.deleteTargetId);
-                
-                // 만약 현재 보고 있는 글을 삭제했다면 목록으로 이동
-                if (state.selectedPostId === state.deleteTargetId) {
-                    state.selectedPostId = null;
-                }
-
-                this.showToast("게시글이 삭제되었습니다.");
-                this.closeModal();
-            },
-
-            toggleArchive: function(id) {
-                const post = state.posts.find(p => p.id === id);
-                if (!post) return;
-
-                post.isArchived = !post.isArchived;
-                
-                if (post.isArchived) {
-                    this.showToast("게시글이 보관함으로 이동되었습니다.");
-                    if (state.viewMode === 'current' && state.selectedPostId) state.selectedPostId = null;
-                } else {
-                    this.showToast("게시글이 공지사항으로 복원되었습니다.");
-                    if (state.viewMode === 'archived' && state.selectedPostId) state.selectedPostId = null;
-                }
-
-                this.renderApp();
             }
         };
 
