@@ -269,6 +269,22 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // ==========================================================================
+        // [중요] 깃허브 페이지(외부 배포)에서 실시간 공유를 하려면 아래 설정을 채워주세요.
+        // 파이어베이스 콘솔(https://console.firebase.google.com)에서 프로젝트 생성 후
+        // '웹 앱'을 추가하면 나오는 설정값(apiKey, projectId 등)을 여기에 붙여넣으면 됩니다.
+        // ==========================================================================
+        const YOUR_FIREBASE_CONFIG = {
+            apiKey: "",
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
+        };
+        // ==========================================================================
+
+
         // --- 전역 변수 설정 (window 객체에 할당하여 HTML onclick 등에서 접근 가능하게 함) ---
         window.isAdminMode = false;
         window.currentCategory = '전체';
@@ -299,33 +315,92 @@
         const deleteModal = document.getElementById('delete-modal');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
-        // --- Firebase 초기화 ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- Firebase 초기화 및 폴백 로직 ---
+        let db, auth;
+        let useFirebase = false;
+        let appId = 'default-app-id';
 
-        // --- Auth & Data Loading ---
-        async function initAuth() {
+        // 기본 데이터 (로컬 모드용)
+        const defaultContents = [
+            {
+                id: 1,
+                category: '국궁',
+                title: '국궁(鞠躬)의 기본 자세',
+                desc: '국궁은 몸을 굽혀 존경을 표하는 동작입니다. 두 손을 공수(拱手)하고 허리를 15도 가량 굽히며, 시선은 자신의 발끝 전방 1~2미터 지점을 향합니다. 이때 마음을 차분히 가라앉히고 공경하는 마음을 담는 것이 중요합니다.',
+                image: 'https://images.unsplash.com/photo-1518330666324-4286280b3328?auto=format&fit=crop&q=80&w=800', 
+                date: '2023.10.15'
+            },
+            {
+                id: 2,
+                category: '배례',
+                title: '배례(拜禮) 행하는 법',
+                desc: '배례는 상제님께 올리는 가장 큰 경의의 표시입니다. 국궁 자세에서 시작하여 무릎을 꿇고 엎드려 절을 올립니다. 손의 위치와 일어나는 순서가 중요하며, 처음 공부하시는 분들은 무릎에 무리가 가지 않도록 천천히 연습하시기 바랍니다.',
+                image: '', 
+                date: '2023.10.16'
+            },
+            {
+                id: 3,
+                category: '봉심',
+                title: '봉심(奉審)의 마음가짐',
+                desc: '봉심은 성전을 살피고 받드는 의식입니다. 정해진 시간에 의관을 정제하고 엄숙한 마음으로 행해야 합니다. 단순히 건물을 둘러보는 것이 아니라, 도(道)와 하나 되는 경건한 마음가짐이 핵심입니다.',
+                image: 'https://images.unsplash.com/photo-1598556885318-48b495922312?auto=format&fit=crop&q=80&w=800',
+                date: '2023.10.20'
+            },
+            {
+                id: 4,
+                category: '강식',
+                title: '강식(講式) 참여 예절',
+                desc: '강식은 진리를 공부하고 토론하는 시간입니다. 경청하는 자세를 유지하며, 질문이나 발언 시에는 예의를 갖추어야 합니다. 복장은 단정해야 하며, 강의 시작 10분 전에는 착석하여 마음을 정돈합니다.',
+                image: '',
+                date: '2023.11.01'
+            }
+        ];
+        const defaultCategories = ['국궁', '배례', '봉심', '강식'];
+
+        async function initialize() {
             try {
+                let firebaseConfig;
+
+                // 1. Canvas 내부 환경 (자동 연결)
+                if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                    appId = __app_id;
+                    console.log("Canvas Firebase 연결");
+                } 
+                // 2. 외부 배포 환경 (수동 설정 연결)
+                else if (YOUR_FIREBASE_CONFIG && YOUR_FIREBASE_CONFIG.apiKey) {
+                    firebaseConfig = YOUR_FIREBASE_CONFIG;
+                    appId = 'tgd-guide-public'; // 공용 경로 ID
+                    console.log("외부 Firebase 설정 연결");
+                } 
+                else {
+                    throw new Error("환경 설정이 없습니다. (로컬 모드 전환)");
+                }
+
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                useFirebase = true;
+
+                // 인증 처리
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
+                
+                subscribeToData();
+
             } catch (error) {
-                console.error("Auth Error:", error);
-                alert("서버 연결에 실패했습니다.");
+                console.warn("Firebase 연결 안 됨: 로컬 저장소 모드 사용", error);
+                useFirebase = false;
+                loadLocalData();
             }
         }
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                subscribeToData();
-            }
-        });
+        // --- 데이터 로딩 로직 (분기 처리) ---
 
+        // 1. Firebase 사용 시 (Canvas 환경)
         function subscribeToData() {
             // 게시글 구독
             const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
@@ -334,7 +409,6 @@
                 snapshot.forEach((doc) => {
                     localContents.push({ id: doc.id, ...doc.data() });
                 });
-                // 최신순 정렬
                 localContents.sort((a, b) => {
                     if(a.createdAt && b.createdAt) return b.createdAt - a.createdAt;
                     return 0;
@@ -355,6 +429,34 @@
                 renderCategorySelect();
                 renderAdminCategories();
             });
+        }
+
+        // 2. LocalStorage 사용 시 (외부 배포 환경 - 설정 없을 때)
+        function loadLocalData() {
+            const savedContents = localStorage.getItem('taegeukdo_posts');
+            const savedCategories = localStorage.getItem('taegeukdo_categories');
+
+            if (savedContents) {
+                localContents = JSON.parse(savedContents);
+            } else {
+                localContents = JSON.parse(JSON.stringify(defaultContents));
+            }
+
+            if (savedCategories) {
+                localCategories = JSON.parse(savedCategories);
+            } else {
+                localCategories = [...defaultCategories];
+            }
+
+            renderContents();
+            renderCategories();
+            renderCategorySelect();
+            renderAdminCategories();
+        }
+
+        function saveLocalData() {
+            localStorage.setItem('taegeukdo_posts', JSON.stringify(localContents));
+            localStorage.setItem('taegeukdo_categories', JSON.stringify(localCategories));
         }
 
         // --- 렌더링 함수들 ---
@@ -427,7 +529,6 @@
                                 <video src="${item.image}" controls class="w-full max-h-[400px] mx-auto"></video>
                             </div>`;
                     } else if (item.image.includes('youtube.com') || item.image.includes('youtu.be')) {
-                        // YouTube ID 추출 시도
                         let embedUrl = item.image;
                         if (item.image.includes('watch?v=')) {
                             const vId = item.image.split('watch?v=')[1].split('&')[0];
@@ -478,20 +579,16 @@
         // --- 파일 처리 및 압축 로직 ---
         function processFile(file) {
             return new Promise((resolve, reject) => {
-                // Video: 엄격한 용량 제한
                 if (file.type.startsWith('video')) {
-                    // 700KB 제한
                     if (file.size > 700 * 1024) {
-                        reject("동영상 파일은 700KB 이하여야 합니다.\n큰 영상은 YouTube 등에 올린 후 '이미지/영상 URL' 칸에 주소를 입력해주세요.");
+                        reject("동영상 파일은 700KB 이하여야 합니다.");
                         return;
                     }
                     const reader = new FileReader();
                     reader.onload = (e) => resolve(e.target.result);
                     reader.onerror = (e) => reject("파일 읽기 실패");
                     reader.readAsDataURL(file);
-                } 
-                // Image: 자동 압축
-                else if (file.type.startsWith('image')) {
+                } else if (file.type.startsWith('image')) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const img = new Image();
@@ -499,8 +596,6 @@
                             const canvas = document.createElement('canvas');
                             let width = img.width;
                             let height = img.height;
-                            
-                            // 최대 해상도 제한 (1200px)
                             const MAX_DIM = 1200;
                             if (width > height) {
                                 if (width > MAX_DIM) {
@@ -513,26 +608,15 @@
                                     height = MAX_DIM;
                                 }
                             }
-                            
                             canvas.width = width;
                             canvas.height = height;
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
-                            
-                            // JPEG로 압축 (퀄리티 0.7)
                             let dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                            
-                            // 그래도 1MB에 근접하면 퀄리티 낮춤 (약 800KB 기준)
                             if (dataUrl.length > 800000) {
                                 dataUrl = canvas.toDataURL('image/jpeg', 0.5);
                             }
-                            
-                            // 그래도 크면 실패 처리
-                            if (dataUrl.length > 1000000) {
-                                reject("이미지 압축 후에도 용량이 너무 큽니다. 더 작은 이미지를 사용해주세요.");
-                            } else {
-                                resolve(dataUrl);
-                            }
+                            resolve(dataUrl);
                         };
                         img.src = e.target.result;
                     };
@@ -543,7 +627,7 @@
             });
         }
 
-        // --- 사용자 액션 ---
+        // --- 사용자 액션 (통합) ---
         window.setCategory = (cat) => {
             window.currentCategory = cat;
             renderCategories();
@@ -560,20 +644,43 @@
                 alert('이미 존재하는 카테고리입니다.');
                 return;
             }
-            try {
-                const catsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-                await addDoc(catsCollection, { name: newCat });
-                newCategoryInput.value = '';
-            } catch (e) {
-                console.error(e);
-                alert("카테고리 추가 실패: " + e.message);
+
+            if (useFirebase) {
+                try {
+                    const catsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
+                    await addDoc(catsCollection, { name: newCat });
+                } catch (e) {
+                    console.error(e);
+                    alert("추가 실패: " + e.message);
+                    return;
+                }
+            } else {
+                localCategories.push(newCat);
+                saveLocalData();
+                renderCategories();
+                renderCategorySelect();
+                renderAdminCategories();
             }
+            newCategoryInput.value = '';
         };
 
         window.deleteCategory = async (catName) => {
             if (catName === '전체') return;
             if (!confirm(`'${catName}' 카테고리를 삭제하시겠습니까?`)) return;
-            alert("카테고리 삭제는 현재 데이터 안전을 위해 비활성화되어 있습니다.");
+            
+            if (useFirebase) {
+                alert("Firebase 모드에서 카테고리 삭제는 현재 지원하지 않습니다.");
+            } else {
+                localCategories = localCategories.filter(c => c !== catName);
+                if (window.currentCategory === catName) {
+                    window.currentCategory = '전체';
+                    renderContents();
+                }
+                saveLocalData();
+                renderCategories();
+                renderCategorySelect();
+                renderAdminCategories();
+            }
         };
 
         window.openDeleteModal = (id) => {
@@ -588,19 +695,27 @@
 
         confirmDeleteBtn.addEventListener('click', async () => {
             if (window.deleteTargetId) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.deleteTargetId));
+                if (useFirebase) {
+                    try {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.deleteTargetId));
+                        window.closeDeleteModal();
+                    } catch (e) {
+                        console.error(e);
+                        alert("삭제 실패: " + e.message);
+                    }
+                } else {
+                    localContents = localContents.filter(p => p.id !== window.deleteTargetId);
+                    saveLocalData();
+                    renderContents();
                     window.closeDeleteModal();
-                } catch (e) {
-                    console.error(e);
-                    alert("삭제 실패: " + e.message);
                 }
             }
         });
 
         window.editPost = (id) => {
             if (!window.isAdminMode) return;
-            const post = localContents.find(p => p.id === id);
+            // id가 숫자(로컬)일수도 있고 문자열(Firebase)일수도 있음. 비교 시 주의.
+            const post = localContents.find(p => String(p.id) === String(id));
             if (!post) return;
 
             window.editingId = id;
@@ -610,7 +725,6 @@
             document.getElementById('input-desc').value = post.desc;
             
             if (post.image && !post.image.startsWith('data:')) {
-                // URL인 경우
                 imageUrlInput.value = post.image;
             } else {
                 imageUrlInput.value = '';
@@ -701,39 +815,61 @@
                 return;
             }
 
-            // 로딩 상태 표시
             const originalBtnText = submitBtnText.innerText;
             submitBtnText.innerText = "처리 중...";
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-70');
 
             const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
-            const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
 
             const executeSave = async (mediaUrl) => {
                 try {
-                    // URL 입력이 있고, 파일 선택이 없으면 URL 우선 사용
                     if (!file && urlInput) {
                         mediaUrl = urlInput;
                     }
 
-                    if (window.editingId) {
-                        const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.editingId);
-                        const updateData = { category, title, desc };
-                        if (mediaUrl !== null) updateData.image = mediaUrl; // null이면 기존 유지
-                        else if (urlInput) updateData.image = urlInput; // 파일 없는데 URL 변경했을 경우
+                    const newData = {
+                        category,
+                        title,
+                        desc,
+                        image: mediaUrl || '',
+                        date: today,
+                        createdAt: Date.now()
+                    };
 
-                        await updateDoc(postRef, updateData);
+                    if (window.editingId) {
+                        // 수정
+                        if (useFirebase) {
+                            const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.editingId);
+                            const updateData = { category, title, desc };
+                            if (mediaUrl !== null) updateData.image = mediaUrl;
+                            else if (urlInput) updateData.image = urlInput;
+                            await updateDoc(postRef, updateData);
+                        } else {
+                            const idx = localContents.findIndex(p => String(p.id) === String(window.editingId));
+                            if (idx !== -1) {
+                                localContents[idx] = { 
+                                    ...localContents[idx], 
+                                    ...newData,
+                                    image: mediaUrl !== null ? mediaUrl : (urlInput || localContents[idx].image),
+                                    id: localContents[idx].id // ID 유지
+                                };
+                                saveLocalData();
+                                renderContents();
+                            }
+                        }
                         alert("수정되었습니다.");
                     } else {
-                        await addDoc(postsCollection, {
-                            category,
-                            title,
-                            desc,
-                            image: mediaUrl || '',
-                            date: today,
-                            createdAt: Date.now()
-                        });
+                        // 신규
+                        if (useFirebase) {
+                            const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
+                            await addDoc(postsCollection, newData);
+                        } else {
+                            newData.id = Date.now(); // 로컬 ID
+                            localContents.unshift(newData);
+                            saveLocalData();
+                            renderContents();
+                        }
                         alert("등록되었습니다.");
                     }
                     window.resetForm();
@@ -758,13 +894,12 @@
                     submitBtn.classList.remove('opacity-70');
                 }
             } else {
-                // 파일 없으면 null 전달 (기존 유지) 또는 URL
                 executeSave(window.editingId ? null : (urlInput || ''));
             }
         });
 
-        // Init
-        initAuth();
+        // 시작
+        initialize();
         lucide.createIcons();
 
     </script>
