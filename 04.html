@@ -76,6 +76,21 @@
             background-color: #8b3a3a;
             color: #ffffff;
         }
+        
+        /* 로딩 인디케이터 */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #8b3a3a;
+            width: 24px;
+            height: 24px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="text-ink font-sans min-h-screen flex flex-col items-center py-8 px-4 sm:px-6">
@@ -106,12 +121,17 @@
         <nav class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-stone-200 px-4 sm:px-8 py-3 overflow-x-auto">
             <div class="flex gap-2 min-w-max sm:justify-start" id="category-container">
                 <!-- 자바스크립트로 버튼이 생성됩니다 -->
+                <div class="px-4 py-2 text-stone-400 text-sm">카테고리 로딩중...</div>
             </div>
         </nav>
 
         <!-- 컨텐츠 리스트 영역 -->
         <section id="content-list" class="divide-y divide-stone-100 min-h-[400px]">
             <!-- 자바스크립트로 카드가 생성됩니다 -->
+            <div class="py-20 text-center flex flex-col items-center justify-center">
+                <div class="loader mb-4"></div>
+                <p class="text-stone-500 font-serif">데이터를 불러오고 있습니다...</p>
+            </div>
         </section>
 
         <!-- 관리자 패널 (숨김 상태) -->
@@ -120,7 +140,7 @@
                 <h3 class="font-serif text-xl font-bold text-ink flex items-center gap-2">
                     <i data-lucide="settings" class="w-5 h-5 text-bean"></i> 관리자 패널
                 </h3>
-                <button onclick="resetForm()" class="text-xs text-stone-500 hover:text-bean underline">입력 초기화</button>
+                <button onclick="window.resetForm()" class="text-xs text-stone-500 hover:text-bean underline">입력 초기화</button>
             </div>
 
             <!-- 카테고리 관리 섹션 -->
@@ -134,8 +154,8 @@
                 <div class="flex gap-2">
                     <input type="text" id="new-category-input" placeholder="새 카테고리 추가" 
                         class="flex-1 bg-stone-50 border border-stone-200 rounded p-2 text-sm focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean transition-all"
-                        onkeypress="if(event.key === 'Enter') addCategory()">
-                    <button onclick="addCategory()" class="px-4 py-2 bg-stone-600 text-white rounded hover:bg-stone-700 text-sm font-medium transition-colors whitespace-nowrap">
+                        onkeypress="if(event.key === 'Enter') window.addCategory()">
+                    <button onclick="window.addCategory()" class="px-4 py-2 bg-stone-600 text-white rounded hover:bg-stone-700 text-sm font-medium transition-colors whitespace-nowrap">
                         추가
                     </button>
                 </div>
@@ -165,16 +185,24 @@
 
                 <div>
                     <label class="block text-xs font-bold text-stone-500 mb-1">사진/영상 첨부</label>
-                    <!-- 파일 업로드 인풋으로 변경됨 -->
                     <input type="file" id="input-file" accept="image/*,video/*" class="w-full bg-white border border-stone-300 rounded p-2 text-sm focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200 cursor-pointer">
                     <div id="file-preview-info" class="mt-2 text-xs text-bean font-medium hidden">
                         <i class="fa-solid fa-check mr-1"></i><span id="file-name-display"></span>
                     </div>
-                    <p class="text-[10px] text-stone-400 mt-1">* 내 컴퓨터의 사진이나 영상 파일을 선택하세요.</p>
+                    <p class="text-[10px] text-stone-400 mt-1">
+                        * <span class="font-bold text-bean">사진</span>: 고화질 사진은 자동으로 압축되어 업로드됩니다.<br>
+                        * <span class="font-bold text-bean">동영상</span>: 용량이 크므로 YouTube 등에 올린 후 URL을 '이미지/영상 URL' 칸에 입력하는 것을 권장합니다. (직접 업로드는 700KB 이하만 가능)
+                    </p>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-stone-500 mb-1">이미지/영상 URL (선택)</label>
+                    <input type="text" id="input-image-url" placeholder="https://..." class="w-full bg-white border border-stone-300 rounded p-2 text-sm focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean">
+                    <p class="text-[10px] text-stone-400 mt-1">* YouTube 링크나 외부 이미지 주소가 있다면 여기에 입력하세요.</p>
                 </div>
 
                 <div class="pt-2">
-                    <button type="submit" class="w-full sm:w-auto px-6 py-2 bg-bean text-white rounded hover:bg-[#6d2b2b] transition-colors text-sm font-medium shadow-sm flex items-center justify-center gap-2">
+                    <button type="submit" id="submit-btn" class="w-full sm:w-auto px-6 py-2 bg-bean text-white rounded hover:bg-[#6d2b2b] transition-colors text-sm font-medium shadow-sm flex items-center justify-center gap-2">
                         <i data-lucide="pen-line" class="w-4 h-4"></i>
                         <span id="submit-btn-text">게시글 등록하기</span>
                     </button>
@@ -210,15 +238,15 @@
             <input type="password" id="admin-password-input" 
                 class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded text-sm mb-2 focus:outline-none focus:border-bean focus:ring-1 focus:ring-bean transition-all" 
                 placeholder="비밀번호" 
-                onkeypress="if(event.key === 'Enter') checkPassword()">
+                onkeypress="if(event.key === 'Enter') window.checkPassword()">
             
             <p id="password-error" class="text-xs text-red-500 mb-4 h-4 opacity-0 transition-opacity">
                 <i class="fa-solid fa-circle-exclamation mr-1"></i>비밀번호가 올바르지 않습니다.
             </p>
             
             <div class="flex justify-end gap-2">
-                <button onclick="closePasswordModal()" class="px-3 py-1.5 text-xs font-medium text-stone-500 hover:bg-stone-100 rounded transition-colors">취소</button>
-                <button onclick="checkPassword()" class="px-4 py-1.5 text-xs font-medium bg-bean text-white rounded hover:bg-[#6d2b2b] shadow-sm transition-colors">확인</button>
+                <button onclick="window.closePasswordModal()" class="px-3 py-1.5 text-xs font-medium text-stone-500 hover:bg-stone-100 rounded transition-colors">취소</button>
+                <button onclick="window.checkPassword()" class="px-4 py-1.5 text-xs font-medium bg-bean text-white rounded hover:bg-[#6d2b2b] shadow-sm transition-colors">확인</button>
             </div>
         </div>
     </div>
@@ -229,96 +257,113 @@
             <h3 class="font-serif font-bold text-lg mb-2 text-ink">게시글 삭제</h3>
             <p class="text-sm text-stone-600 mb-6">정말로 이 게시글을 삭제하시겠습니까?<br>삭제 후에는 복구할 수 없습니다.</p>
             <div class="flex justify-end gap-2">
-                <button onclick="closeDeleteModal()" class="px-3 py-1.5 text-xs font-medium text-stone-500 hover:bg-stone-100 rounded transition-colors">취소</button>
+                <button onclick="window.closeDeleteModal()" class="px-3 py-1.5 text-xs font-medium text-stone-500 hover:bg-stone-100 rounded transition-colors">취소</button>
                 <button id="confirm-delete-btn" class="px-4 py-1.5 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700 shadow-sm transition-colors">삭제하기</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // 아이콘 초기화
-        lucide.createIcons();
+    <!-- 파이어베이스 및 앱 로직 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 초기 데이터 (Mock Data)
-        let contents = [
-            {
-                id: 1,
-                category: '국궁',
-                title: '국궁(鞠躬)의 기본 자세',
-                desc: '국궁은 몸을 굽혀 존경을 표하는 동작입니다. 두 손을 공수(拱手)하고 허리를 15도 가량 굽히며, 시선은 자신의 발끝 전방 1~2미터 지점을 향합니다. 이때 마음을 차분히 가라앉히고 공경하는 마음을 담는 것이 중요합니다.',
-                image: 'https://images.unsplash.com/photo-1518330666324-4286280b3328?auto=format&fit=crop&q=80&w=800', 
-                date: '2023.10.15'
-            },
-            {
-                id: 2,
-                category: '배례',
-                title: '배례(拜禮) 행하는 법',
-                desc: '배례는 상제님께 올리는 가장 큰 경의의 표시입니다. 국궁 자세에서 시작하여 무릎을 꿇고 엎드려 절을 올립니다. 손의 위치와 일어나는 순서가 중요하며, 처음 공부하시는 분들은 무릎에 무리가 가지 않도록 천천히 연습하시기 바랍니다.',
-                image: '', 
-                date: '2023.10.16'
-            },
-            {
-                id: 3,
-                category: '봉심',
-                title: '봉심(奉審)의 마음가짐',
-                desc: '봉심은 성전을 살피고 받드는 의식입니다. 정해진 시간에 의관을 정제하고 엄숙한 마음으로 행해야 합니다. 단순히 건물을 둘러보는 것이 아니라, 도(道)와 하나 되는 경건한 마음가짐이 핵심입니다.',
-                image: 'https://images.unsplash.com/photo-1598556885318-48b495922312?auto=format&fit=crop&q=80&w=800',
-                date: '2023.10.20'
-            },
-            {
-                id: 4,
-                category: '강식',
-                title: '강식(講式) 참여 예절',
-                desc: '강식은 진리를 공부하고 토론하는 시간입니다. 경청하는 자세를 유지하며, 질문이나 발언 시에는 예의를 갖추어야 합니다. 복장은 단정해야 하며, 강의 시작 10분 전에는 착석하여 마음을 정돈합니다.',
-                image: '',
-                date: '2023.11.01'
-            }
-        ];
+        // --- 전역 변수 설정 (window 객체에 할당하여 HTML onclick 등에서 접근 가능하게 함) ---
+        window.isAdminMode = false;
+        window.currentCategory = '전체';
+        window.editingId = null;
+        window.deleteTargetId = null;
+        
+        let localContents = [];
+        let localCategories = [];
 
-        let currentCategory = '전체';
-        let isAdminMode = false;
-        let editingId = null;
-        let deleteTargetId = null;
-
-        // 카테고리 목록 (변경 가능)
-        let categories = ['전체', '국궁', '배례', '봉심', '강식'];
-
-        // DOM 요소
+        // DOM 요소 가져오기
         const contentListEl = document.getElementById('content-list');
         const categoryContainerEl = document.getElementById('category-container');
         const adminPanelEl = document.getElementById('admin-panel');
         const postFormEl = document.getElementById('post-form');
         const adminToggleBtn = document.getElementById('admin-toggle');
         const toggleCircle = document.getElementById('toggle-circle');
-        
-        // 카테고리 관리용 요소
         const adminCategoryListEl = document.getElementById('admin-category-list');
         const newCategoryInput = document.getElementById('new-category-input');
         const inputCategorySelect = document.getElementById('input-category');
-        const fileInput = document.getElementById('input-file'); // 파일 인풋
-
-        // 모달 요소
+        const fileInput = document.getElementById('input-file');
+        const imageUrlInput = document.getElementById('input-image-url');
+        const submitBtn = document.getElementById('submit-btn');
+        const submitBtnText = document.getElementById('submit-btn-text');
+        
         const passwordModal = document.getElementById('password-modal');
         const passwordInput = document.getElementById('admin-password-input');
         const passwordError = document.getElementById('password-error');
         const deleteModal = document.getElementById('delete-modal');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
-        // 초기화
-        function init() {
-            renderCategories();
-            renderContents();
-            renderCategorySelect(); // 드롭다운 초기화
-            renderAdminCategories(); // 관리자 패널 카테고리 초기화
+        // --- Firebase 초기화 ---
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // --- Auth & Data Loading ---
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+                alert("서버 연결에 실패했습니다.");
+            }
         }
 
-        // 메인 네비게이션 카테고리 버튼 렌더링
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                subscribeToData();
+            }
+        });
+
+        function subscribeToData() {
+            // 게시글 구독
+            const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
+            onSnapshot(postsCollection, (snapshot) => {
+                localContents = [];
+                snapshot.forEach((doc) => {
+                    localContents.push({ id: doc.id, ...doc.data() });
+                });
+                // 최신순 정렬
+                localContents.sort((a, b) => {
+                    if(a.createdAt && b.createdAt) return b.createdAt - a.createdAt;
+                    return 0;
+                });
+                renderContents();
+            });
+
+            // 카테고리 구독
+            const catsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
+            onSnapshot(catsCollection, (snapshot) => {
+                let cats = [];
+                snapshot.forEach((doc) => {
+                    cats.push({ id: doc.id, ...doc.data() });
+                });
+                cats.sort((a, b) => a.name.localeCompare(b.name));
+                localCategories = cats.map(c => c.name);
+                renderCategories();
+                renderCategorySelect();
+                renderAdminCategories();
+            });
+        }
+
+        // --- 렌더링 함수들 ---
         function renderCategories() {
-            categoryContainerEl.innerHTML = categories.map(cat => `
-                <button 
-                    onclick="setCategory('${cat}')" 
+            const displayCategories = ['전체', ...localCategories];
+            categoryContainerEl.innerHTML = displayCategories.map(cat => `
+                <button onclick="window.setCategory('${cat}')" 
                     class="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 border ${
-                        currentCategory === cat 
+                        window.currentCategory === cat 
                         ? 'bg-ink text-white border-ink shadow-md' 
                         : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400 hover:text-stone-700'
                     }">
@@ -327,23 +372,24 @@
             `).join('');
         }
 
-        // 글쓰기 폼의 카테고리 선택(Dropdown) 렌더링
         function renderCategorySelect() {
-            const writeCategories = categories.filter(c => c !== '전체');
-            inputCategorySelect.innerHTML = writeCategories.map(cat => 
+            inputCategorySelect.innerHTML = localCategories.map(cat => 
                 `<option value="${cat}">${cat}</option>`
             ).join('');
+            if(localCategories.length === 0) {
+                 inputCategorySelect.innerHTML = `<option value="" disabled selected>카테고리를 추가해주세요</option>`;
+            }
         }
 
-        // 관리자 패널의 카테고리 관리 목록 렌더링
         function renderAdminCategories() {
-            adminCategoryListEl.innerHTML = categories.map(cat => {
+            const displayCategories = ['전체', ...localCategories];
+            adminCategoryListEl.innerHTML = displayCategories.map(cat => {
                 const isAll = cat === '전체';
                 return `
                 <div class="flex items-center gap-1 px-3 py-1 bg-stone-100 border border-stone-200 rounded-full text-xs text-stone-600">
                     <span>${cat}</span>
                     ${!isAll ? `
-                    <button onclick="deleteCategory('${cat}')" class="ml-1 text-stone-400 hover:text-red-500 p-0.5 rounded-full hover:bg-stone-200 transition-colors">
+                    <button onclick="window.deleteCategory('${cat}')" class="ml-1 text-stone-400 hover:text-red-500 p-0.5 rounded-full hover:bg-stone-200 transition-colors">
                         <i data-lucide="x" class="w-3 h-3"></i>
                     </button>
                     ` : ''}
@@ -352,51 +398,11 @@
             lucide.createIcons();
         }
 
-        // 카테고리 추가 함수
-        function addCategory() {
-            const newCat = newCategoryInput.value.trim();
-            if (!newCat) {
-                alert('카테고리 이름을 입력해주세요.');
-                return;
-            }
-            if (categories.includes(newCat)) {
-                alert('이미 존재하는 카테고리입니다.');
-                return;
-            }
-
-            categories.push(newCat);
-            newCategoryInput.value = '';
-            
-            // 모든 UI 업데이트
-            renderCategories();
-            renderCategorySelect();
-            renderAdminCategories();
-        }
-
-        // 카테고리 삭제 함수
-        function deleteCategory(cat) {
-            if (cat === '전체') return;
-            if (!confirm(`'${cat}' 카테고리를 삭제하시겠습니까?`)) return;
-
-            categories = categories.filter(c => c !== cat);
-
-            if (currentCategory === cat) {
-                currentCategory = '전체';
-                renderContents();
-            }
-
-            renderCategories();
-            renderCategorySelect();
-            renderAdminCategories();
-        }
-
-        // 컨텐츠 렌더링
         function renderContents() {
             contentListEl.innerHTML = '';
-            
-            const filtered = currentCategory === '전체' 
-                ? contents 
-                : contents.filter(item => item.category === currentCategory);
+            const filtered = window.currentCategory === '전체' 
+                ? localContents 
+                : localContents.filter(item => item.category === window.currentCategory);
 
             if (filtered.length === 0) {
                 contentListEl.innerHTML = `
@@ -411,28 +417,31 @@
 
             filtered.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'p-6 sm:p-8 hover:bg-stone-50/50 transition-colors group relative';
+                div.className = 'p-6 sm:p-8 hover:bg-stone-50/50 transition-colors group relative border-b border-stone-100 last:border-0';
                 
                 let mediaHtml = '';
                 if (item.image) {
-                    // 1. Data URL이 비디오인 경우 (직접 업로드한 영상)
                     if (item.image.startsWith('data:video')) {
                         mediaHtml = `
                             <div class="mt-4 rounded-lg overflow-hidden shadow-sm w-full bg-black">
                                 <video src="${item.image}" controls class="w-full max-h-[400px] mx-auto"></video>
                             </div>`;
-                    } 
-                    // 2. 유튜브 링크 (기존 목업 데이터 호환)
-                    else if (item.image.includes('youtube.com') || item.image.includes('youtu.be')) {
+                    } else if (item.image.includes('youtube.com') || item.image.includes('youtu.be')) {
+                        // YouTube ID 추출 시도
+                        let embedUrl = item.image;
+                        if (item.image.includes('watch?v=')) {
+                            const vId = item.image.split('watch?v=')[1].split('&')[0];
+                            embedUrl = `https://www.youtube.com/embed/${vId}`;
+                        } else if (item.image.includes('youtu.be/')) {
+                            const vId = item.image.split('youtu.be/')[1].split('?')[0];
+                            embedUrl = `https://www.youtube.com/embed/${vId}`;
+                        }
+                        
                         mediaHtml = `
                             <div class="mt-4 aspect-video rounded overflow-hidden bg-black/5 shadow-inner">
-                                <div class="w-full h-full flex items-center justify-center text-stone-400 text-sm">
-                                    (영상 미리보기: ${item.image.substring(0, 30)}...)
-                                </div>
+                                <iframe src="${embedUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
                             </div>`;
-                    } 
-                    // 3. 이미지 (Data URL 또는 일반 URL)
-                    else {
+                    } else {
                         mediaHtml = `
                             <div class="mt-4 rounded-lg overflow-hidden shadow-sm max-h-[500px] w-full bg-stone-100 flex justify-center">
                                 <img src="${item.image}" alt="${item.title}" class="max-w-full max-h-[500px] object-contain">
@@ -440,12 +449,12 @@
                     }
                 }
 
-                const adminButtons = isAdminMode ? `
+                const adminButtons = window.isAdminMode ? `
                     <div class="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onclick="editPost(${item.id})" class="p-1.5 bg-white border border-stone-200 rounded text-stone-500 hover:text-bean hover:border-bean shadow-sm">
+                        <button onclick="window.editPost('${item.id}')" class="p-1.5 bg-white border border-stone-200 rounded text-stone-500 hover:text-bean hover:border-bean shadow-sm">
                             <i data-lucide="edit-2" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="openDeleteModal(${item.id})" class="p-1.5 bg-white border border-stone-200 rounded text-stone-500 hover:text-red-600 hover:border-red-600 shadow-sm">
+                        <button onclick="window.openDeleteModal('${item.id}')" class="p-1.5 bg-white border border-stone-200 rounded text-stone-500 hover:text-red-600 hover:border-red-600 shadow-sm">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -454,9 +463,9 @@
                 div.innerHTML = `
                     <div class="flex items-center gap-2 mb-2">
                         <span class="text-xs font-bold text-bean bg-red-50 px-2 py-0.5 rounded border border-red-100">${item.category}</span>
-                        <span class="text-xs text-stone-400">${item.date || '날짜 미상'}</span>
+                        <span class="text-xs text-stone-400">${item.date || ''}</span>
                     </div>
-                    <h2 class="text-2xl font-serif font-bold mb-3 text-ink leading-tight group-hover:text-bean transition-colors duration-300 cursor-pointer" onclick="editPost(${item.id})">${item.title}</h2>
+                    <h2 class="text-2xl font-serif font-bold mb-3 text-ink leading-tight group-hover:text-bean transition-colors duration-300 cursor-pointer" onclick="window.editPost('${item.id}')">${item.title}</h2>
                     <p class="text-stone-600 leading-relaxed text-sm sm:text-base whitespace-pre-line">${item.desc}</p>
                     ${mediaHtml}
                     ${adminButtons}
@@ -466,16 +475,172 @@
             lucide.createIcons();
         }
 
-        // 카테고리 변경
-        function setCategory(cat) {
-            currentCategory = cat;
-            renderCategories();
-            renderContents();
+        // --- 파일 처리 및 압축 로직 ---
+        function processFile(file) {
+            return new Promise((resolve, reject) => {
+                // Video: 엄격한 용량 제한
+                if (file.type.startsWith('video')) {
+                    // 700KB 제한
+                    if (file.size > 700 * 1024) {
+                        reject("동영상 파일은 700KB 이하여야 합니다.\n큰 영상은 YouTube 등에 올린 후 '이미지/영상 URL' 칸에 주소를 입력해주세요.");
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = (e) => reject("파일 읽기 실패");
+                    reader.readAsDataURL(file);
+                } 
+                // Image: 자동 압축
+                else if (file.type.startsWith('image')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            
+                            // 최대 해상도 제한 (1200px)
+                            const MAX_DIM = 1200;
+                            if (width > height) {
+                                if (width > MAX_DIM) {
+                                    height *= MAX_DIM / width;
+                                    width = MAX_DIM;
+                                }
+                            } else {
+                                if (height > MAX_DIM) {
+                                    width *= MAX_DIM / height;
+                                    height = MAX_DIM;
+                                }
+                            }
+                            
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            // JPEG로 압축 (퀄리티 0.7)
+                            let dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                            
+                            // 그래도 1MB에 근접하면 퀄리티 낮춤 (약 800KB 기준)
+                            if (dataUrl.length > 800000) {
+                                dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                            }
+                            
+                            // 그래도 크면 실패 처리
+                            if (dataUrl.length > 1000000) {
+                                reject("이미지 압축 후에도 용량이 너무 큽니다. 더 작은 이미지를 사용해주세요.");
+                            } else {
+                                resolve(dataUrl);
+                            }
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    reject("지원하지 않는 파일 형식입니다.");
+                }
+            });
         }
 
-        // 관리자 모드 토글 로직
+        // --- 사용자 액션 ---
+        window.setCategory = (cat) => {
+            window.currentCategory = cat;
+            renderCategories();
+            renderContents();
+        };
+
+        window.addCategory = async () => {
+            const newCat = newCategoryInput.value.trim();
+            if (!newCat) {
+                alert('카테고리 이름을 입력해주세요.');
+                return;
+            }
+            if (localCategories.includes(newCat)) {
+                alert('이미 존재하는 카테고리입니다.');
+                return;
+            }
+            try {
+                const catsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
+                await addDoc(catsCollection, { name: newCat });
+                newCategoryInput.value = '';
+            } catch (e) {
+                console.error(e);
+                alert("카테고리 추가 실패: " + e.message);
+            }
+        };
+
+        window.deleteCategory = async (catName) => {
+            if (catName === '전체') return;
+            if (!confirm(`'${catName}' 카테고리를 삭제하시겠습니까?`)) return;
+            alert("카테고리 삭제는 현재 데이터 안전을 위해 비활성화되어 있습니다.");
+        };
+
+        window.openDeleteModal = (id) => {
+            window.deleteTargetId = id;
+            deleteModal.classList.remove('hidden');
+        };
+
+        window.closeDeleteModal = () => {
+            window.deleteTargetId = null;
+            deleteModal.classList.add('hidden');
+        };
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (window.deleteTargetId) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.deleteTargetId));
+                    window.closeDeleteModal();
+                } catch (e) {
+                    console.error(e);
+                    alert("삭제 실패: " + e.message);
+                }
+            }
+        });
+
+        window.editPost = (id) => {
+            if (!window.isAdminMode) return;
+            const post = localContents.find(p => p.id === id);
+            if (!post) return;
+
+            window.editingId = id;
+            document.getElementById('edit-mode-id').value = id;
+            document.getElementById('input-category').value = post.category;
+            document.getElementById('input-title').value = post.title;
+            document.getElementById('input-desc').value = post.desc;
+            
+            if (post.image && !post.image.startsWith('data:')) {
+                // URL인 경우
+                imageUrlInput.value = post.image;
+            } else {
+                imageUrlInput.value = '';
+            }
+            
+            const previewInfo = document.getElementById('file-preview-info');
+            const nameDisplay = document.getElementById('file-name-display');
+            if (post.image) {
+                previewInfo.classList.remove('hidden');
+                nameDisplay.innerText = "기존 첨부 파일/URL이 유지됩니다.";
+            } else {
+                previewInfo.classList.add('hidden');
+            }
+            
+            fileInput.value = '';
+            submitBtnText.innerText = '게시글 수정하기';
+            adminPanelEl.scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.resetForm = () => {
+            window.editingId = null;
+            document.getElementById('edit-mode-id').value = '';
+            document.getElementById('post-form').reset();
+            document.getElementById('file-preview-info').classList.add('hidden');
+            submitBtnText.innerText = '게시글 등록하기';
+        };
+
+        // --- 관리자 토글 ---
         adminToggleBtn.addEventListener('click', () => {
-            if (isAdminMode) {
+            if (window.isAdminMode) {
                 toggleAdminState(false);
             } else {
                 passwordModal.classList.remove('hidden');
@@ -485,181 +650,122 @@
             }
         });
 
-        // 비밀번호 확인 함수
-        function checkPassword() {
-            const val = passwordInput.value;
-            if (val === "taegeuk1909#") {
+        window.checkPassword = () => {
+            if (passwordInput.value === "taegeuk1909#") {
                 toggleAdminState(true);
-                closePasswordModal();
+                window.closePasswordModal();
             } else {
                 passwordError.classList.remove('opacity-0');
                 passwordInput.classList.add('border-red-500', 'ring-1', 'ring-red-500');
-                passwordInput.classList.remove('border-stone-200', 'focus:border-bean', 'focus:ring-bean');
             }
-        }
+        };
 
-        // 비밀번호 모달 닫기
-        function closePasswordModal() {
+        window.closePasswordModal = () => {
             passwordModal.classList.add('hidden');
             passwordInput.value = '';
             passwordInput.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
-            passwordInput.classList.add('border-stone-200');
-        }
+        };
 
-        // 관리자 상태 변경 UI 처리
         function toggleAdminState(enable) {
-            isAdminMode = enable;
-            
-            if (isAdminMode) {
+            window.isAdminMode = enable;
+            if (enable) {
                 adminToggleBtn.classList.remove('bg-stone-300');
                 adminToggleBtn.classList.add('bg-bean');
                 toggleCircle.classList.add('translate-x-6');
                 toggleCircle.classList.remove('translate-x-1');
                 adminPanelEl.classList.remove('hidden');
-                
-                setTimeout(() => {
-                    adminPanelEl.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
+                setTimeout(() => adminPanelEl.scrollIntoView({ behavior: 'smooth' }), 100);
             } else {
                 adminToggleBtn.classList.add('bg-stone-300');
                 adminToggleBtn.classList.remove('bg-bean');
                 toggleCircle.classList.remove('translate-x-6');
                 toggleCircle.classList.add('translate-x-1');
                 adminPanelEl.classList.add('hidden');
-                resetForm();
+                window.resetForm();
             }
             renderContents();
         }
 
-        // 글 등록/수정
-        postFormEl.addEventListener('submit', (e) => {
+        // --- 저장 로직 ---
+        postFormEl.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const category = document.getElementById('input-category').value;
             const title = document.getElementById('input-title').value;
             const desc = document.getElementById('input-desc').value;
-            
-            // 파일 처리
             const file = fileInput.files[0];
+            const urlInput = imageUrlInput.value.trim();
             
             if (!title || !desc) {
                 alert('제목과 내용을 입력해주세요.');
                 return;
             }
 
-            // 게시글 저장 로직 (파일 읽기 완료 후 실행)
-            const savePost = (mediaUrl) => {
-                const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
+            // 로딩 상태 표시
+            const originalBtnText = submitBtnText.innerText;
+            submitBtnText.innerText = "처리 중...";
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70');
 
-                if (editingId) {
-                    // 수정
-                    const index = contents.findIndex(p => p.id === editingId);
-                    if (index !== -1) {
-                        contents[index] = { 
-                            ...contents[index], 
-                            category, 
-                            title, 
-                            desc, 
-                            image: mediaUrl // 새 파일이 없으면 기존 URL 사용 (아래 호출부에서 처리됨)
-                        };
+            const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
+            const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
+
+            const executeSave = async (mediaUrl) => {
+                try {
+                    // URL 입력이 있고, 파일 선택이 없으면 URL 우선 사용
+                    if (!file && urlInput) {
+                        mediaUrl = urlInput;
                     }
-                } else {
-                    // 신규 등록
-                    const newPost = {
-                        id: Date.now(),
-                        category,
-                        title,
-                        desc,
-                        image: mediaUrl,
-                        date: today
-                    };
-                    contents.unshift(newPost);
-                }
 
-                resetForm();
-                renderContents();
+                    if (window.editingId) {
+                        const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.editingId);
+                        const updateData = { category, title, desc };
+                        if (mediaUrl !== null) updateData.image = mediaUrl; // null이면 기존 유지
+                        else if (urlInput) updateData.image = urlInput; // 파일 없는데 URL 변경했을 경우
+
+                        await updateDoc(postRef, updateData);
+                        alert("수정되었습니다.");
+                    } else {
+                        await addDoc(postsCollection, {
+                            category,
+                            title,
+                            desc,
+                            image: mediaUrl || '',
+                            date: today,
+                            createdAt: Date.now()
+                        });
+                        alert("등록되었습니다.");
+                    }
+                    window.resetForm();
+                } catch (error) {
+                    console.error("Save Error:", error);
+                    alert("저장 중 오류가 발생했습니다: " + error.message);
+                } finally {
+                    submitBtnText.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-70');
+                }
             };
 
-            // 파일이 선택된 경우 FileReader로 읽기
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    savePost(e.target.result); // Base64 문자열 전달
-                };
-                reader.readAsDataURL(file);
-            } else {
-                // 파일이 선택되지 않은 경우
-                if (editingId) {
-                    // 수정 모드면 기존 이미지 유지
-                    const original = contents.find(p => p.id === editingId);
-                    savePost(original ? original.image : '');
-                } else {
-                    // 신규 등록이면 이미지 없음
-                    savePost('');
+                try {
+                    const compressedDataUrl = await processFile(file);
+                    executeSave(compressedDataUrl);
+                } catch (error) {
+                    alert(error);
+                    submitBtnText.innerText = originalBtnText;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-70');
                 }
-            }
-        });
-
-        // 삭제 모달 열기
-        function openDeleteModal(id) {
-            deleteTargetId = id;
-            deleteModal.classList.remove('hidden');
-        }
-
-        // 삭제 모달 닫기
-        function closeDeleteModal() {
-            deleteTargetId = null;
-            deleteModal.classList.add('hidden');
-        }
-
-        // 실제 삭제 실행
-        confirmDeleteBtn.addEventListener('click', () => {
-            if (deleteTargetId) {
-                contents = contents.filter(p => p.id !== deleteTargetId);
-                renderContents();
-                closeDeleteModal();
-            }
-        });
-
-        // 수정 모드
-        function editPost(id) {
-            if (!isAdminMode) return;
-
-            const post = contents.find(p => p.id === id);
-            if (!post) return;
-
-            editingId = id;
-            document.getElementById('edit-mode-id').value = id;
-            document.getElementById('input-category').value = post.category;
-            document.getElementById('input-title').value = post.title;
-            document.getElementById('input-desc').value = post.desc;
-            // 파일 인풋은 보안상 값을 설정할 수 없으므로 비워둠
-            fileInput.value = ''; 
-            
-            // 기존 파일명 표시 (UI 편의성)
-            const previewInfo = document.getElementById('file-preview-info');
-            const nameDisplay = document.getElementById('file-name-display');
-            if (post.image) {
-                previewInfo.classList.remove('hidden');
-                nameDisplay.innerText = "기존 첨부파일이 유지됩니다. (변경하려면 파일 선택)";
             } else {
-                previewInfo.classList.add('hidden');
+                // 파일 없으면 null 전달 (기존 유지) 또는 URL
+                executeSave(window.editingId ? null : (urlInput || ''));
             }
+        });
 
-            document.getElementById('submit-btn-text').innerText = '게시글 수정하기';
-            adminPanelEl.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function resetForm() {
-            editingId = null;
-            document.getElementById('edit-mode-id').value = '';
-            document.getElementById('post-form').reset();
-            document.getElementById('file-preview-info').classList.add('hidden');
-            document.getElementById('submit-btn-text').innerText = '게시글 등록하기';
-        }
-
-        // 시작
-        init();
+        // Init
+        initAuth();
+        lucide.createIcons();
 
     </script>
 </body>
