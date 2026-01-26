@@ -243,8 +243,13 @@
                         loadedPosts.push({ id: doc.id, ...doc.data() });
                     });
 
-                    // 날짜/시간 정렬 (최신순)
+                    // 정렬 로직 수정: 필독 우선 -> 최신순
                     loadedPosts.sort((a, b) => {
+                        // 1. 필독 공지 우선 정렬 (isMustRead가 true인 것이 앞으로)
+                        if (a.isMustRead && !b.isMustRead) return -1;
+                        if (!a.isMustRead && b.isMustRead) return 1;
+
+                        // 2. 날짜/시간 정렬 (최신순)
                         const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (new Date(a.date).getTime() || 0);
                         const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (new Date(b.date).getTime() || 0);
                         return timeB - timeA;
