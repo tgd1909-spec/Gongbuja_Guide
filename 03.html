@@ -8,6 +8,30 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'k-bg': '#fdfbf7',
+                        'k-text': '#1a1a1a',
+                        'theme-color': '#be123c', // 다홍색 (Crimson)
+                        'theme-light': '#ffe4e6', // 연한 다홍색 배경용
+                        'stone-custom': '#57534e',
+                    },
+                    fontFamily: {
+                        serif: ['"Noto Serif KR"', 'serif'],
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'hanji-pattern': 'radial-gradient(#e6e2d3 1px, transparent 1px)',
+                    }
+                }
+            }
+        }
+    </script>
+    
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
@@ -20,14 +44,8 @@
         /* 기본 설정 */
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            color: #1a1a1a;
-            background-color: #f8f6f2;
-            background-image: radial-gradient(#e8e4da 1px, transparent 1px);
-            background-size: 24px 24px;
         }
         
-        .font-serif-kr { font-family: 'Noto Serif KR', serif; }
-        .font-sans-kr { font-family: 'Noto Sans KR', sans-serif; }
         .break-keep { word-break: keep-all; }
 
         @keyframes slideDown {
@@ -38,28 +56,22 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-            20%, 40%, 60%, 80% { transform: translateX(4px); }
-        }
-        @keyframes pulse-red {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        @keyframes pulse-custom {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(1.05); }
         }
 
         .animate-slide-down { animation: slideDown 0.4s ease-out forwards; }
         .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-        .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        .animate-pulse-red { animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-pulse-custom { animation: pulse-custom 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         
         textarea { resize: none; }
-        .shadow-card { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
+        .shadow-custom { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08); }
         
         /* 로딩 스피너 */
         .loader {
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #9d2424;
+            border-top: 3px solid #be123c;
             border-radius: 50%;
             width: 24px;
             height: 24px;
@@ -86,10 +98,10 @@
         }
     </script>
 </head>
-<body class="min-h-screen flex flex-col items-center py-6 px-4 relative">
+<body class="bg-k-bg bg-hanji-pattern bg-[length:24px_24px] text-k-text min-h-screen flex flex-col items-center py-8 px-4 relative">
 
     <!-- 홈 버튼 -->
-    <a href="index.html" class="fixed top-6 right-6 z-50 bg-white border-2 border-stone-200 text-stone-600 hover:text-[#9d2424] hover:border-[#9d2424] hover:bg-red-50 rounded-full px-4 py-2 flex items-center gap-2 shadow-card transition-all duration-300 font-bold text-sm md:text-base group">
+    <a href="index.html" class="fixed top-6 right-6 z-50 bg-white/90 backdrop-blur-sm border-2 border-stone-200 text-stone-600 hover:text-theme-color hover:border-theme-color hover:bg-theme-light rounded-full px-5 py-2.5 flex items-center gap-2 shadow-custom transition-all duration-300 font-bold text-sm md:text-base group font-sans">
         <i data-lucide="home" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
         <span class="hidden md:inline">홈으로</span>
     </a>
@@ -98,53 +110,47 @@
     <div id="toast-container"></div>
 
     <!-- 헤더 영역 -->
-    <div class="w-full max-w-4xl relative mb-10 animate-fade-in text-center">
-        <header class="pt-8 pb-4 cursor-pointer select-none inline-block" onclick="app.goHome()">
-            <div class="flex justify-center mb-4">
-                <div class="w-12 h-12 rounded-full border-2 border-[#1a1a1a] flex items-center justify-center bg-white shadow-md">
-                    <div class="relative w-7 h-7">
-                        <div class="absolute top-0 left-0 w-7 h-3.5 bg-[#b93636] rounded-t-full"></div>
-                        <div class="absolute bottom-0 left-0 w-7 h-3.5 bg-[#2d3a66] rounded-b-full"></div>
-                        <div class="absolute top-1/2 left-0 w-3.5 h-3.5 bg-[#b93636] rounded-full transform -translate-y-1/2"></div>
-                        <div class="absolute top-1/2 right-0 w-3.5 h-3.5 bg-[#2d3a66] rounded-full transform -translate-y-1/2"></div>
-                    </div>
-                </div>
+    <div class="w-full max-w-4xl relative mb-12 animate-fade-in text-center">
+        <header class="pt-4 cursor-pointer select-none inline-block" onclick="app.goHome()">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <i data-lucide="bell-ring" class="w-8 h-8 text-theme-color"></i>
+                <h1 class="text-4xl md:text-5xl font-serif font-bold text-k-text tracking-wide break-keep">
+                    太極道 공지사항
+                </h1>
             </div>
-            <h1 class="text-3xl md:text-4xl font-serif-kr font-bold text-[#1a1a1a] tracking-widest mb-3 break-keep">
-                太極道 공지사항
-            </h1>
-            <div class="flex justify-center">
-                <span class="bg-[#9d2424]/10 text-[#9d2424] px-3 py-1 rounded-full text-sm font-bold font-sans-kr">
-                    도인 여러분께 소식을 전합니다
-                </span>
-            </div>
+            <!-- 테마 컬러 Divider -->
+            <div class="w-16 h-1 bg-theme-color mx-auto rounded-full mb-4"></div>
+            
+            <p class="text-stone-500 font-sans text-base md:text-lg tracking-wider">
+                도인 여러분께 중요한 소식을 전합니다
+            </p>
         </header>
     </div>
 
     <!-- 메인 콘텐츠 영역 -->
-    <main id="main-content" class="w-full max-w-4xl bg-white/60 backdrop-blur-md rounded-2xl min-h-[500px] flex flex-col transition-all duration-300 p-4 md:p-6 relative">
+    <main id="main-content" class="w-full max-w-4xl bg-white shadow-custom border border-stone-200 rounded-3xl min-h-[600px] flex flex-col transition-all duration-300 p-6 md:p-10 relative overflow-hidden">
         <!-- 초기 로딩 상태 (깔끔한 버전) -->
-        <div id="initial-loader" class="absolute inset-0 flex items-center justify-center bg-white/90 z-10 rounded-2xl">
-            <div class="flex flex-col items-center gap-3 p-4 text-center">
-                <div class="loader w-8 h-8 border-4"></div>
-                <p class="text-stone-500 font-sans-kr text-sm animate-pulse">데이터를 불러오는 중...</p>
+        <div id="initial-loader" class="absolute inset-0 flex items-center justify-center bg-white/95 z-10 rounded-3xl">
+            <div class="flex flex-col items-center gap-4 p-6 text-center">
+                <div class="loader w-10 h-10 border-4"></div>
+                <p class="text-stone-500 font-sans text-base animate-pulse">소식을 불러오고 있습니다...</p>
             </div>
         </div>
         <!-- JS Render Target -->
     </main>
 
     <!-- 푸터 -->
-    <footer class="mt-12 text-center pb-8 animate-fade-in">
-        <button onclick="app.toggleAdmin()" class="group text-sm text-stone-400 hover:text-[#9d2424] flex items-center justify-center gap-2 mx-auto transition-colors px-5 py-2.5 rounded-full hover:bg-white border border-transparent hover:border-stone-200 hover:shadow-sm">
+    <footer class="mt-16 text-center pb-8 animate-fade-in">
+        <button onclick="app.toggleAdmin()" class="group text-xs text-stone-400 hover:text-theme-color flex items-center justify-center gap-2 mx-auto transition-colors px-6 py-3 rounded-full hover:bg-white border border-transparent hover:border-stone-200 hover:shadow-sm">
             <span id="admin-icon-wrapper" class="transition-transform group-hover:scale-110"></span>
-            <span id="admin-text" class="font-bold">관리자 모드</span>
+            <span id="admin-text" class="font-medium font-sans">관리자 모드</span>
         </button>
-        <p class="text-xs text-stone-400 mt-4 font-sans-kr tracking-wider">&copy; 2026 Taegukdo. All rights reserved.</p>
+        <p class="text-[10px] text-stone-300 mt-4 font-sans tracking-widest uppercase">&copy; 2026 Taegukdo. All rights reserved.</p>
     </footer>
 
     <!-- 모달 컨테이너 -->
     <div id="modal-container" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 transition-opacity duration-300" onclick="app.closeModal()">
-        <div id="modal-content" class="bg-white w-full max-w-md rounded-2xl shadow-2xl border-2 border-stone-200 overflow-hidden transform transition-all scale-95 opacity-0" onclick="event.stopPropagation()">
+        <div id="modal-content" class="bg-white w-full max-w-md rounded-2xl shadow-2xl border-2 border-white overflow-hidden transform transition-all scale-95 opacity-0" onclick="event.stopPropagation()">
             <!-- JS Render Target -->
         </div>
     </div>
@@ -184,7 +190,7 @@
                 const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, onSnapshot, query, orderBy } = window.firebaseModules;
 
                 try {
-                    // 제공해주신 Config
+                    // Config
                     const firebaseConfig = {
                         apiKey: "AIzaSyDe1mpaPcDfiNG63peU7EFNXXNJQmKc2rM",
                         authDomain: "taegukdo-notice.firebaseapp.com",
@@ -205,7 +211,6 @@
                         await signInAnonymously(auth);
                     } catch (authError) {
                         console.error("Auth Failed:", authError);
-                        // 인증 실패 시에도 일단 진행 (화면이라도 띄우기 위해)
                     }
 
                     // 인증 상태 감지 및 데이터 연결
@@ -213,9 +218,6 @@
                         if (user) {
                             state.user = user;
                             this.subscribeToPosts();
-                        } else {
-                            // 로그아웃 등의 이유로 user가 없을 때
-                            // 필요한 경우 재로그인 시도 로직을 넣을 수 있음
                         }
                     });
 
@@ -248,20 +250,19 @@
                         return timeB - timeA;
                     });
 
-                    // 최초 로딩이 아닐 때만 새 글 알림
                     if (!state.isLoading && loadedPosts.length > state.posts.length) {
-                        this.showToast("🔔 새로운 공지사항이 등록되었습니다!");
+                        this.showToast("🔔 새로운 공지사항이 도착했습니다!");
                     }
 
                     state.posts = loadedPosts;
-                    this.stopLoading(); // 데이터 수신 성공 시 로딩 종료
+                    this.stopLoading();
                     this.renderApp();
 
                 }, (error) => {
                     console.error("Firestore Listen Error:", error);
                     this.stopLoading();
                     this.showToast("데이터를 불러올 수 없습니다.", 'error');
-                    this.renderMainContent(); // 빈 화면이라도 렌더링
+                    this.renderMainContent(); 
                 });
             },
 
@@ -271,7 +272,7 @@
                 if (loader) loader.classList.add('hidden');
             },
 
-            // --- 기존 기능 유지 ---
+            // --- 데이터 조작 ---
             
             submitPost: async function() {
                 const { addDoc, collection, serverTimestamp } = window.firebaseModules;
@@ -300,7 +301,7 @@
                         isMustRead: isMustRead
                     });
 
-                    this.showToast(isMustRead ? "필독 공지가 등록되었습니다." : "새로운 공지사항이 등록되었습니다.");
+                    this.showToast(isMustRead ? "중요 필독 공지가 등록되었습니다." : "새로운 공지사항이 등록되었습니다.");
                     state.viewMode = 'current';
                     this.closeModal();
 
@@ -317,7 +318,7 @@
                     const postRef = doc(state.db, COLLECTION_NAME, state.deleteTargetId);
                     await deleteDoc(postRef);
                     if (state.selectedPostId === state.deleteTargetId) state.selectedPostId = null;
-                    this.showToast("게시글이 삭제되었습니다.");
+                    this.showToast("게시글이 안전하게 삭제되었습니다.");
                     this.closeModal();
                 } catch (e) {
                     console.error(e);
@@ -333,7 +334,7 @@
                 try {
                     const postRef = doc(state.db, COLLECTION_NAME, id);
                     await updateDoc(postRef, { isArchived: newStatus });
-                    this.showToast(newStatus ? "보관함으로 이동됨" : "공지사항으로 복원됨");
+                    this.showToast(newStatus ? "보관함으로 이동되었습니다." : "공지사항으로 복원되었습니다.");
                     if (newStatus && state.viewMode === 'current' && state.selectedPostId) state.selectedPostId = null;
                     if (!newStatus && state.viewMode === 'archived' && state.selectedPostId) state.selectedPostId = null;
                 } catch (e) {
@@ -353,7 +354,7 @@
                 return diff < (3 * 24 * 60 * 60 * 1000); 
             },
 
-            // --- Render Logic ---
+            // --- 렌더링 로직 (Tailwind & 테마 적용) ---
 
             init: function() {
                 document.addEventListener('keydown', (e) => {
@@ -362,8 +363,6 @@
                 document.addEventListener('keydown', (e) => {
                     if (e.ctrlKey && e.key === 'q') this.toggleAdmin();
                 });
-                
-                // 시작
                 this.initFirebase();
             },
 
@@ -376,7 +375,7 @@
 
             renderMainContent: function() {
                 const mainEl = document.getElementById('main-content');
-                if (state.isLoading) return; // 로딩중이면 덮어쓰지 않음
+                if (state.isLoading) return; 
 
                 if (state.selectedPostId !== null) {
                     this.renderDetailView(mainEl);
@@ -390,82 +389,132 @@
                 if (!post) { state.selectedPostId = null; return this.renderApp(); }
                 
                 container.innerHTML = `
-                    <div class="bg-white rounded-2xl border-2 border-stone-200 shadow-card p-6 md:p-10 animate-fade-in h-full relative overflow-hidden">
-                        <div class="flex justify-between items-center mb-8 border-b-2 border-stone-100 pb-6">
-                            <button onclick="app.goList()" class="group flex items-center gap-2 text-stone-500 hover:text-[#1a1a1a] transition font-sans-kr font-bold text-lg">
-                                <span class="bg-stone-100 group-hover:bg-stone-200 p-2 rounded-full transition-colors border border-stone-200"><i data-lucide="arrow-left" class="w-5 h-5"></i></span>
-                                목록으로 돌아가기
+                    <div class="h-full flex flex-col animate-fade-in">
+                        <!-- 툴바 -->
+                        <div class="flex justify-between items-center mb-8 border-b border-stone-200 pb-6">
+                            <button onclick="app.goList()" class="group flex items-center gap-2 text-stone-500 hover:text-k-text transition font-sans font-bold text-lg">
+                                <span class="bg-stone-100 group-hover:bg-theme-light group-hover:text-theme-color p-2 rounded-full transition-colors"><i data-lucide="arrow-left" class="w-5 h-5"></i></span>
+                                목록으로
                             </button>
+                            
                             ${state.isAdmin ? `
                                 <div class="flex gap-3">
-                                    <button onclick="app.toggleArchive('${post.id}')" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-lg transition font-bold flex items-center gap-2">
+                                    <button onclick="app.toggleArchive('${post.id}')" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-lg transition font-bold flex items-center gap-2 font-sans text-sm">
                                         <i data-lucide="${post.isArchived ? 'refresh-ccw' : 'archive'}" class="w-4 h-4"></i> ${post.isArchived ? "복원" : "보관"}
                                     </button>
-                                    <button onclick="app.requestDelete('${post.id}')" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition font-bold flex items-center gap-2">
+                                    <button onclick="app.requestDelete('${post.id}')" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition font-bold flex items-center gap-2 font-sans text-sm">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i> 삭제
                                     </button>
                                 </div>
                             ` : ''}
                         </div>
-                        <div class="mb-8">
-                            <div class="flex flex-wrap items-center gap-2 mb-4">
-                                ${post.isMustRead && !post.isArchived ? `<span class="bg-[#9d2424]/10 text-[#9d2424] px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1"><i data-lucide="megaphone" class="w-4 h-4 fill-current"></i> 필독 공지</span>` : ''}
-                                ${post.isArchived ? `<span class="bg-stone-100 text-stone-500 px-3 py-1 rounded-full text-sm font-bold">보관됨</span>` : ''}
-                                <span class="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1"><i data-lucide="calendar" class="w-4 h-4"></i> ${post.date}</span>
+
+                        <!-- 제목 및 정보 -->
+                        <div class="mb-10">
+                            <div class="flex flex-wrap items-center gap-3 mb-4">
+                                ${post.isMustRead && !post.isArchived ? 
+                                    `<span class="bg-theme-light text-theme-color px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 font-sans border border-theme-color/20">
+                                        <i data-lucide="megaphone" class="w-4 h-4 fill-current"></i> 필독
+                                     </span>` : ''}
+                                ${post.isArchived ? `<span class="bg-stone-100 text-stone-500 px-3 py-1.5 rounded-full text-sm font-bold font-sans">보관됨</span>` : ''}
+                                <span class="bg-stone-50 text-stone-500 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 font-sans">
+                                    <i data-lucide="calendar" class="w-4 h-4"></i> ${post.date}
+                                </span>
                             </div>
-                            <h2 class="text-3xl md:text-4xl font-serif-kr font-bold text-[#1a1a1a] leading-tight break-keep mb-6">${post.title}</h2>
+                            <h2 class="text-3xl md:text-4xl font-serif font-bold text-k-text leading-tight break-keep">${post.title}</h2>
                         </div>
-                        <div class="font-sans-kr text-[#1a1a1a] text-lg md:text-xl leading-relaxed whitespace-pre-wrap break-keep min-h-[300px] bg-stone-50/50 p-6 rounded-xl border border-stone-100">${post.content}</div>
+
+                        <!-- 본문 -->
+                        <div class="flex-grow font-sans text-k-text text-lg leading-loose whitespace-pre-wrap break-keep bg-[#fdfdfd] p-8 rounded-2xl border border-stone-100 shadow-sm min-h-[300px]">
+${post.content}
+                        </div>
                     </div>
                 `;
             },
 
             renderListView: function(container) {
+                // 탭 메뉴
                 let html = `
-                    <div class="flex gap-2 mb-6 px-1">
-                        <button onclick="app.changeViewMode('current')" class="flex-1 py-4 text-center rounded-xl font-serif-kr text-lg transition-all duration-300 border-2 ${state.viewMode === 'current' ? 'bg-white border-[#1a1a1a] text-[#1a1a1a] font-bold shadow-card transform -translate-y-1' : 'bg-white/50 border-transparent text-stone-400 hover:bg-white hover:text-stone-600'}">진행 중인 공지</button>
-                        <button onclick="app.changeViewMode('archived')" class="flex-1 py-4 text-center rounded-xl font-serif-kr text-lg transition-all duration-300 border-2 ${state.viewMode === 'archived' ? 'bg-stone-100 border-stone-400 text-stone-600 font-bold shadow-card transform -translate-y-1' : 'bg-white/50 border-transparent text-stone-400 hover:bg-white hover:text-stone-600'}">지난 공지 보관함</button>
+                    <div class="flex gap-3 mb-8 px-1">
+                        <button onclick="app.changeViewMode('current')" class="flex-1 py-4 text-center rounded-2xl font-serif text-lg transition-all duration-300 border-2 ${state.viewMode === 'current' ? 'bg-k-text text-white border-k-text shadow-md font-bold transform -translate-y-1' : 'bg-white border-stone-200 text-stone-400 hover:border-k-text hover:text-k-text'}">
+                            진행 중인 공지
+                        </button>
+                        <button onclick="app.changeViewMode('archived')" class="flex-1 py-4 text-center rounded-2xl font-serif text-lg transition-all duration-300 border-2 ${state.viewMode === 'archived' ? 'bg-stone-100 border-stone-400 text-stone-600 shadow-md font-bold transform -translate-y-1' : 'bg-white border-stone-200 text-stone-400 hover:border-stone-400 hover:text-stone-600'}">
+                            보관함
+                        </button>
                     </div>
                 `;
 
+                // 글쓰기 버튼
                 if (state.isAdmin && state.viewMode === 'current') {
-                    html += `<div class="flex justify-end mb-6 animate-fade-in px-1"><button onclick="app.openModal('write')" class="flex items-center gap-2 bg-[#1a1a1a] text-white px-5 py-3 rounded-xl hover:bg-[#333] transition-all shadow-lg hover:-translate-y-1 font-bold text-base"><i data-lucide="pen-line" class="w-5 h-5"></i> 새 공지사항 작성</button></div>`;
+                    html += `
+                        <div class="flex justify-end mb-6 animate-fade-in px-1">
+                            <button onclick="app.openModal('write')" class="flex items-center gap-2 bg-theme-color text-white px-5 py-3 rounded-xl hover:bg-[#9f1239] transition-all shadow-lg hover:-translate-y-1 font-bold text-base font-sans">
+                                <i data-lucide="pen-line" class="w-5 h-5"></i> 새 공지사항
+                            </button>
+                        </div>
+                    `;
                 }
 
                 const filteredPosts = state.posts
                     .filter(p => state.viewMode === 'current' ? !p.isArchived : p.isArchived)
-                    .sort((a, b) => {
-                        if (state.viewMode === 'current') {
-                            if (a.isMustRead && !b.isMustRead) return -1;
-                            if (!a.isMustRead && b.isMustRead) return 1;
-                        }
-                        return 0; 
-                    });
+                    .sort((a, b) => 0); 
 
-                html += `<ul class="space-y-4 pb-4">`;
+                html += `<ul class="space-y-5 pb-4">`;
                 
                 if (filteredPosts.length === 0) {
-                    html += `<li class="bg-white rounded-2xl border-2 border-stone-200 p-12 text-center flex flex-col items-center justify-center text-stone-400 font-sans-kr h-64 gap-4 animate-fade-in shadow-card"><i data-lucide="clipboard-x" class="w-16 h-16 stroke-[1.5] text-stone-300"></i><p class="text-lg font-medium">${state.viewMode === 'current' ? '현재 등록된 공지사항이 없습니다.' : '보관함이 비어있습니다.'}</p></li>`;
+                    html += `
+                        <li class="bg-stone-50/50 rounded-2xl border-2 border-dashed border-stone-200 p-16 text-center flex flex-col items-center justify-center text-stone-400 font-sans h-80 gap-6 animate-fade-in">
+                            <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm mb-2">
+                                <i data-lucide="clipboard-x" class="w-10 h-10 text-stone-300"></i>
+                            </div>
+                            <p class="text-xl font-medium">${state.viewMode === 'current' ? '현재 등록된 공지사항이 없습니다.' : '보관된 공지사항이 없습니다.'}</p>
+                        </li>
+                    `;
                 } else {
                     filteredPosts.forEach((post, index) => {
                         const isHighlighted = post.isMustRead && state.viewMode === 'current';
                         const isNew = this.isNewPost(post);
+                        
                         const delayClass = index < 5 ? `animate-fade-in` : '';
                         const styleDelay = index < 5 ? `animation-delay: ${index * 0.05}s` : '';
                         
+                        // 카드 디자인
                         html += `
-                            <li onclick="app.selectPost('${post.id}')" class="group bg-white rounded-2xl border-2 ${isHighlighted ? 'border-[#9d2424]/30 bg-red-50/10' : 'border-stone-200'} p-6 md:p-8 cursor-pointer shadow-card transition-all duration-300 hover:border-[#9d2424] hover:bg-red-50/30 hover:-translate-y-1 ${delayClass}" style="${styleDelay}">
-                                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center">
-                                    <div class="flex-shrink-0"><span class="inline-flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-bold bg-stone-100 text-stone-600 group-hover:bg-[#9d2424]/10 group-hover:text-[#9d2424] transition-colors">${post.date}</span></div>
-                                    <div class="flex-grow min-w-0 w-full">
-                                        <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                            ${isHighlighted ? `<span class="bg-[#9d2424]/10 text-[#9d2424] text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1"><i data-lucide="megaphone" class="w-3.5 h-3.5 fill-current"></i> 필독</span>` : ''}
-                                            ${isNew && !post.isArchived ? `<span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse-red shadow-sm">NEW</span>` : ''}
-                                        </div>
-                                        <h3 class="text-xl md:text-2xl font-serif-kr font-bold text-[#1a1a1a] group-hover:text-[#9d2424] transition-colors break-keep leading-snug">${post.title}</h3>
-                                        <p class="text-stone-500 font-sans-kr text-base mt-2 line-clamp-1 group-hover:text-stone-700 transition-colors break-keep">${post.content}</p>
+                            <li onclick="app.selectPost('${post.id}')" 
+                                class="group bg-white rounded-2xl border-2 ${isHighlighted ? 'border-theme-color/40 bg-theme-light/10' : 'border-stone-100'} p-6 md:p-8 cursor-pointer shadow-sm hover:shadow-lg transition-all duration-300 hover:border-theme-color hover:-translate-y-1 relative overflow-hidden ${delayClass}" 
+                                style="${styleDelay}">
+                                
+                                ${isHighlighted ? `<div class="absolute left-0 top-0 bottom-0 w-2 bg-theme-color"></div>` : ''}
+
+                                <div class="flex flex-col md:flex-row gap-5 items-start md:items-center">
+                                    <div class="flex-shrink-0 pt-1">
+                                        <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-bold font-sans bg-stone-100 text-stone-500 group-hover:bg-theme-color group-hover:text-white transition-colors min-w-[100px]">
+                                            ${post.date}
+                                        </span>
                                     </div>
-                                    <div class="hidden md:flex text-stone-300 group-hover:text-[#9d2424] transition-colors"><i data-lucide="chevron-right" class="w-6 h-6"></i></div>
+                                    
+                                    <div class="flex-grow min-w-0 w-full">
+                                        <div class="flex items-center gap-2 mb-2.5 flex-wrap">
+                                            ${isHighlighted ? 
+                                                `<span class="bg-theme-light text-theme-color text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 font-sans border border-theme-color/20">
+                                                    <i data-lucide="megaphone" class="w-3.5 h-3.5 fill-current"></i> 필독
+                                                 </span>` : ''}
+                                            
+                                            ${isNew && !post.isArchived ? 
+                                                `<span class="bg-theme-color text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse-custom shadow-sm font-sans">NEW</span>` : ''}
+                                        </div>
+                                        <h3 class="text-xl md:text-2xl font-serif font-bold text-k-text group-hover:text-theme-color transition-colors break-keep leading-snug">
+                                            ${post.title}
+                                        </h3>
+                                        <p class="text-stone-500 font-sans text-base mt-3 line-clamp-1 group-hover:text-stone-700 transition-colors break-keep">
+                                            ${post.content}
+                                        </p>
+                                    </div>
+
+                                    <div class="hidden md:flex text-stone-300 group-hover:text-theme-color transition-colors transform group-hover:translate-x-1 duration-300">
+                                        <i data-lucide="chevron-right" class="w-8 h-8 stroke-[1.5]"></i>
+                                    </div>
                                 </div>
                             </li>
                         `;
@@ -478,11 +527,21 @@
             renderFooterIcon: function() {
                 const iconWrapper = document.getElementById('admin-icon-wrapper');
                 const textEl = document.getElementById('admin-text');
-                iconWrapper.innerHTML = state.isAdmin ? `<i data-lucide="unlock" class="w-4 h-4 text-[#9d2424]"></i>` : `<i data-lucide="lock" class="w-4 h-4"></i>`;
+                
+                iconWrapper.innerHTML = state.isAdmin 
+                    ? `<i data-lucide="unlock" class="w-4 h-4 text-theme-color"></i>` 
+                    : `<i data-lucide="lock" class="w-4 h-4"></i>`;
+                
                 textEl.innerText = state.isAdmin ? '관리자 모드 종료' : '관리자 모드';
+                
                 const btn = textEl.parentElement;
-                if(state.isAdmin) { btn.classList.add('bg-stone-100', 'text-[#9d2424]', 'border-stone-200'); btn.classList.remove('text-stone-400'); } 
-                else { btn.classList.remove('bg-stone-100', 'text-[#9d2424]', 'border-stone-200'); btn.classList.add('text-stone-400'); }
+                if(state.isAdmin) {
+                    btn.classList.add('bg-theme-light', 'text-theme-color', 'border-theme-color/20');
+                    btn.classList.remove('text-stone-400');
+                } else {
+                    btn.classList.remove('bg-theme-light', 'text-theme-color', 'border-theme-color/20');
+                    btn.classList.add('text-stone-400');
+                }
             },
 
             renderModal: function() {
@@ -493,75 +552,195 @@
                     return;
                 }
                 container.classList.remove('hidden');
-                requestAnimationFrame(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); });
+                requestAnimationFrame(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                });
 
                 let html = '';
+
                 if (state.modalType === 'login') {
                     html = `
-                        <div class="p-8 text-center font-sans-kr relative bg-white">
-                            <button onclick="app.closeModal()" class="absolute top-4 right-4 text-stone-400 hover:text-[#1a1a1a]"><i data-lucide="x" class="w-6 h-6"></i></button>
-                            <div class="w-14 h-14 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-5 text-[#1a1a1a] border-2 border-stone-200"><i data-lucide="shield-check" class="w-7 h-7"></i></div>
-                            <h3 class="font-serif-kr font-bold text-2xl mb-2 text-[#1a1a1a]">관리자 로그인</h3>
-                            <p class="text-stone-500 mb-8 break-keep font-medium">관리자 권한으로 접근하려면 비밀번호를 입력하세요.</p>
-                            <div class="relative mb-8 group"><input type="password" id="pw-input" placeholder="비밀번호" class="w-full border-b-2 border-stone-300 p-3 text-center focus:outline-none focus:border-[#9d2424] bg-transparent transition-colors text-[#1a1a1a] text-xl font-bold placeholder-stone-300" onkeydown="if(event.key === 'Enter') app.submitLogin()"></div>
-                            <button onclick="app.submitLogin()" class="w-full py-4 bg-[#1a1a1a] text-white rounded-xl hover:bg-[#333] transition font-bold shadow-md hover:-translate-y-1 text-lg">확인</button>
+                        <div class="p-8 text-center font-sans bg-white relative">
+                            <button onclick="app.closeModal()" class="absolute top-4 right-4 text-stone-400 hover:text-k-text"><i data-lucide="x" class="w-6 h-6"></i></button>
+                            <div class="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6 text-k-text border-2 border-stone-200">
+                                <i data-lucide="shield-check" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="font-serif font-bold text-2xl mb-2 text-k-text">관리자 로그인</h3>
+                            <p class="text-stone-500 mb-8 break-keep text-sm">관리자 권한으로 접근하려면 비밀번호를 입력하세요.</p>
+                            
+                            <div class="relative mb-8 group">
+                                <input type="password" id="pw-input" placeholder="비밀번호 입력"
+                                    class="w-full border-b-2 border-stone-300 p-3 text-center focus:outline-none focus:border-theme-color bg-transparent transition-colors text-k-text text-xl font-bold placeholder-stone-300"
+                                    onkeydown="if(event.key === 'Enter') app.submitLogin()">
+                            </div>
+                            
+                            <button onclick="app.submitLogin()" class="w-full py-4 bg-k-text text-white rounded-xl hover:bg-black transition font-bold shadow-lg hover:-translate-y-1 text-lg">확인</button>
                         </div>
                     `;
                 } else if (state.modalType === 'write') {
                     html = `
-                        <div class="bg-white px-6 py-5 flex justify-between items-center border-b-2 border-stone-100">
-                            <h3 class="font-serif-kr font-bold text-xl flex items-center gap-2 text-[#1a1a1a]"><span class="bg-[#9d2424]/10 text-[#9d2424] p-2 rounded-full"><i data-lucide="pen-tool" class="w-5 h-5"></i></span> 새 공지사항 작성</h3>
-                            <button onclick="app.closeModal()" class="hover:bg-stone-100 p-2 rounded-full transition text-[#1a1a1a]"><i data-lucide="x" class="w-6 h-6"></i></button>
+                        <div class="bg-white px-8 py-6 flex justify-between items-center border-b border-stone-100">
+                            <h3 class="font-serif font-bold text-xl flex items-center gap-2 text-k-text">
+                                <span class="bg-theme-light p-2 rounded-full text-theme-color"><i data-lucide="pen-tool" class="w-5 h-5"></i></span>
+                                새 공지사항 작성
+                            </h3>
+                            <button onclick="app.closeModal()" class="hover:bg-stone-100 p-2 rounded-full transition text-k-text"><i data-lucide="x" class="w-6 h-6"></i></button>
                         </div>
-                        <div class="p-8 font-sans-kr bg-white">
-                            <div class="mb-6 bg-red-50/50 p-4 rounded-xl border-2 border-red-100 hover:border-[#9d2424]/30 transition-colors">
-                                <label class="flex items-center gap-3 cursor-pointer select-none"><input type="checkbox" id="must-read-check" class="peer sr-only"><div class="w-11 h-6 bg-stone-300 rounded-full peer peer-checked:bg-[#9d2424] transition-all"></div><span class="text-base font-bold text-[#9d2424] flex items-center gap-2"><i data-lucide="megaphone" class="w-4 h-4"></i> 중요 필독 공지로 설정</span></label>
+                        <div class="p-8 font-sans bg-white">
+                            <div class="mb-6 bg-theme-light/30 p-4 rounded-xl border border-theme-color/20 hover:border-theme-color/50 transition-colors">
+                                <label class="flex items-center gap-3 cursor-pointer select-none">
+                                    <div class="relative flex items-center">
+                                        <input type="checkbox" id="must-read-check" class="peer sr-only">
+                                        <div class="w-11 h-6 bg-stone-300 rounded-full peer peer-checked:bg-theme-color transition-all"></div>
+                                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all peer-checked:left-6 shadow-sm"></div>
+                                    </div>
+                                    <span class="text-base font-bold text-theme-color flex items-center gap-2">
+                                        <i data-lucide="megaphone" class="w-4 h-4"></i> 중요 필독 공지로 설정
+                                    </span>
+                                </label>
                             </div>
-                            <div class="mb-6"><label class="block text-base font-bold text-[#1a1a1a] mb-2">제목</label><input type="text" id="title-input" class="w-full border-2 border-stone-200 p-4 rounded-xl focus:outline-none focus:border-[#9d2424] transition-all text-lg font-medium placeholder-stone-400" placeholder="제목을 입력하세요"></div>
-                            <div class="mb-8"><label class="block text-base font-bold text-[#1a1a1a] mb-2">내용</label><textarea id="content-input" class="w-full border-2 border-stone-200 p-4 rounded-xl h-48 resize-none focus:outline-none focus:border-[#9d2424] transition-all leading-relaxed text-lg font-medium placeholder-stone-400" placeholder="공지 내용을 입력하세요"></textarea></div>
-                            <div class="flex gap-3"><button onclick="app.closeModal()" class="flex-1 py-4 text-stone-500 hover:bg-stone-100 rounded-xl transition font-bold text-lg border-2 border-transparent">취소</button><button onclick="app.submitPost()" class="flex-[2] py-4 bg-[#1a1a1a] text-white rounded-xl font-bold hover:bg-[#333] transition shadow-lg hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"><i data-lucide="send" class="w-5 h-5"></i> 등록하기</button></div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-sm font-bold text-k-text mb-2 ml-1">제목</label>
+                                <input type="text" id="title-input" class="w-full border-2 border-stone-200 p-4 rounded-xl focus:outline-none focus:border-theme-color transition-all text-lg font-medium placeholder-stone-400" placeholder="제목을 입력하세요">
+                            </div>
+                            
+                            <div class="mb-8">
+                                <label class="block text-sm font-bold text-k-text mb-2 ml-1">내용</label>
+                                <textarea id="content-input" class="w-full border-2 border-stone-200 p-4 rounded-xl h-48 resize-none focus:outline-none focus:border-theme-color transition-all leading-relaxed text-lg font-medium placeholder-stone-400" placeholder="공지 내용을 입력하세요"></textarea>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button onclick="app.closeModal()" class="flex-1 py-4 text-stone-500 hover:bg-stone-100 rounded-xl transition font-bold text-lg border-2 border-transparent">취소</button>
+                                <button onclick="app.submitPost()" class="flex-[2] py-4 bg-theme-color text-white rounded-xl font-bold hover:bg-[#9f1239] transition shadow-lg hover:-translate-y-1 flex items-center justify-center gap-2 text-lg">
+                                    <i data-lucide="send" class="w-5 h-5"></i> 등록하기
+                                </button>
+                            </div>
                         </div>
                     `;
                 } else if (state.modalType === 'delete') {
                     html = `
-                        <div class="p-10 text-center font-sans-kr bg-white">
-                            <div class="mx-auto w-20 h-20 bg-red-50 text-[#9d2424] rounded-full flex items-center justify-center mb-6 border-2 border-red-100"><i data-lucide="alert-triangle" class="w-10 h-10"></i></div>
-                            <h3 class="font-bold text-2xl mb-3 text-[#1a1a1a]">게시글을 삭제하시겠습니까?</h3>
-                            <p class="text-base text-stone-500 mb-10 break-keep font-medium leading-relaxed">삭제된 게시글은 영구적으로 제거되며<br>다시 복구할 수 없습니다.</p>
-                            <div class="flex gap-3 justify-center"><button onclick="app.closeModal()" class="flex-1 py-3.5 border-2 border-stone-200 rounded-xl hover:bg-stone-50 text-stone-600 font-bold transition text-lg">취소</button><button onclick="app.confirmDelete()" class="flex-[2] py-3.5 bg-[#9d2424] text-white rounded-xl hover:bg-[#7a1c1c] font-bold shadow-md hover:-translate-y-1 transition flex items-center justify-center gap-2 text-lg"><i data-lucide="trash-2" class="w-5 h-5"></i> 삭제하기</button></div>
+                        <div class="p-10 text-center font-sans bg-white">
+                            <div class="mx-auto w-20 h-20 bg-theme-light text-theme-color rounded-full flex items-center justify-center mb-6 border-2 border-theme-color/20">
+                                <i data-lucide="alert-triangle" class="w-10 h-10"></i>
+                            </div>
+                            <h3 class="font-bold text-2xl mb-3 text-k-text">게시글을 삭제하시겠습니까?</h3>
+                            <p class="text-base text-stone-500 mb-10 break-keep font-medium leading-relaxed">
+                                삭제된 게시글은 영구적으로 제거되며<br>다시 복구할 수 없습니다.
+                            </p>
+                            <div class="flex gap-3 justify-center">
+                                <button onclick="app.closeModal()" class="flex-1 py-3.5 border-2 border-stone-200 rounded-xl hover:bg-stone-50 text-stone-600 font-bold transition text-lg">취소</button>
+                                <button onclick="app.confirmDelete()" class="flex-[2] py-3.5 bg-theme-color text-white rounded-xl hover:bg-[#9f1239] font-bold shadow-md hover:-translate-y-1 transition flex items-center justify-center gap-2 text-lg">
+                                    <i data-lucide="trash-2" class="w-5 h-5"></i> 삭제하기
+                                </button>
+                            </div>
                         </div>
                     `;
                 }
+                
                 content.innerHTML = html;
+                
                 if(state.modalType === 'login') setTimeout(() => document.getElementById('pw-input').focus(), 100);
             },
 
             showToast: function(message, type = 'success') {
                 const container = document.getElementById('toast-container');
                 const toast = document.createElement('div');
-                const bgColor = type === 'error' ? 'bg-[#9d2424]' : 'bg-[#1a1a1a]';
+                
+                const bgColor = type === 'error' ? 'bg-theme-color' : 'bg-k-text';
                 const icon = type === 'error' ? 'alert-circle' : 'check-circle-2';
+                
                 toast.className = "fixed top-8 left-1/2 transform -translate-x-1/2 z-[100] animate-slide-down shadow-2xl w-[90%] md:w-auto text-center";
-                toast.innerHTML = `<div class="${bgColor} text-white px-6 py-4 rounded-full inline-flex items-center justify-center gap-3 font-sans-kr text-base font-bold border-2 border-white/20 shadow-lg"><i data-lucide="${icon}" class="w-5 h-5 text-white flex-shrink-0"></i><span class="break-keep">${message}</span></div>`;
+                toast.innerHTML = `
+                    <div class="${bgColor} text-white px-8 py-4 rounded-full inline-flex items-center justify-center gap-3 font-sans text-base font-bold border-2 border-white/20 shadow-lg">
+                        <i data-lucide="${icon}" class="w-5 h-5 text-white flex-shrink-0"></i> 
+                        <span class="break-keep">${message}</span>
+                    </div>
+                `;
+                
                 container.appendChild(toast);
                 lucide.createIcons();
-                setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translate(-50%, -20px)'; toast.style.transition = 'all 0.3s ease-out'; setTimeout(() => toast.remove(), 300); }, 4000);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translate(-50%, -20px)';
+                    toast.style.transition = 'all 0.3s ease-out';
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000); 
             },
 
-            // Action Handlers
-            goHome: function() { state.selectedPostId = null; this.renderApp(); window.scrollTo({top: 0, behavior: 'smooth'}); },
-            goList: function() { state.selectedPostId = null; this.renderApp(); },
-            selectPost: function(id) { state.selectedPostId = id; this.renderApp(); window.scrollTo({top: 0, behavior: 'smooth'}); },
-            changeViewMode: function(mode) { state.viewMode = mode; this.renderApp(); },
-            toggleAdmin: function() { if (state.isAdmin) { state.isAdmin = false; this.showToast("관리자 모드가 종료되었습니다."); this.renderApp(); } else { this.openModal('login'); } },
-            openModal: function(type) { state.modalType = type; this.renderApp(); },
-            closeModal: function() { state.modalType = null; state.deleteTargetId = null; this.renderApp(); },
-            requestDelete: function(id) { state.deleteTargetId = id; this.openModal('delete'); },
+            // --- Action Handlers ---
+            
+            goHome: function() {
+                state.selectedPostId = null;
+                this.renderApp();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            },
+
+            goList: function() {
+                state.selectedPostId = null;
+                this.renderApp();
+            },
+
+            selectPost: function(id) {
+                state.selectedPostId = id;
+                this.renderApp();
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            },
+
+            changeViewMode: function(mode) {
+                state.viewMode = mode;
+                this.renderApp();
+            },
+
+            toggleAdmin: function() {
+                if (state.isAdmin) {
+                    state.isAdmin = false;
+                    this.showToast("관리자 모드가 종료되었습니다.");
+                    this.renderApp();
+                } else {
+                    this.openModal('login');
+                }
+            },
+
+            openModal: function(type) {
+                state.modalType = type;
+                this.renderApp();
+            },
+
+            closeModal: function() {
+                state.modalType = null;
+                state.deleteTargetId = null;
+                this.renderApp();
+            },
+
             submitLogin: function() {
                 const input = document.getElementById('pw-input');
                 const container = input.parentElement;
-                if (input.value === ADMIN_PASSWORD) { state.isAdmin = true; this.showToast("관리자 모드로 전환되었습니다."); this.closeModal(); } 
-                else { container.classList.remove('animate-shake'); void container.offsetWidth; container.classList.add('animate-shake'); input.classList.add('border-[#9d2424]', 'text-[#9d2424]'); this.showToast("비밀번호가 일치하지 않습니다.", 'error'); setTimeout(() => { input.classList.remove('border-[#9d2424]', 'text-[#9d2424]'); input.value = ''; input.focus(); }, 1000); }
+                
+                if (input.value === ADMIN_PASSWORD) {
+                    state.isAdmin = true;
+                    this.showToast("관리자 모드로 전환되었습니다.");
+                    this.closeModal();
+                } else {
+                    container.classList.remove('animate-shake');
+                    void container.offsetWidth;
+                    container.classList.add('animate-shake');
+                    input.classList.add('border-theme-color', 'text-theme-color');
+                    this.showToast("비밀번호가 일치하지 않습니다.", 'error');
+                    
+                    setTimeout(() => {
+                        input.classList.remove('border-theme-color', 'text-theme-color');
+                        input.value = '';
+                        input.focus();
+                    }, 1000);
+                }
+            },
+            
+            requestDelete: function(id) {
+                state.deleteTargetId = id;
+                this.openModal('delete');
             }
         };
 
