@@ -574,7 +574,7 @@
                 if (item.image) {
                     if (item.image.startsWith('data:video')) {
                         mediaHtml = `
-                            <div class="mt-6 rounded-xl overflow-hidden shadow-md w-full bg-black border border-stone-200">
+                            <div class="mb-6 rounded-xl overflow-hidden shadow-md w-full bg-black border border-stone-200">
                                 <video src="${item.image}" controls class="w-full max-h-[450px] mx-auto"></video>
                             </div>`;
                     } else if (item.image.includes('youtube.com') || item.image.includes('youtu.be')) {
@@ -588,12 +588,12 @@
                         }
                         
                         mediaHtml = `
-                            <div class="mt-6 aspect-video rounded-xl overflow-hidden bg-black/5 shadow-md border border-stone-200">
+                            <div class="mb-6 aspect-video rounded-xl overflow-hidden bg-black/5 shadow-md border border-stone-200">
                                 <iframe src="${embedUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
                             </div>`;
                     } else {
                         mediaHtml = `
-                            <div class="mt-6 rounded-xl overflow-hidden shadow-md max-h-[500px] w-full bg-stone-50 flex justify-center border border-stone-200">
+                            <div class="mb-6 rounded-xl overflow-hidden shadow-md max-h-[500px] w-full bg-stone-50 flex justify-center border border-stone-200">
                                 <img src="${item.image}" alt="${item.title}" class="max-w-full max-h-[500px] object-contain">
                             </div>`;
                     }
@@ -616,6 +616,7 @@
                 ` : '';
 
                 div.innerHTML = `
+                    ${mediaHtml}
                     <div class="flex items-center gap-3 mb-4">
                         <span class="text-sm font-bold text-theme-color bg-theme-color/10 px-3 py-1 rounded-full border border-theme-color/20">${item.category}</span>
                         <span class="text-sm font-bold text-stone-400 flex items-center gap-1">
@@ -627,7 +628,6 @@
                         ${item.title}
                     </h2>
                     <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line break-keep">${item.desc}</p>
-                    ${mediaHtml}
                     ${adminButtons}
                 `;
                 contentListEl.appendChild(div);
