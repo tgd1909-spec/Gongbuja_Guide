@@ -616,7 +616,6 @@
                 ` : '';
 
                 div.innerHTML = `
-                    ${mediaHtml}
                     <div class="flex items-center gap-3 mb-4">
                         <span class="text-sm font-bold text-theme-color bg-theme-color/10 px-3 py-1 rounded-full border border-theme-color/20">${item.category}</span>
                         <span class="text-sm font-bold text-stone-400 flex items-center gap-1">
@@ -627,6 +626,7 @@
                     <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-4 text-k-text leading-snug group-hover:text-theme-color transition-colors duration-300 cursor-pointer break-keep" onclick="window.editPost('${item.id}')">
                         ${item.title}
                     </h2>
+                    ${mediaHtml}
                     <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line break-keep">${item.desc}</p>
                     ${adminButtons}
                 `;
