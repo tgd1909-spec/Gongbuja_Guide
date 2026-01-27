@@ -247,7 +247,7 @@
     <!-- 푸터 -->
     <footer class="mt-10 mb-20 text-center text-stone-500 text-sm font-medium">
         <p class="font-serif text-lg text-stone-400 mb-1">Taegeukdo Guide for Beginners</p>
-        <p>&copy; 2026 태극도 법식 안내. All rights reserved.</p>
+        <p>&copy; 2024 태극도 법식 안내. All rights reserved.</p>
     </footer>
 
     <!-- 관리자 모드 토글 스위치 -->
@@ -328,6 +328,7 @@
         
         let localContents = [];
         let localCategories = [];
+        let localCategoriesObjects = []; // 카테고리 ID 관리를 위한 배열
 
         // DOM 요소 가져오기
         const contentListEl = document.getElementById('content-list');
@@ -472,7 +473,8 @@
                     cats.push({ id: doc.id, ...doc.data() });
                 });
                 cats.sort((a, b) => a.name.localeCompare(b.name));
-                localCategories = cats.map(c => c.name);
+                localCategoriesObjects = cats; // ID 참조를 위해 전체 객체 저장
+                localCategories = cats.map(c => c.name); // 이름만 추출
                 renderCategories();
                 renderCategorySelect();
                 renderAdminCategories();
@@ -726,7 +728,20 @@
             if (!confirm(`'${catName}' 카테고리를 삭제하시겠습니까?`)) return;
             
             if (useFirebase) {
-                alert("Firebase 모드에서 카테고리 삭제는 현재 지원하지 않습니다.");
+                const catObj = localCategoriesObjects.find(c => c.name === catName);
+                if (!catObj) {
+                    alert("카테고리 정보를 찾을 수 없습니다.");
+                    return;
+                }
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', catObj.id));
+                    if (window.currentCategory === catName) {
+                        window.currentCategory = '전체';
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("삭제 실패: " + e.message);
+                }
             } else {
                 localCategories = localCategories.filter(c => c !== catName);
                 if (window.currentCategory === catName) {
