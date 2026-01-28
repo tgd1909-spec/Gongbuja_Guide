@@ -145,7 +145,7 @@
                 <div class="w-24 h-1 bg-theme-color mt-4 mb-6 rounded-full"></div>
                 
                 <p class="text-stone-700 font-medium text-lg sm:text-xl break-keep leading-relaxed">
-                    초심 공부자들이 갖추어야 할 <b class="text-theme-color">국궁, 배례, 봉심, 강식</b> 등<br class="hidden sm:block"> 도인으로서의 기본 예법을 안내합니다.
+                    초심 공부자들이 갖추어야 할 <b class="text-theme-color">국궁, 배례, 봉심</b> 등<br class="hidden sm:block"> 도인으로서의 기본 예법을 안내합니다.
                 </p>
             </div>
         </header>
@@ -589,9 +589,29 @@
 
         function renderContents() {
             contentListEl.innerHTML = '';
-            const filtered = window.currentCategory === '전체' 
-                ? localContents 
+            
+            // 1. 필터링 (전체인 경우 복사본 생성, 아니면 필터링)
+            let filtered = window.currentCategory === '전체' 
+                ? [...localContents] 
                 : localContents.filter(item => item.category === window.currentCategory);
+
+            // 2. 정렬 (전체보기일 때: 카테고리 순 -> 최신 순 / 그 외: 최신 순)
+            filtered.sort((a, b) => {
+                if (window.currentCategory === '전체') {
+                    const idxA = localCategories.indexOf(a.category);
+                    const idxB = localCategories.indexOf(b.category);
+                    
+                    // 카테고리 순서가 다르면 카테고리 인덱스로 정렬
+                    if (idxA !== idxB) {
+                        // 목록에 없는 카테고리는 뒤로
+                        if (idxA === -1) return 1;
+                        if (idxB === -1) return -1;
+                        return idxA - idxB;
+                    }
+                }
+                // 같은 카테고리 내에서는 최신순 (createdAt 내림차순)
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
 
             if (filtered.length === 0) {
                 contentListEl.innerHTML = `
@@ -674,6 +694,7 @@
                 ` : '';
 
                 div.innerHTML = `
+                    ${mediaHtml}
                     <div class="flex items-center gap-3 mb-4">
                         <span class="text-sm font-bold text-theme-color bg-theme-color/10 px-3 py-1 rounded-full border border-theme-color/20">${item.category}</span>
                         <span class="text-sm font-bold text-stone-400 flex items-center gap-1">
@@ -684,7 +705,6 @@
                     <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-4 text-k-text leading-snug group-hover:text-theme-color transition-colors duration-300 cursor-pointer break-keep" onclick="window.editPost('${item.id}')">
                         ${item.title}
                     </h2>
-                    ${mediaHtml}
                     <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line break-keep">${item.desc}</p>
                     ${adminButtons}
                 `;
@@ -873,7 +893,7 @@
             }
             
             fileInput.value = '';
-            submitBtnText.innerText = '게시글 등록하기';
+            submitBtnText.innerText = '게시글 수정하기';
             adminPanelEl.scrollIntoView({ behavior: 'smooth' });
         };
 
