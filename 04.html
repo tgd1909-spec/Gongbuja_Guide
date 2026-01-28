@@ -106,6 +106,12 @@
             70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(44, 62, 80, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(44, 62, 80, 0); }
         }
+        
+        /* 이미지 모달 애니메이션 */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 0.2s ease-in, transform 0.2s ease-in; }
     </style>
 </head>
 <body class="text-k-text font-sans min-h-screen flex flex-col items-center py-6 px-4 sm:px-6">
@@ -256,6 +262,14 @@
         <button id="admin-toggle" class="relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none bg-stone-300 hover:bg-stone-400">
             <span class="sr-only">관리자 모드 활성화</span>
             <span id="toggle-circle" class="inline-block h-6 w-6 transform rounded-full bg-white transition-transform translate-x-1 shadow-sm"></span>
+        </button>
+    </div>
+
+    <!-- 이미지 확대 모달 (Lightbox) -->
+    <div id="image-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/90 backdrop-blur-sm cursor-zoom-out" onclick="window.closeImageModal()">
+        <img id="modal-image" src="" alt="확대 이미지" class="max-w-[95%] max-h-[95%] object-contain rounded-lg shadow-2xl transition-transform duration-300 scale-95 opacity-0">
+        <button class="absolute top-6 right-6 text-white/80 hover:text-white transition-colors bg-black/20 hover:bg-black/40 rounded-full p-2">
+            <i data-lucide="x" class="w-8 h-8"></i>
         </button>
     </div>
 
@@ -431,6 +445,12 @@
                 useFirebase = false;
                 loadLocalData();
             }
+
+            // 관리자 모드 복원 (로컬 스토리지 확인)
+            const savedAdminState = localStorage.getItem('isAdminMode') === 'true';
+            if (savedAdminState) {
+                toggleAdminState(true);
+            }
         }
 
         // --- NEW 배지 로직 (7일 이내) ---
@@ -446,6 +466,29 @@
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                 return diffDays <= 7;
             } catch(e) { return false; }
+        }
+
+        // --- 이미지 모달 (Lightbox) ---
+        window.openImageModal = (src) => {
+            const modal = document.getElementById('image-modal');
+            const img = document.getElementById('modal-image');
+            modal.classList.remove('hidden');
+            img.src = src;
+            setTimeout(() => {
+                img.classList.remove('scale-95', 'opacity-0');
+                img.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        window.closeImageModal = () => {
+            const modal = document.getElementById('image-modal');
+            const img = document.getElementById('modal-image');
+            img.classList.remove('scale-100', 'opacity-100');
+            img.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                img.src = '';
+            }, 300);
         }
 
         // --- 데이터 로딩 로직 (분기 처리) ---
@@ -593,8 +636,8 @@
                             </div>`;
                     } else {
                         mediaHtml = `
-                            <div class="mb-6 rounded-xl overflow-hidden shadow-md max-h-[500px] w-full bg-stone-50 flex justify-center border border-stone-200">
-                                <img src="${item.image}" alt="${item.title}" class="max-w-full max-h-[500px] object-contain">
+                            <div class="mb-6 rounded-xl overflow-hidden shadow-md max-h-[500px] w-full bg-stone-50 flex justify-center border border-stone-200 group-image">
+                                <img src="${item.image}" alt="${item.title}" class="max-w-full max-h-[500px] object-contain cursor-zoom-in transition-transform duration-300 hover:scale-[1.02]" onclick="event.stopPropagation(); window.openImageModal('${item.image}')">
                             </div>`;
                     }
                 }
@@ -616,6 +659,7 @@
                 ` : '';
 
                 div.innerHTML = `
+                    ${mediaHtml}
                     <div class="flex items-center gap-3 mb-4">
                         <span class="text-sm font-bold text-theme-color bg-theme-color/10 px-3 py-1 rounded-full border border-theme-color/20">${item.category}</span>
                         <span class="text-sm font-bold text-stone-400 flex items-center gap-1">
@@ -626,7 +670,6 @@
                     <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-4 text-k-text leading-snug group-hover:text-theme-color transition-colors duration-300 cursor-pointer break-keep" onclick="window.editPost('${item.id}')">
                         ${item.title}
                     </h2>
-                    ${mediaHtml}
                     <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line break-keep">${item.desc}</p>
                     ${adminButtons}
                 `;
@@ -853,6 +896,7 @@
 
         function toggleAdminState(enable) {
             window.isAdminMode = enable;
+            localStorage.setItem('isAdminMode', enable); // 상태 저장
             if (enable) {
                 adminToggleBtn.classList.remove('bg-stone-300');
                 adminToggleBtn.classList.add('bg-theme-color');
