@@ -65,6 +65,7 @@
         /* 스크롤바 커스터마이징 */
         ::-webkit-scrollbar {
             width: 8px;
+            height: 8px; /* 가로 스크롤바 높이 추가 */
         }
         ::-webkit-scrollbar-track {
             background: transparent;
@@ -223,13 +224,15 @@
                     <label class="block text-sm font-bold text-stone-600 mb-2 flex items-center gap-2">
                         <i data-lucide="image" class="w-4 h-4"></i> 사진/영상 첨부
                     </label>
-                    <input type="file" id="input-file" accept="image/*,video/*" class="w-full bg-white border-2 border-stone-300 rounded-lg p-2 text-sm focus:outline-none focus:border-theme-color file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-stone-200 file:text-stone-700 hover:file:bg-stone-300 cursor-pointer">
+                    <!-- multiple 속성 추가 -->
+                    <input type="file" id="input-file" accept="image/*,video/*" multiple class="w-full bg-white border-2 border-stone-300 rounded-lg p-2 text-sm focus:outline-none focus:border-theme-color file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-stone-200 file:text-stone-700 hover:file:bg-stone-300 cursor-pointer">
                     <div id="file-preview-info" class="mt-3 text-sm text-theme-color font-bold hidden flex items-center gap-2">
                         <i class="fa-solid fa-check-circle"></i><span id="file-name-display"></span>
                     </div>
                     <div class="mt-3 text-xs text-stone-500 space-y-1">
+                        <p class="flex items-center gap-1"><i class="fa-solid fa-layer-group text-stone-400"></i> <span class="font-bold">다중 선택:</span> 여러 장의 사진을 선택하여 올릴 수 있습니다.</p>
                         <p class="flex items-center gap-1"><i class="fa-solid fa-camera text-stone-400"></i> <span class="font-bold">사진:</span> 고화질 사진은 자동으로 최적화되어 업로드됩니다.</p>
-                        <p class="flex items-center gap-1"><i class="fa-solid fa-video text-stone-400"></i> <span class="font-bold">동영상:</span> 700KB 이하만 가능합니다. (큰 영상은 아래 URL 기능을 이용하세요)</p>
+                        <p class="flex items-center gap-1"><i class="fa-solid fa-video text-stone-400"></i> <span class="font-bold">동영상:</span> 700KB 이하만 가능합니다. (큰 영상은 아래 URL 이용)</p>
                     </div>
                 </div>
                 
@@ -342,7 +345,7 @@
         
         let localContents = [];
         let localCategories = [];
-        let localCategoriesObjects = []; // 카테고리 ID 관리를 위한 배열
+        let localCategoriesObjects = []; 
 
         // DOM 요소 가져오기
         const contentListEl = document.getElementById('content-list');
@@ -365,12 +368,12 @@
         const deleteModal = document.getElementById('delete-modal');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
-        // --- Firebase 초기화 및 폴백 로직 ---
+        // --- Firebase 초기화 ---
         let db, auth;
         let useFirebase = false;
         let appId = 'default-app-id';
 
-        // 기본 데이터 (로컬 모드용)
+        // 기본 데이터
         const defaultContents = [
             {
                 id: 1,
@@ -411,13 +414,11 @@
             try {
                 let firebaseConfig;
 
-                // 1. Canvas 내부 환경
                 if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
                     firebaseConfig = JSON.parse(__firebase_config);
                     appId = __app_id;
                     console.log("Canvas Firebase 연결");
                 } 
-                // 2. 외부 배포 환경
                 else if (YOUR_FIREBASE_CONFIG && YOUR_FIREBASE_CONFIG.apiKey) {
                     firebaseConfig = YOUR_FIREBASE_CONFIG;
                     appId = 'tgd-guide-public';
@@ -446,17 +447,15 @@
                 loadLocalData();
             }
 
-            // 관리자 모드 복원 (로컬 스토리지 확인)
             const savedAdminState = localStorage.getItem('isAdminMode') === 'true';
             if (savedAdminState) {
                 toggleAdminState(true);
             }
         }
 
-        // --- NEW 배지 로직 (7일 이내) ---
+        // --- Utils ---
         function isNew(dateStr) {
             if (!dateStr) return false;
-            // dateStr 형식: YYYY.MM.DD
             try {
                 const parts = dateStr.split('.');
                 if(parts.length < 3) return false;
@@ -468,7 +467,6 @@
             } catch(e) { return false; }
         }
 
-        // --- 이미지 모달 (Lightbox) ---
         window.openImageModal = (src) => {
             const modal = document.getElementById('image-modal');
             const img = document.getElementById('modal-image');
@@ -491,10 +489,8 @@
             }, 300);
         }
 
-        // --- 데이터 로딩 로직 (분기 처리) ---
-
+        // --- Data Logic ---
         function subscribeToData() {
-            // 게시글 구독
             const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
             onSnapshot(postsCollection, (snapshot) => {
                 localContents = [];
@@ -508,7 +504,6 @@
                 renderContents();
             });
 
-            // 카테고리 구독
             const catsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
             onSnapshot(catsCollection, (snapshot) => {
                 let cats = [];
@@ -516,8 +511,8 @@
                     cats.push({ id: doc.id, ...doc.data() });
                 });
                 cats.sort((a, b) => a.name.localeCompare(b.name));
-                localCategoriesObjects = cats; // ID 참조를 위해 전체 객체 저장
-                localCategories = cats.map(c => c.name); // 이름만 추출
+                localCategoriesObjects = cats;
+                localCategories = cats.map(c => c.name);
                 renderCategories();
                 renderCategorySelect();
                 renderAdminCategories();
@@ -551,7 +546,7 @@
             localStorage.setItem('taegeukdo_categories', JSON.stringify(localCategories));
         }
 
-        // --- 렌더링 함수들 ---
+        // --- Rendering ---
         function renderCategories() {
             const displayCategories = ['전체', ...localCategories];
             categoryContainerEl.innerHTML = displayCategories.map(cat => `
@@ -613,31 +608,51 @@
                 const div = document.createElement('div');
                 div.className = 'p-6 sm:p-8 bg-white border-2 border-stone-200 rounded-xl shadow-card transition-all duration-300 group relative mb-6 transform hover:-translate-y-1 hover:border-theme-color hover:bg-stone-50/50';
                 
+                // 이미지/영상 렌더링 로직 (다중 이미지 지원)
                 let mediaHtml = '';
-                if (item.image) {
-                    if (item.image.startsWith('data:video')) {
-                        mediaHtml = `
-                            <div class="mb-6 rounded-xl overflow-hidden shadow-md w-full bg-black border border-stone-200">
-                                <video src="${item.image}" controls class="w-full max-h-[450px] mx-auto"></video>
-                            </div>`;
-                    } else if (item.image.includes('youtube.com') || item.image.includes('youtu.be')) {
-                        let embedUrl = item.image;
-                        if (item.image.includes('watch?v=')) {
-                            const vId = item.image.split('watch?v=')[1].split('&')[0];
-                            embedUrl = `https://www.youtube.com/embed/${vId}`;
-                        } else if (item.image.includes('youtu.be/')) {
-                            const vId = item.image.split('youtu.be/')[1].split('?')[0];
-                            embedUrl = `https://www.youtube.com/embed/${vId}`;
+                const images = item.images || (item.image ? [item.image] : []);
+
+                if (images.length > 0) {
+                    if (images.length === 1) {
+                        // 단일 이미지/영상 (기존 로직 유지)
+                        const src = images[0];
+                        if (src.startsWith('data:video')) {
+                            mediaHtml = `
+                                <div class="mb-6 rounded-xl overflow-hidden shadow-md w-full bg-black border border-stone-200">
+                                    <video src="${src}" controls class="w-full max-h-[450px] mx-auto"></video>
+                                </div>`;
+                        } else if (src.includes('youtube.com') || src.includes('youtu.be')) {
+                            let embedUrl = src;
+                            if (src.includes('watch?v=')) {
+                                const vId = src.split('watch?v=')[1].split('&')[0];
+                                embedUrl = `https://www.youtube.com/embed/${vId}`;
+                            } else if (src.includes('youtu.be/')) {
+                                const vId = src.split('youtu.be/')[1].split('?')[0];
+                                embedUrl = `https://www.youtube.com/embed/${vId}`;
+                            }
+                            mediaHtml = `
+                                <div class="mb-6 aspect-video rounded-xl overflow-hidden bg-black/5 shadow-md border border-stone-200">
+                                    <iframe src="${embedUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                                </div>`;
+                        } else {
+                            mediaHtml = `
+                                <div class="mb-6 rounded-xl overflow-hidden shadow-md max-h-[500px] w-full bg-stone-50 flex justify-center border border-stone-200 group-image">
+                                    <img src="${src}" alt="${item.title}" class="max-w-full max-h-[500px] object-contain cursor-zoom-in transition-transform duration-300 hover:scale-[1.02]" onclick="event.stopPropagation(); window.openImageModal('${src}')">
+                                </div>`;
                         }
+                    } else {
+                        // 다중 이미지 (갤러리 뷰)
+                        const galleryItems = images.map(src => `
+                            <div class="flex-shrink-0 w-64 h-48 bg-stone-50 rounded-lg overflow-hidden border border-stone-200 mr-3 last:mr-0">
+                                <img src="${src}" class="w-full h-full object-cover cursor-zoom-in hover:opacity-90 transition-opacity" onclick="event.stopPropagation(); window.openImageModal('${src}')">
+                            </div>
+                        `).join('');
                         
                         mediaHtml = `
-                            <div class="mb-6 aspect-video rounded-xl overflow-hidden bg-black/5 shadow-md border border-stone-200">
-                                <iframe src="${embedUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-                            </div>`;
-                    } else {
-                        mediaHtml = `
-                            <div class="mb-6 rounded-xl overflow-hidden shadow-md max-h-[500px] w-full bg-stone-50 flex justify-center border border-stone-200 group-image">
-                                <img src="${item.image}" alt="${item.title}" class="max-w-full max-h-[500px] object-contain cursor-zoom-in transition-transform duration-300 hover:scale-[1.02]" onclick="event.stopPropagation(); window.openImageModal('${item.image}')">
+                            <div class="mb-6 w-full overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-stone-300 scrollbar-track-transparent">
+                                <div class="flex">
+                                    ${galleryItems}
+                                </div>
                             </div>`;
                     }
                 }
@@ -659,7 +674,6 @@
                 ` : '';
 
                 div.innerHTML = `
-                    ${mediaHtml}
                     <div class="flex items-center gap-3 mb-4">
                         <span class="text-sm font-bold text-theme-color bg-theme-color/10 px-3 py-1 rounded-full border border-theme-color/20">${item.category}</span>
                         <span class="text-sm font-bold text-stone-400 flex items-center gap-1">
@@ -670,6 +684,7 @@
                     <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-4 text-k-text leading-snug group-hover:text-theme-color transition-colors duration-300 cursor-pointer break-keep" onclick="window.editPost('${item.id}')">
                         ${item.title}
                     </h2>
+                    ${mediaHtml}
                     <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line break-keep">${item.desc}</p>
                     ${adminButtons}
                 `;
@@ -678,7 +693,7 @@
             lucide.createIcons();
         }
 
-        // --- 파일 처리 및 압축 로직 ---
+        // --- File Processing ---
         function processFile(file) {
             return new Promise((resolve, reject) => {
                 if (file.type.startsWith('video')) {
@@ -729,7 +744,7 @@
             });
         }
 
-        // --- 사용자 액션 (통합) ---
+        // --- User Actions ---
         window.setCategory = (cat) => {
             window.currentCategory = cat;
             renderCategories();
@@ -838,19 +853,23 @@
             document.getElementById('input-title').value = post.title;
             document.getElementById('input-desc').value = post.desc;
             
-            if (post.image && !post.image.startsWith('data:')) {
-                imageUrlInput.value = post.image;
-            } else {
-                imageUrlInput.value = '';
-            }
-            
+            // 기존 이미지 처리
+            const images = post.images || (post.image ? [post.image] : []);
             const previewInfo = document.getElementById('file-preview-info');
             const nameDisplay = document.getElementById('file-name-display');
-            if (post.image) {
+            
+            if (images.length > 0) {
                 previewInfo.classList.remove('hidden');
-                nameDisplay.innerText = "기존 첨부 파일/URL이 유지됩니다.";
+                nameDisplay.innerText = `기존 파일 ${images.length}개가 유지됩니다. (새 파일 선택 시 교체)`;
+                // URL 입력창도 채울지 고민이지만, 다중 파일인 경우 복잡해지므로 비움
+                if(images.length === 1 && !images[0].startsWith('data:')) {
+                    imageUrlInput.value = images[0];
+                } else {
+                    imageUrlInput.value = '';
+                }
             } else {
                 previewInfo.classList.add('hidden');
+                imageUrlInput.value = '';
             }
             
             fileInput.value = '';
@@ -866,7 +885,7 @@
             submitBtnText.innerText = '게시글 등록하기';
         };
 
-        // --- 관리자 토글 ---
+        // --- Admin Toggle ---
         adminToggleBtn.addEventListener('click', () => {
             if (window.isAdminMode) {
                 toggleAdminState(false);
@@ -896,7 +915,7 @@
 
         function toggleAdminState(enable) {
             window.isAdminMode = enable;
-            localStorage.setItem('isAdminMode', enable); // 상태 저장
+            localStorage.setItem('isAdminMode', enable);
             if (enable) {
                 adminToggleBtn.classList.remove('bg-stone-300');
                 adminToggleBtn.classList.add('bg-theme-color');
@@ -915,14 +934,14 @@
             renderContents();
         }
 
-        // --- 저장 로직 ---
+        // --- Submit Logic (Multi-file support) ---
         postFormEl.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const category = document.getElementById('input-category').value;
             const title = document.getElementById('input-title').value;
             const desc = document.getElementById('input-desc').value;
-            const file = fileInput.files[0];
+            const files = fileInput.files;
             const urlInput = imageUrlInput.value.trim();
             
             if (!title || !desc) {
@@ -937,17 +956,54 @@
 
             const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
 
-            const executeSave = async (mediaUrl) => {
+            // Process all files
+            let processedImages = [];
+            let totalSize = 0;
+
+            try {
+                if (files.length > 0) {
+                    for (const file of files) {
+                        const dataUrl = await processFile(file);
+                        totalSize += dataUrl.length;
+                        processedImages.push(dataUrl);
+                    }
+                    // Safety check for Firestore document size limit (approx 1MB total)
+                    // Base64 string length roughly equals byte size. 900KB safety margin.
+                    if (totalSize > 900000) {
+                        throw new Error(`총 파일 용량이 너무 큽니다. (${Math.round(totalSize/1024)}KB). 사진 개수를 줄이거나 더 작은 이미지를 사용해주세요.`);
+                    }
+                }
+            } catch (error) {
+                alert(error.message || error);
+                submitBtnText.innerText = originalBtnText;
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-70');
+                return;
+            }
+
+            const executeSave = async () => {
                 try {
-                    if (!file && urlInput) {
-                        mediaUrl = urlInput;
+                    // Determine final image list
+                    let finalImages = [];
+                    if (processedImages.length > 0) {
+                        finalImages = processedImages;
+                    } else if (urlInput) {
+                        finalImages = [urlInput]; // If only URL is provided
+                    } else if (window.editingId) {
+                        // Keep existing if no new file/url provided
+                        // Fetch current post to get existing images
+                        const currentPost = localContents.find(p => String(p.id) === String(window.editingId));
+                        if(currentPost) {
+                            finalImages = currentPost.images || (currentPost.image ? [currentPost.image] : []);
+                        }
                     }
 
                     const newData = {
                         category,
                         title,
                         desc,
-                        image: mediaUrl || '',
+                        images: finalImages,
+                        image: finalImages.length > 0 ? finalImages[0] : '', // Backward compatibility
                         date: today,
                         createdAt: Date.now()
                     };
@@ -956,18 +1012,19 @@
                         // 수정
                         if (useFirebase) {
                             const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.editingId);
-                            const updateData = { category, title, desc };
-                            if (mediaUrl !== null) updateData.image = mediaUrl;
-                            else if (urlInput) updateData.image = urlInput;
-                            await updateDoc(postRef, updateData);
+                            // Only update fields
+                            await updateDoc(postRef, {
+                                category, title, desc, 
+                                images: finalImages,
+                                image: finalImages.length > 0 ? finalImages[0] : ''
+                            });
                         } else {
                             const idx = localContents.findIndex(p => String(p.id) === String(window.editingId));
                             if (idx !== -1) {
                                 localContents[idx] = { 
                                     ...localContents[idx], 
                                     ...newData,
-                                    image: mediaUrl !== null ? mediaUrl : (urlInput || localContents[idx].image),
-                                    id: localContents[idx].id // ID 유지
+                                    id: localContents[idx].id
                                 };
                                 saveLocalData();
                                 renderContents();
@@ -985,7 +1042,6 @@
                             saveLocalData();
                             renderContents();
                         }
-                        // 알림 삭제됨
                         alert("등록되었습니다.");
                     }
                     window.resetForm();
@@ -999,19 +1055,7 @@
                 }
             };
 
-            if (file) {
-                try {
-                    const compressedDataUrl = await processFile(file);
-                    executeSave(compressedDataUrl);
-                } catch (error) {
-                    alert(error);
-                    submitBtnText.innerText = originalBtnText;
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-70');
-                }
-            } else {
-                executeSave(window.editingId ? null : (urlInput || ''));
-            }
+            executeSave();
         });
 
         // 시작
