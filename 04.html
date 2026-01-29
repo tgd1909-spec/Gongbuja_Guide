@@ -145,7 +145,7 @@
                 <div class="w-24 h-1 bg-theme-color mt-4 mb-6 rounded-full"></div>
                 
                 <p class="text-stone-700 font-medium text-lg sm:text-xl break-keep leading-relaxed">
-                    초심 공부자들이 갖추어야 할 <b class="text-theme-color">국궁, 배례, 봉심</b> 등<br class="hidden sm:block"> 도인으로서의 기본 예법을 안내합니다.
+                    초심 공부자들이 갖추어야 할 <b class="text-theme-color">국궁, 배례, 봉심, 강식</b> 등<br class="hidden sm:block"> 도인으로서의 기본 예법을 안내합니다.
                 </p>
             </div>
         </header>
@@ -224,7 +224,7 @@
                     <label class="block text-sm font-bold text-stone-600 mb-2 flex items-center gap-2">
                         <i data-lucide="image" class="w-4 h-4"></i> 사진/영상 첨부
                     </label>
-                    <!-- multiple 속성 재확인 및 적용 -->
+                    <!-- multiple 속성 적용 -->
                     <input type="file" id="input-file" accept="image/*,video/*" multiple class="w-full bg-white border-2 border-stone-300 rounded-lg p-2 text-sm focus:outline-none focus:border-theme-color file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-stone-200 file:text-stone-700 hover:file:bg-stone-300 cursor-pointer">
                     <div id="file-preview-info" class="mt-3 text-sm text-theme-color font-bold hidden flex items-center gap-2">
                         <i class="fa-solid fa-check-circle"></i><span id="file-name-display"></span>
@@ -497,10 +497,8 @@
                 snapshot.forEach((doc) => {
                     localContents.push({ id: doc.id, ...doc.data() });
                 });
-                localContents.sort((a, b) => {
-                    if(a.createdAt && b.createdAt) return b.createdAt - a.createdAt;
-                    return 0;
-                });
+                // 초기 정렬 (혹시 몰라 createdAt 기준) - renderContents에서 다시 정렬함
+                localContents.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
                 renderContents();
             });
 
@@ -510,12 +508,25 @@
                 snapshot.forEach((doc) => {
                     cats.push({ id: doc.id, ...doc.data() });
                 });
-                cats.sort((a, b) => a.name.localeCompare(b.name));
+                
+                // 카테고리 정렬: 지정된 순서 우선, 그 외는 이름순
+                const defaultOrder = ['국궁', '배례', '봉심', '강식'];
+                cats.sort((a, b) => {
+                    const idxA = defaultOrder.indexOf(a.name);
+                    const idxB = defaultOrder.indexOf(b.name);
+                    
+                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                    if (idxA !== -1) return -1;
+                    if (idxB !== -1) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+
                 localCategoriesObjects = cats;
                 localCategories = cats.map(c => c.name);
                 renderCategories();
                 renderCategorySelect();
                 renderAdminCategories();
+                renderContents(); // 카테고리 로드 후 게시글 재정렬 및 렌더링
             });
         }
 
@@ -590,12 +601,12 @@
         function renderContents() {
             contentListEl.innerHTML = '';
             
-            // 1. 필터링 (전체인 경우 복사본 생성, 아니면 필터링)
+            // 1. 필터링
             let filtered = window.currentCategory === '전체' 
                 ? [...localContents] 
                 : localContents.filter(item => item.category === window.currentCategory);
 
-            // 2. 정렬 (전체보기일 때: 카테고리 순 -> 최신 순 / 그 외: 최신 순)
+            // 2. 정렬 (전체보기: 카테고리 순 -> 최신 순 / 그 외: 최신 순)
             filtered.sort((a, b) => {
                 if (window.currentCategory === '전체') {
                     const idxA = localCategories.indexOf(a.category);
@@ -603,13 +614,12 @@
                     
                     // 카테고리 순서가 다르면 카테고리 인덱스로 정렬
                     if (idxA !== idxB) {
-                        // 목록에 없는 카테고리는 뒤로
-                        if (idxA === -1) return 1;
+                        if (idxA === -1) return 1; // 없는 카테고리는 뒤로
                         if (idxB === -1) return -1;
                         return idxA - idxB;
                     }
                 }
-                // 같은 카테고리 내에서는 최신순 (createdAt 내림차순)
+                // 같은 카테고리 내에서는 최신순
                 return (b.createdAt || 0) - (a.createdAt || 0);
             });
 
