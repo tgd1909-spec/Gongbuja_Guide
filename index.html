@@ -4,19 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>태극도 공부 길라잡이</title>
-    
-    <!-- 휴대전화 홈 화면 바로가기(PWA) 및 아이콘 설정 -->
-    <!-- 1. 안드로이드/크롬/네이버용 아이콘 (가장 권장되는 크기 192x192) -->
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <!-- 2. 아이폰/아이패드용 아이콘 (180x180) -->
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <!-- 3. 브라우저 주소창 색상 (태극도의 청색 계열로 설정) -->
-    <meta name="theme-color" content="#1565c0">
-    <!-- 4. iOS에서 앱처럼 보이게 하는 설정 -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="태극도 공부">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Google Fonts -->
@@ -24,19 +11,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
 
-    <!-- Tailwind Config -->
+    <!-- Tailwind Config for Custom Colors and Fonts -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'k-bg': '#fdfbf7',
-                        'k-text': '#1a1a1a',
-                        'k-sub': '#555555',
-                        'theme-navy': '#2c3e50',
-                        'theme-apricot': '#d97706',
-                        'theme-teal': '#0f766e',
-                        'theme-crimson': '#be123c',
+                        'k-bg': '#fdfbf7',   // 기본 배경 (미색)
+                        'k-text': '#1a1a1a', // 본문 텍스트 (진한 검정)
+                        'k-sub': '#555555',  // 보조 텍스트
+                        
+                        // 챕터별 테마 컬러 (한국 전통색 재해석)
+                        'theme-navy': '#2c3e50',    // 쪽빛 (법식)
+                        'theme-apricot': '#d97706',  // 살구색 (준비)
+                        'theme-blue': '#5c6bc0',     // 은은한 인디고 (공부 방법) - 변경됨 (기존 자색 -> 파스텔톤 블루)
+                        'theme-teal': '#0f766e',     // 청자색 (일과)
+                        'theme-crimson': '#be123c',  // 다홍색 (공지)
                     },
                     fontFamily: {
                         serif: ['"Noto Serif KR"', 'serif'],
@@ -55,13 +45,17 @@
     </script>
 
     <style>
+        /* 한지 질감 및 기본 설정 */
         body {
             background-color: #fdfbf7;
             background-image: radial-gradient(#e6e2d3 1px, transparent 1px);
             background-size: 24px 24px;
             color: #1a1a1a;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
+        
+        /* 텍스트 끊김 방지 */
         .keep-all {
             word-break: keep-all;
             word-wrap: break-word;
@@ -83,12 +77,17 @@
         </a>
 
         <!-- 헤더 섹션 -->
-        <header class="text-center mb-12 mt-4 relative">
+        <header class="text-center mb-10 mt-4 relative">
+            <!-- 로고: SVG 태극팔괘 (심플 버전) -->
             <div class="mx-auto w-28 h-28 mb-6 flex items-center justify-center transform hover:scale-105 transition-transform duration-500">
                 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-md">
                     <circle cx="100" cy="100" r="95" fill="none" stroke="#ddd" stroke-width="1.5" />
+                    <!-- 건곤감리 (약식 표현) -->
                     <path d="M100,5 L100,20 M100,180 L100,195 M5,100 L20,100 M180,100 L195,100" stroke="#ccc" stroke-width="2"/>
+                    <!-- 태극 (색상 반전 & 시계 반대 방향) -->
+                    <!-- 위쪽: 파란색 -->
                     <path d="M100,25 A75,75 0 0,0 100,175 A37.5,37.5 0 0,0 100,100 A37.5,37.5 0 0,1 100,25 Z" fill="#1565c0" />
+                    <!-- 아래쪽: 빨간색 -->
                     <path d="M100,175 A75,75 0 0,0 100,25 A37.5,37.5 0 0,0 100,100 A37.5,37.5 0 0,1 100,175 Z" fill="#c62828" />
                 </svg>
             </div>
@@ -97,23 +96,22 @@
                 태극도 공부 길라잡이
             </h1>
             <p class="font-sans text-stone-600 text-base md:text-lg font-medium tracking-wide keep-all leading-relaxed">
-                도를 구하는 마음으로 <span class="text-stone-800 font-bold underline decoration-stone-300 decoration-2 underline-offset-4">공부에 첫걸음</span>을 내디딘 종도분들을 환영합니다.<br class="hidden md:block"/>
+                도를 구하는 마음으로 <span class="text-stone-800 font-bold underline decoration-stone-300 decoration-2 underline-offset-4">공부에 첫걸음</span>을 내디딘 분들을 환영합니다.<br class="hidden md:block"/>
                 올바른 예법과 마음가짐을 위한 안내서입니다.
             </p>
         </header>
 
-        <!-- 네비게이션 그리드 -->
+        <!-- 네비게이션 그리드 (5개 항목) -->
         <nav class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mx-auto">
             
-            <!-- 1. 법식 안내 -->
+            <!-- 1. 법식 안내 (테마: 쪽빛/Navy) -->
             <a href="04.html" class="group relative flex flex-col bg-white rounded-xl border-2 border-stone-100 hover:border-theme-navy transition-all duration-300 shadow-card hover:shadow-card-hover transform hover:-translate-y-1 overflow-hidden">
                 <div class="h-1.5 w-full bg-theme-navy opacity-80 group-hover:opacity-100 transition-opacity"></div>
                 <div class="p-6 md:p-8 flex items-start gap-5">
                     <div class="shrink-0 w-14 h-14 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-theme-navy group-hover:bg-theme-navy group-hover:text-white transition-colors duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                            <path d="M8 10h8"/>
-                            <path d="M12 10v4"/>
+                            <path d="M8 10h8"/><path d="M12 10v4"/>
                         </svg>
                     </div>
                     <div class="flex-1">
@@ -128,7 +126,7 @@
                 </div>
             </a>
 
-            <!-- 2. 공부 드는 준비 -->
+            <!-- 2. 공부 드는 준비 (테마: 살구색/Apricot) -->
             <a href="01.html" class="group relative flex flex-col bg-white rounded-xl border-2 border-stone-100 hover:border-theme-apricot transition-all duration-300 shadow-card hover:shadow-card-hover transform hover:-translate-y-1 overflow-hidden">
                 <div class="h-1.5 w-full bg-theme-apricot opacity-80 group-hover:opacity-100 transition-opacity"></div>
                 <div class="p-6 md:p-8 flex items-start gap-5">
@@ -149,7 +147,29 @@
                 </div>
             </a>
 
-            <!-- 3. 일과표 -->
+            <!-- 3. 공부 방법 (테마: 은은한 파스텔 블루/Soft Indigo) - 변경됨 -->
+            <a href="05.html" class="group relative flex flex-col bg-white rounded-xl border-2 border-stone-100 hover:border-theme-blue transition-all duration-300 shadow-card hover:shadow-card-hover transform hover:-translate-y-1 overflow-hidden">
+                <div class="h-1.5 w-full bg-theme-blue opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                <div class="p-6 md:p-8 flex items-start gap-5">
+                    <!-- 아이콘: 펼쳐진 책/경전 -->
+                    <div class="shrink-0 w-14 h-14 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-theme-blue group-hover:bg-theme-blue group-hover:text-white transition-colors duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xs font-bold text-theme-blue bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">제3장</span>
+                            <h2 class="font-serif text-2xl font-bold text-k-text group-hover:text-theme-blue transition-colors">공부 방법</h2>
+                        </div>
+                        <p class="text-stone-600 text-sm md:text-base leading-relaxed keep-all group-hover:text-stone-800">
+                            도를 닦는 도인으로서 익혀야 할 <strong class="text-theme-blue font-bold">시법 공부</strong>의 구체적인 방법과 의의를 배웁니다.
+                        </p>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 4. 일과표 (테마: 청자색/Teal) -->
             <a href="02.html" class="group relative flex flex-col bg-white rounded-xl border-2 border-stone-100 hover:border-theme-teal transition-all duration-300 shadow-card hover:shadow-card-hover transform hover:-translate-y-1 overflow-hidden">
                 <div class="h-1.5 w-full bg-theme-teal opacity-80 group-hover:opacity-100 transition-opacity"></div>
                 <div class="p-6 md:p-8 flex items-start gap-5">
@@ -161,31 +181,29 @@
                     </div>
                     <div class="flex-1">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="text-xs font-bold text-theme-teal bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">제3장</span>
+                            <span class="text-xs font-bold text-theme-teal bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">제4장</span>
                             <h2 class="font-serif text-2xl font-bold text-k-text group-hover:text-theme-teal transition-colors">일과표</h2>
                         </div>
                         <p class="text-stone-600 text-sm md:text-base leading-relaxed keep-all group-hover:text-stone-800">
-                            수도인으로서 하루의 시작과 끝, 지켜야 할 <strong class="text-theme-teal font-bold">기도 시간</strong>과 <strong class="text-theme-teal font-bold">하루 일과</strong>를 확인합니다.
+                            하루의 시작과 끝, 수도인으로서 지켜야 할 <strong class="text-theme-teal font-bold">기도 시간</strong>과 <strong class="text-theme-teal font-bold">하루 일과</strong>를 확인합니다.
                         </p>
                     </div>
                 </div>
             </a>
 
-            <!-- 4. 공지사항 -->
-            <a href="03.html" class="group relative flex flex-col bg-white rounded-xl border-2 border-stone-100 hover:border-theme-crimson transition-all duration-300 shadow-card hover:shadow-card-hover transform hover:-translate-y-1 overflow-hidden">
+            <!-- 5. 공지사항 (테마: 다홍색/Crimson) - 2칸 차지 -->
+            <a href="03.html" class="group relative flex flex-col bg-white rounded-xl border-2 border-stone-100 hover:border-theme-crimson transition-all duration-300 shadow-card hover:shadow-card-hover transform hover:-translate-y-1 overflow-hidden md:col-span-2">
                 <div class="h-1.5 w-full bg-theme-crimson opacity-80 group-hover:opacity-100 transition-opacity"></div>
                 <div class="p-6 md:p-8 flex items-start gap-5">
                     <div class="shrink-0 w-14 h-14 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-theme-crimson group-hover:bg-theme-crimson group-hover:text-white transition-colors duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="9" />
-                            <path d="M12 12v.01"/>
-                            <path d="M12 8v4"/>
-                            <path d="M12 3V2"/>
+                            <path d="M12 12v.01"/><path d="M12 8v4"/><path d="M12 3V2"/>
                         </svg>
                     </div>
                     <div class="flex-1">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="text-xs font-bold text-theme-crimson bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">제4장</span>
+                            <span class="text-xs font-bold text-theme-crimson bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">제5장</span>
                             <h2 class="font-serif text-2xl font-bold text-k-text group-hover:text-theme-crimson transition-colors">공지사항</h2>
                         </div>
                         <p class="text-stone-600 text-sm md:text-base leading-relaxed keep-all group-hover:text-stone-800">
