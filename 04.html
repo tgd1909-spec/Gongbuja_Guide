@@ -16,34 +16,23 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'k-bg': '#fdfbf7',       // 한지 배경색
-                        'k-text': '#1a1a1a',     // 기본 텍스트
-                        'theme-color': '#2c3e50', // 쪽빛 (Navy) - 포인트 컬러
+                        'k-bg': '#fdfbf7',
+                        'k-text': '#1a1a1a',
+                        'theme-color': '#2c3e50',
                         stone: {
-                            50: '#fafaf9',
-                            100: '#f5f5f4',
-                            200: '#e7e5e4',
-                            300: '#d6d3d1',
-                            400: '#a8a29e',
-                            500: '#78716c',
-                            600: '#57534e',
-                            700: '#44403c',
-                            800: '#292524',
-                            900: '#1c1917',
+                            50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 300: '#d6d3d1',
+                            400: '#a8a29e', 500: '#78716c', 600: '#57534e', 700: '#44403c',
+                            800: '#292524', 900: '#1c1917',
                         }
                     },
                     fontFamily: {
                         serif: ['"Noto Serif KR"', 'serif'],
                         sans: ['"Noto Sans KR"', 'sans-serif'],
-                    },
-                    backgroundImage: {
-                        'hanji-pattern': 'radial-gradient(#e6e2d3 1px, transparent 1px)',
                     },
                     boxShadow: {
                         'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
@@ -54,65 +43,27 @@
     </script>
 
     <style>
-        /* 배경 설정 (Tailwind config 활용) */
         body {
             background-color: #fdfbf7;
             background-image: radial-gradient(#e6e2d3 1px, transparent 1px);
             background-size: 24px 24px;
             word-break: keep-all; 
         }
-
-        /* 스크롤바 커스터마이징 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px; /* 가로 스크롤바 높이 추가 */
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #d6d3d1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a8a29e;
-        }
-
-        /* 텍스트 드래그 색상 - 테마 컬러 반영 */
-        ::selection {
-            background-color: #2c3e50;
-            color: #ffffff;
-        }
-        
-        /* 로딩 인디케이터 - 테마 컬러 반영 */
+        ::selection { background-color: #2c3e50; color: #ffffff; }
         .loader {
             border: 4px solid #f3f3f3;
             border-radius: 50%;
             border-top: 4px solid #2c3e50;
-            width: 32px;
-            height: 32px;
+            width: 32px; height: 32px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* 깜빡이는 NEW 배지 효과 - 테마 컬러 반영 */
-        .new-badge {
-            animation: pulse-theme 2s infinite;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .new-badge { animation: pulse-theme 2s infinite; }
         @keyframes pulse-theme {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(44, 62, 80, 0.7); }
             70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(44, 62, 80, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(44, 62, 80, 0); }
         }
-        
-        /* 이미지 모달 애니메이션 */
-        .modal-enter { opacity: 0; transform: scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
-        .modal-exit { opacity: 1; transform: scale(1); }
-        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 0.2s ease-in, transform 0.2s ease-in; }
     </style>
 </head>
 <body class="text-k-text font-sans min-h-screen flex flex-col items-center py-6 px-4 sm:px-6">
@@ -122,7 +73,6 @@
         
         <!-- 상단 컨트롤 (홈 버튼) -->
         <div class="absolute top-6 right-6 sm:top-8 sm:right-8 z-20 flex items-center gap-3">
-            <!-- 홈 버튼 -->
             <a href="index.html" class="flex items-center gap-2 px-4 py-2 bg-white border-2 border-stone-200 rounded-full shadow-card text-stone-600 hover:text-k-text hover:border-theme-color transition-all duration-300 group">
                 <i data-lucide="home" class="w-5 h-5"></i>
                 <span class="hidden sm:inline font-serif text-base font-bold pt-0.5 group-hover:underline decoration-theme-color underline-offset-4 decoration-2">홈으로</span>
@@ -132,8 +82,7 @@
         <!-- 헤더 영역 -->
         <header class="pt-16 pb-8 px-6 sm:px-12 text-center sm:text-left bg-white">
             <div class="flex flex-col sm:items-start items-center">
-                <!-- 소제목 추가 -->
-                <p class="text-sm font-bold text-theme-color/80 mb-2 tracking-widest font-serif">공부자를 위한 안내</p>
+                <p class="text-sm font-bold text-theme-color/80 mb-2 tracking-widest font-serif">도인들을 위한 안내</p>
                 
                 <div class="flex items-center gap-3 mb-2">
                     <i data-lucide="book-open" class="w-8 h-8 text-theme-color"></i>
@@ -141,11 +90,10 @@
                         태극도 법식(法式)
                     </h1>
                 </div>
-                <!-- Divider: 테마 컬러 가로줄 -->
                 <div class="w-24 h-1 bg-theme-color mt-4 mb-6 rounded-full"></div>
                 
                 <p class="text-stone-700 font-medium text-lg sm:text-xl break-keep leading-relaxed">
-                    초심 공부자들이 갖추어야 할 <b class="text-theme-color">국궁, 배례, 봉심, 강식</b> 등<br class="hidden sm:block"> 도인으로서의 기본 예법을 안내합니다.
+                    도인들이 갖추어야 할 기본 예법과<br class="hidden sm:block"> 도인으로서의 마음가짐을 안내합니다.
                 </p>
             </div>
         </header>
@@ -153,7 +101,7 @@
         <!-- 탭 네비게이션 -->
         <nav class="sticky top-0 z-10 bg-white/95 backdrop-blur border-b-2 border-stone-200 px-4 sm:px-8 py-4 overflow-x-auto shadow-sm">
             <div class="flex gap-3 min-w-max sm:justify-start" id="category-container">
-                <div class="px-5 py-2.5 text-stone-400 text-base font-bold">카테고리 로딩중...</div>
+                <div class="px-5 py-2.5 text-stone-400 text-base font-bold">로딩 중...</div>
             </div>
         </nav>
 
@@ -182,14 +130,11 @@
                 <label class="block text-sm font-bold text-stone-600 mb-4 flex items-center gap-2">
                     <i data-lucide="tags" class="w-4 h-4 text-theme-color"></i> 카테고리 관리
                 </label>
-                <div class="flex flex-wrap gap-3 mb-5" id="admin-category-list">
-                    <!-- 카테고리 태그들이 여기에 생성됩니다 -->
-                </div>
+                <div class="flex flex-wrap gap-3 mb-5" id="admin-category-list"></div>
                 <div class="flex gap-3 h-12">
                     <input type="text" id="new-category-input" placeholder="새 카테고리 추가" 
-                        class="flex-1 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-base focus:outline-none focus:border-theme-color focus:bg-white transition-colors text-k-text placeholder-stone-400 font-medium"
-                        onkeypress="if(event.key === 'Enter') window.addCategory()">
-                    <button onclick="window.addCategory()" class="px-6 bg-theme-color text-white rounded-lg hover:bg-[#1a252f] text-base font-bold transition-colors whitespace-nowrap shadow-md">
+                        class="flex-1 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-base focus:outline-none focus:border-theme-color focus:bg-white transition-colors text-k-text placeholder-stone-400 font-medium">
+                    <button onclick="window.addCategory()" class="px-6 bg-theme-color text-white rounded-lg hover:bg-stone-800 text-base font-bold transition-colors whitespace-nowrap shadow-md">
                         추가
                     </button>
                 </div>
@@ -202,16 +147,12 @@
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
                     <div class="sm:col-span-1">
                         <label class="block text-sm font-bold text-stone-600 mb-2">카테고리 선택</label>
-                        <div class="relative">
-                            <select id="input-category" class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-3 text-base font-bold text-k-text focus:outline-none focus:border-theme-color cursor-pointer appearance-none">
-                                <!-- JS로 동적 생성 -->
-                            </select>
-                            <i data-lucide="chevron-down" class="absolute right-3 top-3.5 w-5 h-5 text-stone-500 pointer-events-none"></i>
-                        </div>
+                        <select id="input-category" class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-3 text-base font-bold text-k-text focus:outline-none focus:border-theme-color cursor-pointer appearance-none">
+                        </select>
                     </div>
                     <div class="sm:col-span-3">
                         <label class="block text-sm font-bold text-stone-600 mb-2">제목</label>
-                        <input type="text" id="input-title" placeholder="제목을 입력하세요 (예: 국궁의 의미)" class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-lg font-bold text-k-text focus:outline-none focus:border-theme-color focus:bg-white font-serif placeholder-stone-400">
+                        <input type="text" id="input-title" placeholder="제목을 입력하세요" class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-lg font-bold text-k-text focus:outline-none focus:border-theme-color focus:bg-white font-serif placeholder-stone-400">
                     </div>
                 </div>
 
@@ -224,28 +165,21 @@
                     <label class="block text-sm font-bold text-stone-600 mb-2 flex items-center gap-2">
                         <i data-lucide="image" class="w-4 h-4"></i> 사진/영상 첨부
                     </label>
-                    <!-- multiple 속성 적용 -->
                     <input type="file" id="input-file" accept="image/*,video/*" multiple class="w-full bg-white border-2 border-stone-300 rounded-lg p-2 text-sm focus:outline-none focus:border-theme-color file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-stone-200 file:text-stone-700 hover:file:bg-stone-300 cursor-pointer">
                     <div id="file-preview-info" class="mt-3 text-sm text-theme-color font-bold hidden flex items-center gap-2">
-                        <i class="fa-solid fa-check-circle"></i><span id="file-name-display"></span>
-                    </div>
-                    <div class="mt-3 text-xs text-stone-500 space-y-1">
-                        <p class="flex items-center gap-1"><i class="fa-solid fa-layer-group text-stone-400"></i> <span class="font-bold">다중 선택:</span> PC에서는 Ctrl 또는 Shift 키를 누르고 선택하세요.</p>
-                        <p class="flex items-center gap-1"><i class="fa-solid fa-camera text-stone-400"></i> <span class="font-bold">사진:</span> 고화질 사진은 자동으로 최적화되어 업로드됩니다.</p>
-                        <p class="flex items-center gap-1"><i class="fa-solid fa-video text-stone-400"></i> <span class="font-bold">동영상:</span> 700KB 이하만 가능합니다. (큰 영상은 아래 URL 이용)</p>
+                        <i data-lucide="check-circle" class="w-4 h-4"></i><span id="file-name-display"></span>
                     </div>
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-bold text-stone-600 mb-2">이미지/영상 URL (선택)</label>
+                    <label class="block text-sm font-bold text-stone-600 mb-2">URL (선택)</label>
                     <input type="text" id="input-image-url" placeholder="https://..." class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-base focus:outline-none focus:border-theme-color focus:bg-white text-k-text font-medium">
-                    <p class="text-xs text-stone-500 mt-2 font-medium">* YouTube 링크나 외부 이미지 주소가 있다면 여기에 입력하세요.</p>
                 </div>
 
                 <div class="pt-4">
-                    <button type="submit" id="submit-btn" class="w-full py-4 bg-theme-color text-white rounded-xl hover:bg-[#1a252f] transition-all transform hover:-translate-y-1 text-lg font-bold shadow-lg flex items-center justify-center gap-2">
+                    <button type="submit" id="submit-btn" class="w-full py-4 bg-theme-color text-white rounded-xl hover:bg-stone-800 transition-all transform hover:-translate-y-1 text-lg font-bold shadow-lg flex items-center justify-center gap-2">
                         <i data-lucide="pen-line" class="w-5 h-5"></i>
-                        <span id="submit-btn-text">게시글 등록하기</span>
+                        <span id="submit-btn-text">게시글 저장하기</span>
                     </button>
                 </div>
             </form>
@@ -255,93 +189,75 @@
 
     <!-- 푸터 -->
     <footer class="mt-10 mb-20 text-center text-stone-500 text-sm font-medium">
-        <p class="font-serif text-lg text-stone-400 mb-1">Taegeukdo Guide for Beginners</p>
+        <p class="font-serif text-lg text-stone-400 mb-1">Taegeukdo Guide for Do-in</p>
         <p>&copy; 2024 태극도 법식 안내. All rights reserved.</p>
     </footer>
 
-    <!-- 최상단/최하단 이동 플로팅 버튼 (우측 하단) -->
+    <!-- 플로팅 버튼 -->
     <div class="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
-        <!-- Top Scroll -->
-        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-card text-theme-color hover:bg-theme-color hover:text-white hover:border-theme-color transition-all duration-300 transform hover:-translate-y-1" aria-label="맨 위로">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-            </svg>
-        </button>
-        <!-- Bottom Scroll -->
-        <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-card text-theme-color hover:bg-theme-color hover:text-white hover:border-theme-color transition-all duration-300 transform hover:-translate-y-1" aria-label="맨 아래로">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-card text-theme-color hover:bg-theme-color hover:text-white transition-all transform hover:-translate-y-1">
+            <i data-lucide="arrow-up" class="w-6 h-6"></i>
         </button>
     </div>
 
-    <!-- 관리자 모드 토글 스위치 (좌측 하단으로 이동 및 축소) -->
-    <div class="fixed bottom-8 left-8 z-50 flex items-center gap-2 bg-white pl-4 pr-2 py-2 rounded-full shadow-lg border-2 border-stone-200 transform scale-90 origin-bottom-left opacity-80 hover:opacity-100 transition-all">
+    <!-- 관리자 모드 토글 -->
+    <div class="fixed bottom-8 left-8 z-50 flex items-center gap-2 bg-white pl-4 pr-2 py-2 rounded-full shadow-lg border-2 border-stone-200 scale-90 opacity-80 hover:opacity-100 transition-all">
         <span class="text-xs font-bold text-stone-500">관리자 모드</span>
-        <button id="admin-toggle" class="relative inline-flex h-6 w-10 items-center rounded-full transition-colors focus:outline-none bg-stone-300 hover:bg-stone-400">
-            <span class="sr-only">관리자 모드 활성화</span>
+        <button id="admin-toggle" class="relative inline-flex h-6 w-10 items-center rounded-full bg-stone-300 transition-colors focus:outline-none">
             <span id="toggle-circle" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1 shadow-sm"></span>
         </button>
     </div>
 
-    <!-- 이미지 확대 모달 (Lightbox) -->
+    <!-- 이미지 확대 모달 -->
     <div id="image-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/90 backdrop-blur-sm cursor-zoom-out" onclick="window.closeImageModal()">
-        <img id="modal-image" src="" alt="확대 이미지" class="max-w-[95%] max-h-[95%] object-contain rounded-lg shadow-2xl transition-transform duration-300 scale-95 opacity-0">
-        <button class="absolute top-6 right-6 text-white/80 hover:text-white transition-colors bg-black/20 hover:bg-black/40 rounded-full p-2">
-            <i data-lucide="x" class="w-8 h-8"></i>
-        </button>
+        <img id="modal-image" src="" alt="확대 이미지" class="max-w-[95%] max-h-[95%] object-contain rounded-lg shadow-2xl transition-all scale-95 opacity-0">
     </div>
 
-    <!-- 커스텀 모달 (비밀번호 확인) -->
+    <!-- 비밀번호 확인 모달 -->
     <div id="password-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-96 max-w-[90%] border-2 border-stone-200 animate-in fade-in zoom-in duration-200">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-96 max-w-[90%] border-2 border-stone-200">
             <h3 class="font-serif font-bold text-2xl mb-3 text-k-text flex items-center gap-2">
                 <i data-lucide="lock" class="w-6 h-6 text-theme-color"></i> 관리자 인증
             </h3>
             <p class="text-sm font-bold text-stone-500 mb-6">관리자 비밀번호를 입력해주세요.</p>
-            
             <input type="password" id="admin-password-input" 
-                class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-lg mb-3 focus:outline-none focus:border-theme-color focus:bg-white transition-all text-center tracking-widest font-bold text-k-text" 
+                class="w-full h-12 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-lg mb-3 focus:outline-none focus:border-theme-color focus:bg-white text-center tracking-widest font-bold text-k-text" 
                 placeholder="비밀번호" 
                 onkeypress="if(event.key === 'Enter') window.checkPassword()">
-            
-            <p id="password-error" class="text-sm font-bold text-red-600 mb-6 h-5 opacity-0 transition-opacity flex items-center justify-center gap-1">
-                <i class="fa-solid fa-circle-exclamation"></i> 비밀번호가 올바르지 않습니다.
+            <p id="password-error" class="text-sm font-bold text-red-600 mb-6 opacity-0 transition-opacity text-center">
+                비밀번호가 올바르지 않습니다.
             </p>
-            
             <div class="flex justify-end gap-3">
                 <button onclick="window.closePasswordModal()" class="px-5 py-2.5 text-sm font-bold text-stone-500 hover:bg-stone-100 rounded-lg transition-colors">취소</button>
-                <button onclick="window.checkPassword()" class="px-6 py-2.5 text-sm font-bold bg-theme-color text-white rounded-lg hover:bg-[#1a252f] shadow-md transition-colors">확인</button>
+                <button onclick="window.checkPassword()" class="px-6 py-2.5 text-sm font-bold bg-theme-color text-white rounded-lg hover:bg-stone-800 shadow-md transition-colors">확인</button>
             </div>
         </div>
     </div>
 
-    <!-- 커스텀 모달 (삭제 확인) -->
+    <!-- 삭제 확인 모달 -->
     <div id="delete-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-96 max-w-[90%] border-2 border-stone-200 animate-in fade-in zoom-in duration-200">
-            <div class="flex flex-col items-center text-center mb-6">
-                <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-600">
-                    <i data-lucide="trash-2" class="w-8 h-8"></i>
-                </div>
-                <h3 class="font-serif font-bold text-2xl text-k-text mb-2">게시글 삭제</h3>
-                <p class="text-stone-600 font-medium leading-relaxed">정말로 이 게시글을 삭제하시겠습니까?<br>삭제 후에는 복구할 수 없습니다.</p>
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-96 max-w-[90%] border-2 border-stone-200 text-center">
+            <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
+                <i data-lucide="trash-2" class="w-8 h-8"></i>
             </div>
-            <div class="flex justify-center gap-3 w-full">
+            <h3 class="font-serif font-bold text-2xl mb-2 text-k-text">게시글 삭제</h3>
+            <p class="text-stone-600 font-medium mb-6">정말로 이 게시글을 삭제하시겠습니까?</p>
+            <div class="flex gap-3">
                 <button onclick="window.closeDeleteModal()" class="flex-1 py-3 text-base font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors">취소</button>
-                <button id="confirm-delete-btn" class="flex-1 py-3 text-base font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-md transition-colors">삭제하기</button>
+                <button id="confirm-delete-btn" class="flex-1 py-3 text-base font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-md transition-colors">삭제</button>
             </div>
         </div>
     </div>
 
-    <!-- 파이어베이스 및 앱 로직 -->
+    <!-- Firebase SDK 및 앱 로직 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ==========================================================================
-        // [중요] 깃허브 페이지(외부 배포)에서 실시간 공유를 하려면 아래 설정을 채워주세요.
-        // ==========================================================================
+        // 요청하신 법식 순서 고정
+        const FIX_ORDER = ['시립', '법배', '평배', '향납읍', '좌배', '국궁', '좌우진보', '법좌', '수련방법', '점호의례', '봉심의례', '부정기휘법'];
+
         const YOUR_FIREBASE_CONFIG = {
             apiKey: "AIzaSyAoUdyZJQjcT81_2YKzX1rzMJlNAoHcbAw",
             authDomain: "taegeuk-rules.firebaseapp.com",
@@ -350,20 +266,15 @@
             messagingSenderId: "388014641769",
             appId: "1:388014641769:web:f9fd06f30a222663b448f8"
         };
-        // ==========================================================================
 
-
-        // --- 전역 변수 설정 ---
         window.isAdminMode = false;
         window.currentCategory = '전체';
         window.editingId = null;
         window.deleteTargetId = null;
-        
         let localContents = [];
         let localCategories = [];
-        let localCategoriesObjects = []; 
+        let localCategoriesObjects = [];
 
-        // DOM 요소 가져오기
         const contentListEl = document.getElementById('content-list');
         const categoryContainerEl = document.getElementById('category-container');
         const adminPanelEl = document.getElementById('admin-panel');
@@ -377,761 +288,289 @@
         const imageUrlInput = document.getElementById('input-image-url');
         const submitBtn = document.getElementById('submit-btn');
         const submitBtnText = document.getElementById('submit-btn-text');
-        
         const passwordModal = document.getElementById('password-modal');
         const passwordInput = document.getElementById('admin-password-input');
         const passwordError = document.getElementById('password-error');
         const deleteModal = document.getElementById('delete-modal');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
-        // --- Firebase 초기화 ---
         let db, auth;
         let useFirebase = false;
-        let appId = 'default-app-id';
-
-        // 기본 데이터
-        const defaultContents = [
-            {
-                id: 1,
-                category: '국궁',
-                title: '국궁(鞠躬)의 기본 자세',
-                desc: '국궁은 몸을 굽혀 존경을 표하는 동작입니다. 두 손을 공수(拱手)하고 허리를 15도 가량 굽히며, 시선은 자신의 발끝 전방 1~2미터 지점을 향합니다. 이때 마음을 차분히 가라앉히고 공경하는 마음을 담는 것이 중요합니다.',
-                image: 'https://images.unsplash.com/photo-1518330666324-4286280b3328?auto=format&fit=crop&q=80&w=800', 
-                date: '2023.10.15'
-            },
-            {
-                id: 2,
-                category: '배례',
-                title: '배례(拜禮) 행하는 법',
-                desc: '배례는 상제님께 올리는 가장 큰 경의의 표시입니다. 국궁 자세에서 시작하여 무릎을 꿇고 엎드려 절을 올립니다. 손의 위치와 일어나는 순서가 중요하며, 처음 공부하시는 분들은 무릎에 무리가 가지 않도록 천천히 연습하시기 바랍니다.',
-                image: '', 
-                date: '2023.10.16'
-            },
-            {
-                id: 3,
-                category: '봉심',
-                title: '봉심(奉審)의 마음가짐',
-                desc: '봉심은 성전을 살피고 받드는 의식입니다. 정해진 시간에 의관을 정제하고 엄숙한 마음으로 행해야 합니다. 단순히 건물을 둘러보는 것이 아니라, 도(道)와 하나 되는 경건한 마음가짐이 핵심입니다.',
-                image: 'https://images.unsplash.com/photo-1598556885318-48b495922312?auto=format&fit=crop&q=80&w=800',
-                date: '2023.10.20'
-            },
-            {
-                id: 4,
-                category: '강식',
-                title: '강식(講式) 참여 예절',
-                desc: '강식은 진리를 공부하고 토론하는 시간입니다. 경청하는 자세를 유지하며, 질문이나 발언 시에는 예의를 갖추어야 합니다. 복장은 단정해야 하며, 강의 시작 10분 전에는 착석하여 마음을 정돈합니다.',
-                image: '',
-                date: '2023.11.01'
-            }
-        ];
-        const defaultCategories = ['국궁', '배례', '봉심', '강식'];
+        let appId = 'tgd-guide-public';
 
         async function initialize() {
             try {
-                let firebaseConfig;
-
-                if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
-                    firebaseConfig = JSON.parse(__firebase_config);
-                    appId = __app_id;
-                    console.log("Canvas Firebase 연결");
-                } 
-                else if (YOUR_FIREBASE_CONFIG && YOUR_FIREBASE_CONFIG.apiKey) {
-                    firebaseConfig = YOUR_FIREBASE_CONFIG;
-                    appId = 'tgd-guide-public';
-                    console.log("외부 Firebase 설정 연결");
-                } 
-                else {
-                    throw new Error("환경 설정이 없습니다. (로컬 모드 전환)");
-                }
-
-                const app = initializeApp(firebaseConfig);
+                const app = initializeApp(YOUR_FIREBASE_CONFIG);
                 auth = getAuth(app);
                 db = getFirestore(app);
                 useFirebase = true;
 
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                
                 subscribeToData();
-
+                console.log("Firebase connected.");
             } catch (error) {
-                console.warn("Firebase 연결 안 됨: 로컬 저장소 모드 사용", error);
+                console.warn("Firebase offline mode.", error);
                 useFirebase = false;
-                loadLocalData();
             }
 
             const savedAdminState = localStorage.getItem('isAdminMode') === 'true';
-            if (savedAdminState) {
-                toggleAdminState(true);
-            }
+            if (savedAdminState) toggleAdminState(true);
         }
 
-        // --- Utils ---
-        function isNew(dateStr) {
-            if (!dateStr) return false;
-            try {
-                const parts = dateStr.split('.');
-                if(parts.length < 3) return false;
-                const postDate = new Date(parts[0], parts[1]-1, parts[2]);
-                const now = new Date();
-                const diffTime = Math.abs(now - postDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                return diffDays <= 7;
-            } catch(e) { return false; }
+        function sortCategories(cats) {
+            return cats.sort((a, b) => {
+                const idxA = FIX_ORDER.indexOf(a.name);
+                const idxB = FIX_ORDER.indexOf(b.name);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                return a.name.localeCompare(b.name);
+            });
         }
 
-        window.openImageModal = (src) => {
-            const modal = document.getElementById('image-modal');
-            const img = document.getElementById('modal-image');
-            modal.classList.remove('hidden');
-            img.src = src;
-            setTimeout(() => {
-                img.classList.remove('scale-95', 'opacity-0');
-                img.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
-
-        window.closeImageModal = () => {
-            const modal = document.getElementById('image-modal');
-            const img = document.getElementById('modal-image');
-            img.classList.remove('scale-100', 'opacity-100');
-            img.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                img.src = '';
-            }, 300);
-        }
-
-        // --- Data Logic ---
         function subscribeToData() {
             const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
             onSnapshot(postsCollection, (snapshot) => {
-                localContents = [];
-                snapshot.forEach((doc) => {
-                    localContents.push({ id: doc.id, ...doc.data() });
-                });
-                // 초기 정렬 (혹시 몰라 createdAt 기준) - renderContents에서 다시 정렬함
-                localContents.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                localContents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderContents();
-            });
+            }, (err) => console.error("Firestore Listen Error:", err));
 
             const catsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
             onSnapshot(catsCollection, (snapshot) => {
-                let cats = [];
-                snapshot.forEach((doc) => {
-                    cats.push({ id: doc.id, ...doc.data() });
-                });
-                
-                // 카테고리 정렬: 지정된 순서 우선, 그 외는 이름순
-                const defaultOrder = ['국궁', '배례', '봉심', '강식'];
-                cats.sort((a, b) => {
-                    const idxA = defaultOrder.indexOf(a.name);
-                    const idxB = defaultOrder.indexOf(b.name);
-                    
-                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-                    if (idxA !== -1) return -1;
-                    if (idxB !== -1) return 1;
-                    return a.name.localeCompare(b.name);
-                });
-
-                localCategoriesObjects = cats;
-                localCategories = cats.map(c => c.name);
+                let cats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                localCategoriesObjects = sortCategories(cats);
+                localCategories = localCategoriesObjects.map(c => c.name);
                 renderCategories();
                 renderCategorySelect();
                 renderAdminCategories();
-                renderContents(); // 카테고리 로드 후 게시글 재정렬 및 렌더링
+                renderContents();
             });
         }
 
-        function loadLocalData() {
-            const savedContents = localStorage.getItem('taegeukdo_posts');
-            const savedCategories = localStorage.getItem('taegeukdo_categories');
-
-            if (savedContents) {
-                localContents = JSON.parse(savedContents);
-            } else {
-                localContents = JSON.parse(JSON.stringify(defaultContents));
-            }
-
-            if (savedCategories) {
-                localCategories = JSON.parse(savedCategories);
-            } else {
-                localCategories = [...defaultCategories];
-            }
-
-            renderContents();
-            renderCategories();
-            renderCategorySelect();
-            renderAdminCategories();
-        }
-
-        function saveLocalData() {
-            localStorage.setItem('taegeukdo_posts', JSON.stringify(localContents));
-            localStorage.setItem('taegeukdo_categories', JSON.stringify(localCategories));
-        }
-
-        // --- Rendering ---
         function renderCategories() {
             const displayCategories = ['전체', ...localCategories];
             categoryContainerEl.innerHTML = displayCategories.map(cat => `
                 <button onclick="window.setCategory('${cat}')" 
-                    class="px-5 py-2.5 rounded-full text-base font-bold transition-all duration-300 border-2 shadow-sm whitespace-nowrap ${
+                    class="px-5 py-2.5 rounded-full text-base font-bold border-2 transition-all ${
                         window.currentCategory === cat 
-                        ? 'bg-theme-color text-white border-theme-color shadow-md transform scale-105' 
-                        : 'bg-white text-stone-500 border-stone-200 hover:border-theme-color hover:text-theme-color hover:bg-stone-50'
-                    }">
-                    ${cat}
-                </button>
+                        ? 'bg-theme-color text-white border-theme-color scale-105 shadow-md' 
+                        : 'bg-white text-stone-500 border-stone-200 hover:border-theme-color hover:text-theme-color'
+                    }">${cat}</button>
             `).join('');
         }
 
         function renderCategorySelect() {
-            inputCategorySelect.innerHTML = localCategories.map(cat => 
-                `<option value="${cat}">${cat}</option>`
-            ).join('');
-            if(localCategories.length === 0) {
-                 inputCategorySelect.innerHTML = `<option value="" disabled selected>카테고리를 추가해주세요</option>`;
-            }
+            inputCategorySelect.innerHTML = localCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
         }
 
         function renderAdminCategories() {
-            const displayCategories = ['전체', ...localCategories];
-            adminCategoryListEl.innerHTML = displayCategories.map(cat => {
-                const isAll = cat === '전체';
-                return `
-                <div class="flex items-center gap-1 px-4 py-2 bg-stone-100 border-2 border-stone-200 rounded-full text-sm font-bold text-stone-600 shadow-sm">
+            adminCategoryListEl.innerHTML = ['전체', ...localCategories].map(cat => `
+                <div class="flex items-center gap-1 px-4 py-2 bg-stone-100 border-2 border-stone-200 rounded-full text-sm font-bold text-stone-600">
                     <span>${cat}</span>
-                    ${!isAll ? `
-                    <button onclick="window.deleteCategory('${cat}')" class="ml-2 text-stone-400 hover:text-red-600 p-0.5 rounded-full hover:bg-stone-200 transition-colors">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                    ` : ''}
+                    ${cat !== '전체' ? `<button onclick="window.deleteCategory('${cat}')" class="ml-2 text-stone-400 hover:text-red-600"><i data-lucide="x" class="w-4 h-4"></i></button>` : ''}
                 </div>
-            `}).join('');
+            `).join('');
             lucide.createIcons();
         }
 
         function renderContents() {
             contentListEl.innerHTML = '';
-            
-            // 1. 필터링
-            let filtered = window.currentCategory === '전체' 
-                ? [...localContents] 
-                : localContents.filter(item => item.category === window.currentCategory);
+            let filtered = window.currentCategory === '전체' ? [...localContents] : localContents.filter(item => item.category === window.currentCategory);
 
-            // 2. 정렬 (전체보기: 카테고리 순 -> 최신 순 / 그 외: 최신 순)
             filtered.sort((a, b) => {
                 if (window.currentCategory === '전체') {
-                    const idxA = localCategories.indexOf(a.category);
-                    const idxB = localCategories.indexOf(b.category);
-                    
-                    // 카테고리 순서가 다르면 카테고리 인덱스로 정렬
-                    if (idxA !== idxB) {
-                        if (idxA === -1) return 1; // 없는 카테고리는 뒤로
-                        if (idxB === -1) return -1;
-                        return idxA - idxB;
-                    }
+                    const idxA = FIX_ORDER.indexOf(a.category);
+                    const idxB = FIX_ORDER.indexOf(b.category);
+                    if (idxA !== idxB) return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
                 }
-                // 같은 카테고리 내에서는 최신순
                 return (b.createdAt || 0) - (a.createdAt || 0);
             });
 
             if (filtered.length === 0) {
-                contentListEl.innerHTML = `
-                    <div class="py-32 text-center rounded-xl border-2 border-dashed border-stone-300">
-                        <i data-lucide="scroll" class="w-16 h-16 text-stone-300 mx-auto mb-4"></i>
-                        <p class="text-stone-500 font-serif text-xl font-bold">등록된 안내글이 없습니다.</p>
-                    </div>
-                `;
-                lucide.createIcons();
+                contentListEl.innerHTML = '<div class="py-32 text-center text-stone-400 font-bold font-serif">등록된 안내 글이 없습니다.</div>';
                 return;
             }
 
             filtered.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'p-6 sm:p-8 bg-white border-2 border-stone-200 rounded-xl shadow-card transition-all duration-300 group relative mb-6 transform hover:-translate-y-1 hover:border-theme-color hover:bg-stone-50/50';
+                div.className = 'p-6 sm:p-8 bg-white border-2 border-stone-200 rounded-xl shadow-card transition-all group relative mb-6 hover:border-theme-color';
                 
-                // 이미지/영상 렌더링 로직 (다중 이미지 지원)
-                let mediaHtml = '';
                 const images = item.images || (item.image ? [item.image] : []);
-
-                if (images.length > 0) {
-                    if (images.length === 1) {
-                        // 단일 이미지/영상 (기존 로직 유지)
-                        const src = images[0];
-                        if (src.startsWith('data:video')) {
-                            mediaHtml = `
-                                <div class="mb-6 rounded-xl overflow-hidden shadow-md w-full bg-black border border-stone-200">
-                                    <video src="${src}" controls class="w-full max-h-[450px] mx-auto"></video>
-                                </div>`;
-                        } else if (src.includes('youtube.com') || src.includes('youtu.be')) {
-                            let embedUrl = src;
-                            if (src.includes('watch?v=')) {
-                                const vId = src.split('watch?v=')[1].split('&')[0];
-                                embedUrl = `https://www.youtube.com/embed/${vId}`;
-                            } else if (src.includes('youtu.be/')) {
-                                const vId = src.split('youtu.be/')[1].split('?')[0];
-                                embedUrl = `https://www.youtube.com/embed/${vId}`;
-                            }
-                            mediaHtml = `
-                                <div class="mb-6 aspect-video rounded-xl overflow-hidden bg-black/5 shadow-md border border-stone-200">
-                                    <iframe src="${embedUrl}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-                                </div>`;
-                        } else {
-                            mediaHtml = `
-                                <div class="mb-6 rounded-xl overflow-hidden shadow-md max-h-[500px] w-full bg-stone-50 flex justify-center border border-stone-200 group-image">
-                                    <img src="${src}" alt="${item.title}" class="max-w-full max-h-[500px] object-contain cursor-zoom-in transition-transform duration-300 hover:scale-[1.02]" onclick="event.stopPropagation(); window.openImageModal('${src}')">
-                                </div>`;
-                        }
-                    } else {
-                        // 다중 이미지 (갤러리 뷰)
-                        const galleryItems = images.map(src => `
-                            <div class="flex-shrink-0 w-64 h-48 bg-stone-50 rounded-lg overflow-hidden border border-stone-200 mr-3 last:mr-0">
-                                <img src="${src}" class="w-full h-full object-cover cursor-zoom-in hover:opacity-90 transition-opacity" onclick="event.stopPropagation(); window.openImageModal('${src}')">
-                            </div>
-                        `).join('');
-                        
-                        mediaHtml = `
-                            <div class="mb-6 w-full overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-stone-300 scrollbar-track-transparent">
-                                <div class="flex">
-                                    ${galleryItems}
-                                </div>
-                            </div>`;
-                    }
-                }
-
-                let newBadge = '';
-                if (isNew(item.date)) {
-                    newBadge = `<span class="inline-flex items-center justify-center px-2 py-0.5 ml-2 text-xs font-bold text-white bg-theme-color rounded-md new-badge shadow-sm">NEW</span>`;
-                }
-
-                const adminButtons = window.isAdminMode ? `
-                    <div class="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        <button onclick="window.editPost('${item.id}')" class="p-2 bg-white border-2 border-stone-200 rounded-lg text-stone-500 hover:text-theme-color hover:border-theme-color shadow-sm transition-colors">
-                            <i data-lucide="edit-2" class="w-5 h-5"></i>
-                        </button>
-                        <button onclick="window.openDeleteModal('${item.id}')" class="p-2 bg-white border-2 border-stone-200 rounded-lg text-stone-500 hover:text-red-600 hover:border-red-600 shadow-sm transition-colors">
-                            <i data-lucide="trash-2" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                ` : '';
+                let mediaHtml = images.length > 0 ? `
+                    <div class="mb-6 w-full overflow-x-auto flex gap-3 pb-2 scrollbar-thin scrollbar-thumb-stone-300">
+                        ${images.map(src => `<img src="${src}" class="h-48 rounded-lg object-cover cursor-zoom-in hover:opacity-90 transition-opacity" onclick="window.openImageModal('${src}')">`).join('')}
+                    </div>` : '';
 
                 div.innerHTML = `
                     ${mediaHtml}
                     <div class="flex items-center gap-3 mb-4">
                         <span class="text-sm font-bold text-theme-color bg-theme-color/10 px-3 py-1 rounded-full border border-theme-color/20">${item.category}</span>
-                        <span class="text-sm font-bold text-stone-400 flex items-center gap-1">
-                            <i class="fa-regular fa-calendar"></i> ${item.date || ''}
-                        </span>
-                        ${newBadge}
+                        <span class="text-sm text-stone-400 font-bold">${item.date || ''}</span>
                     </div>
-                    <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-4 text-k-text leading-snug group-hover:text-theme-color transition-colors duration-300 cursor-pointer break-keep" onclick="window.editPost('${item.id}')">
-                        ${item.title}
-                    </h2>
+                    <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-4 text-k-text leading-snug break-keep group-hover:text-theme-color">${item.title}</h2>
                     <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line break-keep">${item.desc}</p>
-                    ${adminButtons}
+                    ${window.isAdminMode ? `
+                        <div class="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="window.editPost('${item.id}')" class="p-2 bg-white border-2 rounded-lg text-stone-500 hover:text-theme-color"><i data-lucide="edit-2" class="w-5 h-5"></i></button>
+                            <button onclick="window.openDeleteModal('${item.id}')" class="p-2 bg-white border-2 rounded-lg text-stone-500 hover:text-red-600"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                        </div>
+                    ` : ''}
                 `;
                 contentListEl.appendChild(div);
             });
             lucide.createIcons();
         }
 
-        // --- File Processing ---
-        function processFile(file) {
-            return new Promise((resolve, reject) => {
-                if (file.type.startsWith('video')) {
-                    if (file.size > 700 * 1024) {
-                        reject("동영상 파일은 700KB 이하여야 합니다.");
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.onerror = (e) => reject("파일 읽기 실패");
-                    reader.readAsDataURL(file);
-                } else if (file.type.startsWith('image')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            let width = img.width;
-                            let height = img.height;
-                            const MAX_DIM = 1200;
-                            if (width > height) {
-                                if (width > MAX_DIM) {
-                                    height *= MAX_DIM / width;
-                                    width = MAX_DIM;
-                                }
-                            } else {
-                                if (height > MAX_DIM) {
-                                    width *= MAX_DIM / height;
-                                    height = MAX_DIM;
-                                }
-                            }
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            let dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                            if (dataUrl.length > 800000) {
-                                dataUrl = canvas.toDataURL('image/jpeg', 0.5);
-                            }
-                            resolve(dataUrl);
-                        };
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    reject("지원하지 않는 파일 형식입니다.");
+        window.checkPassword = async () => {
+            if (passwordInput.value === "taegeuk1909#") {
+                try {
+                    // 보안 규칙을 통과하기 위해 익명 로그인을 수행합니다.
+                    await signInAnonymously(auth);
+                    toggleAdminState(true);
+                    window.closePasswordModal();
+                } catch (e) {
+                    console.error("Auth Error:", e);
+                    alert("인증 오류가 발생했습니다.");
                 }
-            });
-        }
-
-        // --- User Actions ---
-        window.setCategory = (cat) => {
-            window.currentCategory = cat;
-            renderCategories();
-            renderContents();
+            } else {
+                passwordError.classList.remove('opacity-0');
+            }
         };
 
         window.addCategory = async () => {
-            const newCat = newCategoryInput.value.trim();
-            if (!newCat) {
-                alert('카테고리 이름을 입력해주세요.');
-                return;
-            }
-            if (localCategories.includes(newCat)) {
-                alert('이미 존재하는 카테고리입니다.');
-                return;
-            }
-
-            if (useFirebase) {
-                try {
-                    const catsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-                    await addDoc(catsCollection, { name: newCat });
-                } catch (e) {
-                    console.error(e);
-                    alert("추가 실패: " + e.message);
-                    return;
-                }
-            } else {
-                localCategories.push(newCat);
-                saveLocalData();
-                renderCategories();
-                renderCategorySelect();
-                renderAdminCategories();
-            }
+            const name = newCategoryInput.value.trim();
+            if (!name || localCategories.includes(name)) return;
+            if (useFirebase) await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), { name });
             newCategoryInput.value = '';
         };
 
-        window.deleteCategory = async (catName) => {
-            if (catName === '전체') return;
-            if (!confirm(`'${catName}' 카테고리를 삭제하시겠습니까?`)) return;
-            
-            if (useFirebase) {
-                const catObj = localCategoriesObjects.find(c => c.name === catName);
-                if (!catObj) {
-                    alert("카테고리 정보를 찾을 수 없습니다.");
-                    return;
-                }
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', catObj.id));
-                    if (window.currentCategory === catName) {
-                        window.currentCategory = '전체';
-                    }
-                } catch (e) {
-                    console.error(e);
-                    alert("삭제 실패: " + e.message);
-                }
-            } else {
-                localCategories = localCategories.filter(c => c !== catName);
-                if (window.currentCategory === catName) {
-                    window.currentCategory = '전체';
-                    renderContents();
-                }
-                saveLocalData();
-                renderCategories();
-                renderCategorySelect();
-                renderAdminCategories();
-            }
+        window.deleteCategory = async (name) => {
+            if (name === '전체' || !confirm(`'${name}' 삭제하시겠습니까?`)) return;
+            const obj = localCategoriesObjects.find(c => c.name === name);
+            if (useFirebase && obj) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', obj.id));
         };
 
-        window.openDeleteModal = (id) => {
-            window.deleteTargetId = id;
-            deleteModal.classList.remove('hidden');
-        };
+        postFormEl.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const category = document.getElementById('input-category').value;
+            const title = document.getElementById('input-title').value;
+            const desc = document.getElementById('input-desc').value;
+            const files = Array.from(fileInput.files);
+            const url = imageUrlInput.value.trim();
 
-        window.closeDeleteModal = () => {
-            window.deleteTargetId = null;
-            deleteModal.classList.add('hidden');
-        };
+            if (!title || !desc) return alert("제목과 내용을 입력해주세요.");
 
-        confirmDeleteBtn.addEventListener('click', async () => {
-            if (window.deleteTargetId) {
-                if (useFirebase) {
-                    try {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.deleteTargetId));
-                        window.closeDeleteModal();
-                    } catch (e) {
-                        console.error(e);
-                        alert("삭제 실패: " + e.message);
-                    }
+            submitBtn.disabled = true;
+            submitBtnText.innerText = "저장 중...";
+
+            try {
+                let processedImages = [];
+                for (const f of files) {
+                    const data = await new Promise((res) => {
+                        const r = new FileReader();
+                        r.onload = (ev) => res(ev.target.result);
+                        r.readAsDataURL(f);
+                    });
+                    processedImages.push(data);
+                }
+                if (url) processedImages.push(url);
+
+                const postData = {
+                    category, title, desc,
+                    images: processedImages,
+                    date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
+                    createdAt: Date.now()
+                };
+
+                if (window.editingId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.editingId), postData);
                 } else {
-                    localContents = localContents.filter(p => p.id !== window.deleteTargetId);
-                    saveLocalData();
-                    renderContents();
-                    window.closeDeleteModal();
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), postData);
                 }
+                window.resetForm();
+                alert("저장되었습니다.");
+            } catch (err) {
+                alert("오류: " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtnText.innerText = "게시글 저장하기";
             }
         });
 
         window.editPost = (id) => {
-            if (!window.isAdminMode) return;
-            const post = localContents.find(p => String(p.id) === String(id));
-            if (!post) return;
-
+            const p = localContents.find(x => String(x.id) === String(id));
+            if (!p) return;
             window.editingId = id;
-            document.getElementById('edit-mode-id').value = id;
-            document.getElementById('input-category').value = post.category;
-            document.getElementById('input-title').value = post.title;
-            document.getElementById('input-desc').value = post.desc;
-            
-            // 기존 이미지 처리
-            const images = post.images || (post.image ? [post.image] : []);
-            const previewInfo = document.getElementById('file-preview-info');
-            const nameDisplay = document.getElementById('file-name-display');
-            
-            if (images.length > 0) {
-                previewInfo.classList.remove('hidden');
-                nameDisplay.innerText = `기존 파일 ${images.length}개가 유지됩니다. (새 파일 선택 시 교체)`;
-                // URL 입력창도 채울지 고민이지만, 다중 파일인 경우 복잡해지므로 비움
-                if(images.length === 1 && !images[0].startsWith('data:')) {
-                    imageUrlInput.value = images[0];
-                } else {
-                    imageUrlInput.value = '';
-                }
-            } else {
-                previewInfo.classList.add('hidden');
-                imageUrlInput.value = '';
-            }
-            
-            fileInput.value = '';
-            submitBtnText.innerText = '게시글 수정하기';
+            document.getElementById('input-category').value = p.category;
+            document.getElementById('input-title').value = p.title;
+            document.getElementById('input-desc').value = p.desc;
             adminPanelEl.scrollIntoView({ behavior: 'smooth' });
         };
 
-        window.resetForm = () => {
-            window.editingId = null;
-            document.getElementById('edit-mode-id').value = '';
-            document.getElementById('post-form').reset();
-            document.getElementById('file-preview-info').classList.add('hidden');
-            submitBtnText.innerText = '게시글 등록하기';
-        };
-
-        // --- Admin Toggle ---
-        adminToggleBtn.addEventListener('click', () => {
-            if (window.isAdminMode) {
-                toggleAdminState(false);
-            } else {
-                passwordModal.classList.remove('hidden');
-                passwordInput.value = '';
-                passwordError.classList.add('opacity-0');
-                setTimeout(() => passwordInput.focus(), 100);
+        window.openDeleteModal = (id) => { window.deleteTargetId = id; deleteModal.classList.remove('hidden'); };
+        window.closeDeleteModal = () => deleteModal.classList.add('hidden');
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (window.deleteTargetId && useFirebase) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.deleteTargetId));
+                window.closeDeleteModal();
             }
         });
 
-        window.checkPassword = () => {
-            if (passwordInput.value === "taegeuk1909#") {
-                toggleAdminState(true);
-                window.closePasswordModal();
-            } else {
-                passwordError.classList.remove('opacity-0');
-                passwordInput.classList.add('border-red-600', 'ring-2', 'ring-red-600');
-            }
+        window.setCategory = (c) => { window.currentCategory = c; renderCategories(); renderContents(); };
+        window.resetForm = () => { 
+            window.editingId = null; 
+            postFormEl.reset(); 
+            document.getElementById('file-preview-info').classList.add('hidden');
+        };
+        window.closePasswordModal = () => passwordModal.classList.add('hidden');
+        
+        window.openImageModal = (s) => { 
+            const m = document.getElementById('image-modal');
+            const i = document.getElementById('modal-image');
+            m.classList.remove('hidden'); i.src = s;
+            setTimeout(() => { i.classList.remove('scale-95', 'opacity-0'); i.classList.add('scale-100', 'opacity-100'); }, 10);
+        };
+        
+        window.closeImageModal = () => {
+            const i = document.getElementById('modal-image');
+            i.classList.replace('scale-100', 'scale-95');
+            i.classList.replace('opacity-100', 'opacity-0');
+            setTimeout(() => document.getElementById('image-modal').classList.add('hidden'), 300);
         };
 
-        window.closePasswordModal = () => {
-            passwordModal.classList.add('hidden');
-            passwordInput.value = '';
-            passwordInput.classList.remove('border-red-600', 'ring-2', 'ring-red-600');
-        };
+        fileInput.addEventListener('change', () => {
+            const count = fileInput.files.length;
+            const previewInfo = document.getElementById('file-preview-info');
+            const nameDisplay = document.getElementById('file-name-display');
+            if (count > 0) {
+                previewInfo.classList.remove('hidden');
+                nameDisplay.innerText = `${count}개의 파일 선택됨`;
+            } else {
+                previewInfo.classList.add('hidden');
+            }
+        });
 
         function toggleAdminState(enable) {
             window.isAdminMode = enable;
             localStorage.setItem('isAdminMode', enable);
             if (enable) {
-                adminToggleBtn.classList.remove('bg-stone-300');
-                adminToggleBtn.classList.add('bg-theme-color');
-                toggleCircle.classList.add('translate-x-7');
-                toggleCircle.classList.remove('translate-x-1');
+                adminToggleBtn.classList.replace('bg-stone-300', 'bg-theme-color');
+                toggleCircle.classList.replace('translate-x-1', 'translate-x-5');
                 adminPanelEl.classList.remove('hidden');
-                setTimeout(() => adminPanelEl.scrollIntoView({ behavior: 'smooth' }), 100);
             } else {
-                adminToggleBtn.classList.add('bg-stone-300');
-                adminToggleBtn.classList.remove('bg-theme-color');
-                toggleCircle.classList.remove('translate-x-7');
-                toggleCircle.classList.add('translate-x-1');
+                adminToggleBtn.classList.replace('bg-theme-color', 'bg-stone-300');
+                toggleCircle.classList.replace('translate-x-5', 'translate-x-1');
                 adminPanelEl.classList.add('hidden');
-                window.resetForm();
             }
             renderContents();
         }
 
-        // --- File Input Change Listener (New) ---
-        fileInput.addEventListener('change', () => {
-            const count = fileInput.files.length;
-            const previewInfo = document.getElementById('file-preview-info');
-            const nameDisplay = document.getElementById('file-name-display');
-            
-            if (count > 0) {
-                previewInfo.classList.remove('hidden');
-                nameDisplay.innerText = `${count}개의 파일이 선택되었습니다.`;
-            } else {
-                // If user cancels or clears, behave based on editing state
-                if (!window.editingId) {
-                    previewInfo.classList.add('hidden');
-                }
-                // In edit mode, we might want to revert text to "existing files", 
-                // but standard file input behavior is clearing on cancel.
-                // We'll let the user re-select or cancel edit to reset.
-            }
+        adminToggleBtn.addEventListener('click', () => {
+            if (window.isAdminMode) toggleAdminState(false);
+            else passwordModal.classList.remove('hidden');
         });
 
-        // --- Submit Logic (Multi-file support) ---
-        postFormEl.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const category = document.getElementById('input-category').value;
-            const title = document.getElementById('input-title').value;
-            const desc = document.getElementById('input-desc').value;
-            // Use Array.from for safety
-            const files = Array.from(fileInput.files);
-            const urlInput = imageUrlInput.value.trim();
-            
-            if (!title || !desc) {
-                alert('제목과 내용을 입력해주세요.');
-                return;
-            }
-
-            const originalBtnText = submitBtnText.innerText;
-            submitBtnText.innerText = "처리 중...";
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-70');
-
-            const today = new Date().toISOString().split('T')[0].replace(/-/g, '.');
-
-            // Process all files
-            let processedImages = [];
-            let totalSize = 0;
-
-            try {
-                if (files.length > 0) {
-                    for (const file of files) {
-                        const dataUrl = await processFile(file);
-                        totalSize += dataUrl.length;
-                        processedImages.push(dataUrl);
-                    }
-                    // Safety check for Firestore document size limit (approx 1MB total)
-                    if (totalSize > 900000) {
-                        throw new Error(`총 파일 용량이 너무 큽니다. (${Math.round(totalSize/1024)}KB). 사진 개수를 줄이거나 더 작은 이미지를 사용해주세요.`);
-                    }
-                }
-            } catch (error) {
-                alert(error.message || error);
-                submitBtnText.innerText = originalBtnText;
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-70');
-                return;
-            }
-
-            const executeSave = async () => {
-                try {
-                    // Determine final image list
-                    let finalImages = [];
-                    if (processedImages.length > 0) {
-                        finalImages = processedImages;
-                    } else if (urlInput) {
-                        finalImages = [urlInput]; // If only URL is provided
-                    } else if (window.editingId) {
-                        // Keep existing if no new file/url provided
-                        const currentPost = localContents.find(p => String(p.id) === String(window.editingId));
-                        if(currentPost) {
-                            finalImages = currentPost.images || (currentPost.image ? [currentPost.image] : []);
-                        }
-                    }
-
-                    const newData = {
-                        category,
-                        title,
-                        desc,
-                        images: finalImages,
-                        image: finalImages.length > 0 ? finalImages[0] : '', // Backward compatibility
-                        date: today,
-                        createdAt: Date.now()
-                    };
-
-                    if (window.editingId) {
-                        // 수정
-                        if (useFirebase) {
-                            const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.editingId);
-                            // Only update fields
-                            await updateDoc(postRef, {
-                                category, title, desc, 
-                                images: finalImages,
-                                image: finalImages.length > 0 ? finalImages[0] : ''
-                            });
-                        } else {
-                            const idx = localContents.findIndex(p => String(p.id) === String(window.editingId));
-                            if (idx !== -1) {
-                                localContents[idx] = { 
-                                    ...localContents[idx], 
-                                    ...newData,
-                                    id: localContents[idx].id
-                                };
-                                saveLocalData();
-                                renderContents();
-                            }
-                        }
-                        alert("수정되었습니다.");
-                    } else {
-                        // 신규
-                        if (useFirebase) {
-                            const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
-                            await addDoc(postsCollection, newData);
-                        } else {
-                            newData.id = Date.now(); // 로컬 ID
-                            localContents.unshift(newData);
-                            saveLocalData();
-                            renderContents();
-                        }
-                        alert("등록되었습니다.");
-                    }
-                    window.resetForm();
-                } catch (error) {
-                    console.error("Save Error:", error);
-                    alert("저장 중 오류가 발생했습니다: " + error.message);
-                } finally {
-                    submitBtnText.innerText = originalBtnText;
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-70');
-                }
-            };
-
-            executeSave();
-        });
-
-        // 시작
         initialize();
         lucide.createIcons();
-
-        // 폰트 로딩 시 아이콘 리프레시 (가끔 깨지는 문제 방지)
-        document.fonts.ready.then(() => {
-            lucide.createIcons();
-        });
-
     </script>
 </body>
 </html>
