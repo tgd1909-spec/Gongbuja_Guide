@@ -182,10 +182,9 @@
                     아래 단계(Step)를 순서대로 눌러 확인해 주세요.
                 </p>
 
-                <!-- 준비물 (요약) - 아이콘 교체됨 -->
+                <!-- 준비물 (요약) -->
                 <div class="bg-theme-soft/50 p-4 rounded-lg border border-theme-color/10 flex items-start gap-4">
                     <span class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-white rounded-full text-theme-color border border-theme-color/20 shadow-sm">
-                        <!-- 심플하고 모던한 선 스타일 아이콘 (가방) -->
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                         </svg>
@@ -362,7 +361,7 @@
                                         <div class="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
                                             <span class="font-bold text-stone-500 w-16">👣 ↑</span>
                                             <div class="flex-1">
-                                                <div class="text-xs text-stone-500 font-bold">갱진 1보 (왼쪽 1걸음)</div>
+                                                <div class="text-xs text-stone-500 font-bold">갱진 1보 (앞으로 1걸음)</div>
                                                 <div class="font-bold text-k-text">평배 2배</div>
                                             </div>
                                         </div>
@@ -585,7 +584,7 @@
             return html;
         }
 
-        // [New] 봉심 단계 탭 UI 생성
+        // 봉심 단계 탭 UI 생성
         function renderBongsimTabs(phase) {
             let tabsHtml = `<div class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">`;
             
@@ -620,7 +619,7 @@
             const buttons = document.querySelectorAll('.tab-btn');
             const contents = document.querySelectorAll('.tab-content');
 
-            // 1. 시뮬레이터가 있는지 확인하고 주입 (봉심 탭의 'bow' 콘텐츠 내)
+            // 1. 시뮬레이터 주입 및 위치 수정
             const simContainer = document.getElementById('simulation-placeholder');
             if (simContainer) {
                 simContainer.innerHTML = renderSimulationUI();
@@ -652,16 +651,18 @@
                         <button onclick="updateSim('final')" class="flex-1 px-4 py-3 bg-theme-color text-white font-bold rounded-lg shadow-md text-sm active:bg-[#b45309] hover:bg-[#c26a05] transition-colors">6열 전환</button>
                     </div>
 
-                    <div id="sim-container" class="bg-white border border-stone-200 rounded-xl p-4 sm:p-6 mx-auto w-full relative h-[350px] overflow-hidden shadow-inner">
+                    <!-- p-4 삭제, 완벽한 너비 제어를 위해 패딩 제거 -->
+                    <div id="sim-container" class="bg-white border border-stone-200 rounded-xl mx-auto w-full relative h-[350px] overflow-hidden shadow-inner">
                         <div class="absolute inset-0 pointer-events-none opacity-10" style="background-image: linear-gradient(#1a1a1a 1px, transparent 1px), linear-gradient(90deg, #1a1a1a 1px, transparent 1px); background-size: 40px 40px;"></div>
                         
-                        <div class="absolute right-0 top-0 h-full w-8 bg-stone-50 border-l border-stone-200 flex flex-col items-center justify-center z-20">
+                        <div class="absolute right-0 top-0 h-full w-8 md:w-10 bg-stone-50 border-l border-stone-200 flex flex-col items-center justify-center z-20">
                             <span class="writing-vertical text-theme-color font-serif font-bold text-sm tracking-widest">법단</span>
                         </div>
-                        <div class="absolute top-0 left-0 w-full h-8 bg-stone-50 border-b border-stone-200 flex items-center justify-center z-20">
-                            <span class="text-theme-color font-serif font-bold text-sm tracking-widest">영대</span>
+                        <div class="absolute top-0 left-0 w-full h-8 md:h-10 bg-stone-50 border-b border-stone-200 flex items-center justify-center z-20">
+                            <span class="text-theme-color font-serif font-bold text-sm tracking-widest pr-8 md:pr-10">영대</span>
                         </div>
                         
+                        <!-- 노드가 배치되는 기준이 되는 영역 -->
                         <div id="nodes-area" class="relative w-full h-full"></div>
                     </div>
                 </div>
@@ -683,30 +684,33 @@
             const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
             const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
+            // 모바일 화면에서도 잘림 없도록 안전 영역 계산값 최적화
+            const startLeft = 76; // 우측부터 시작 지점 (법단과의 충돌 방지)
+            const horizontalSpacing = 6.2; // 노드 간격 조정하여 화면 내 100% 안착
+
             roles.forEach((role, rIndex) => {
                 const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
 
                 for (let i = 0; i < 12; i++) {
                     const colIndexFromRight = i; 
                     const num = currentLabels[i]; 
-                    const horizontalSpacing = 7.5; 
                     
                     let effectiveColIndex = colIndexFromRight;
                     if (state === 'final' && num % 2 === 0) {
                         effectiveColIndex = colIndexFromRight - 1; 
                     }
                     
-                    let leftVal = (90 - (colIndexFromRight * horizontalSpacing)); 
-                    let finalLeftVal = (90 - (effectiveColIndex * horizontalSpacing)); 
+                    let leftVal = (startLeft - (colIndexFromRight * horizontalSpacing)); 
+                    let finalLeftVal = (startLeft - (effectiveColIndex * horizontalSpacing)); 
                     
                     let left = (state === 'final') ? finalLeftVal + '%' : leftVal + '%';
-                    const rowBaseTop = 10 + (rIndex * 28); 
+                    const rowBaseTop = 15 + (rIndex * 26); // 세로 간격 조절
                     let top = rowBaseTop + '%';
 
                     if (state === 'final' && num % 2 === 0) {
                         const pathContainer = document.createElement('div');
                         pathContainer.className = 'absolute z-0 arrow-path';
-                        const offset = 1.5;
+                        const offset = 2.5; // 화살표 경로 중심 교정
 
                         pathContainer.style.left = (leftVal + offset) + '%';
                         pathContainer.style.top = (rowBaseTop + offset) + '%';
