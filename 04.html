@@ -195,8 +195,13 @@
 
     <!-- 플로팅 버튼 -->
     <div class="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
-        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-card text-theme-color hover:bg-theme-color hover:text-white transition-all transform hover:-translate-y-1">
+        <!-- Top Scroll -->
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-card text-theme-color hover:bg-theme-color hover:text-white transition-all transform hover:-translate-y-1" aria-label="맨 위로">
             <i data-lucide="arrow-up" class="w-6 h-6"></i>
+        </button>
+        <!-- Bottom Scroll -->
+        <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-card text-theme-color hover:bg-theme-color hover:text-white transition-all transform hover:-translate-y-1" aria-label="맨 아래로">
+            <i data-lucide="arrow-down" class="w-6 h-6"></i>
         </button>
     </div>
 
@@ -423,6 +428,7 @@
         window.checkPassword = async () => {
             if (passwordInput.value === "taegeuk1909#") {
                 try {
+                    // 보안 규칙을 통과하기 위해 익명 로그인을 수행합니다.
                     await signInAnonymously(auth);
                     toggleAdminState(true);
                     window.closePasswordModal();
@@ -448,6 +454,60 @@
             if (useFirebase && obj) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', obj.id));
         };
 
+        // 이미지 처리 최적화 (에러 처리 및 퀄리티 조절)
+        function processFile(file) {
+            return new Promise((resolve, reject) => {
+                if (file.type.startsWith('video')) {
+                    if (file.size > 700 * 1024) {
+                        reject("동영상 파일은 700KB 이하여야 합니다.");
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = () => reject("동영상 파일 읽기 실패");
+                    reader.readAsDataURL(file);
+                } else if (file.type.startsWith('image')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const MAX_DIM = 1200;
+                            if (width > height) {
+                                if (width > MAX_DIM) {
+                                    height *= MAX_DIM / width;
+                                    width = MAX_DIM;
+                                }
+                            } else {
+                                if (height > MAX_DIM) {
+                                    width *= MAX_DIM / height;
+                                    height = MAX_DIM;
+                                }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            // 품질을 0.6으로 낮추어 용량 초과 방지
+                            let dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                            resolve(dataUrl);
+                        };
+                        // 아이폰 HEIC 등 지원하지 않는 이미지 폼맷 업로드 시 무한로딩 방지
+                        img.onerror = () => {
+                            reject("브라우저에서 지원하지 않는 이미지 형식(예: HEIC)이거나 손상된 파일입니다. 일반 사진(JPG, PNG) 형식으로 올려주세요.");
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.onerror = () => reject("이미지 파일 읽기 실패");
+                    reader.readAsDataURL(file);
+                } else {
+                    reject("지원하지 않는 파일 형식입니다.");
+                }
+            });
+        }
+
         postFormEl.addEventListener('submit', async (e) => {
             e.preventDefault();
             const category = document.getElementById('input-category').value;
@@ -463,17 +523,22 @@
 
             try {
                 let processedImages = [];
+                let totalSize = 0;
+
                 for (const f of files) {
-                    const data = await new Promise((res) => {
-                        const r = new FileReader();
-                        r.onload = (ev) => res(ev.target.result);
-                        r.readAsDataURL(f);
-                    });
-                    processedImages.push(data);
+                    const dataUrl = await processFile(f);
+                    totalSize += dataUrl.length;
+                    processedImages.push(dataUrl);
                 }
+
+                // Firestore Document Size 안전 체크 (약 1MB 제한 대비)
+                if (totalSize > 900000) {
+                    throw new Error(`파일 용량이 너무 큽니다. 여러 장일 경우 나누어서 올리거나, 더 작은 해상도의 사진을 사용해주세요.`);
+                }
+
                 if (url) processedImages.push(url);
 
-                // --- 기존 이미지 유지 로직 복구 ---
+                // --- 기존 이미지 유지 로직 ---
                 let finalImages = processedImages;
                 let finalDate = new Date().toISOString().split('T')[0].replace(/-/g, '.');
                 let finalCreatedAt = Date.now();
@@ -481,16 +546,13 @@
                 if (window.editingId) {
                     const existingPost = localContents.find(p => String(p.id) === String(window.editingId));
                     if (existingPost) {
-                        // 새 파일이나 URL을 입력하지 않았다면 기존 이미지를 그대로 사용합니다.
                         if (finalImages.length === 0) {
                             finalImages = existingPost.images || (existingPost.image ? [existingPost.image] : []);
                         }
-                        // 수정 시 기존 작성일과 정렬 순서(createdAt)를 유지합니다.
                         finalDate = existingPost.date || finalDate;
                         finalCreatedAt = existingPost.createdAt || finalCreatedAt;
                     }
                 }
-                // ---------------------------------
 
                 const postData = {
                     category, title, desc,
@@ -507,7 +569,7 @@
                 window.resetForm();
                 alert("저장되었습니다.");
             } catch (err) {
-                alert("오류: " + err.message);
+                alert("업로드 실패: " + (err.message || err));
             } finally {
                 submitBtn.disabled = false;
                 submitBtnText.innerText = "게시글 저장하기";
