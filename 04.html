@@ -423,7 +423,6 @@
         window.checkPassword = async () => {
             if (passwordInput.value === "taegeuk1909#") {
                 try {
-                    // 보안 규칙을 통과하기 위해 익명 로그인을 수행합니다.
                     await signInAnonymously(auth);
                     toggleAdminState(true);
                     window.closePasswordModal();
@@ -474,11 +473,30 @@
                 }
                 if (url) processedImages.push(url);
 
+                // --- 기존 이미지 유지 로직 복구 ---
+                let finalImages = processedImages;
+                let finalDate = new Date().toISOString().split('T')[0].replace(/-/g, '.');
+                let finalCreatedAt = Date.now();
+
+                if (window.editingId) {
+                    const existingPost = localContents.find(p => String(p.id) === String(window.editingId));
+                    if (existingPost) {
+                        // 새 파일이나 URL을 입력하지 않았다면 기존 이미지를 그대로 사용합니다.
+                        if (finalImages.length === 0) {
+                            finalImages = existingPost.images || (existingPost.image ? [existingPost.image] : []);
+                        }
+                        // 수정 시 기존 작성일과 정렬 순서(createdAt)를 유지합니다.
+                        finalDate = existingPost.date || finalDate;
+                        finalCreatedAt = existingPost.createdAt || finalCreatedAt;
+                    }
+                }
+                // ---------------------------------
+
                 const postData = {
                     category, title, desc,
-                    images: processedImages,
-                    date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-                    createdAt: Date.now()
+                    images: finalImages,
+                    date: finalDate,
+                    createdAt: finalCreatedAt
                 };
 
                 if (window.editingId) {
@@ -496,6 +514,7 @@
             }
         });
 
+        // --- 수정 모드 진입 시 기존 이미지 안내 UI 추가 ---
         window.editPost = (id) => {
             const p = localContents.find(x => String(x.id) === String(id));
             if (!p) return;
@@ -503,6 +522,19 @@
             document.getElementById('input-category').value = p.category;
             document.getElementById('input-title').value = p.title;
             document.getElementById('input-desc').value = p.desc;
+            
+            // 기존 이미지/영상이 있으면 파일 입력란 아래에 안내 문구를 띄워줍니다.
+            const images = p.images || (p.image ? [p.image] : []);
+            const previewInfo = document.getElementById('file-preview-info');
+            const nameDisplay = document.getElementById('file-name-display');
+            
+            if (images.length > 0) {
+                previewInfo.classList.remove('hidden');
+                nameDisplay.innerText = `기존 파일 ${images.length}개가 유지됩니다. (새 파일 선택 시 덮어쓰기 됨)`;
+            } else {
+                previewInfo.classList.add('hidden');
+            }
+            
             adminPanelEl.scrollIntoView({ behavior: 'smooth' });
         };
 
@@ -545,7 +577,10 @@
                 previewInfo.classList.remove('hidden');
                 nameDisplay.innerText = `${count}개의 파일 선택됨`;
             } else {
-                previewInfo.classList.add('hidden');
+                // 수정을 취소하고 파일을 비웠을 때 상태를 원래대로
+                if (!window.editingId) {
+                    previewInfo.classList.add('hidden');
+                }
             }
         });
 
