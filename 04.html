@@ -257,7 +257,7 @@
     <!-- Firebase SDK 및 앱 로직 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 요청하신 법식 순서 고정
@@ -305,16 +305,48 @@
 
         async function initialize() {
             try {
-                const app = initializeApp(YOUR_FIREBASE_CONFIG);
+                let firebaseConfig;
+
+                if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                    appId = __app_id;
+                    console.log("Canvas Firebase 연결");
+                } 
+                else if (YOUR_FIREBASE_CONFIG && YOUR_FIREBASE_CONFIG.apiKey) {
+                    firebaseConfig = YOUR_FIREBASE_CONFIG;
+                    appId = 'tgd-guide-public';
+                    console.log("외부 Firebase 설정 연결");
+                } 
+                else {
+                    throw new Error("환경 설정이 없습니다. (로컬 모드 전환)");
+                }
+
+                const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
                 useFirebase = true;
 
-                subscribeToData();
-                console.log("Firebase connected.");
+                // 인증 절차: 인증 완료 후 상태 변화 감지하여 구독 실행
+                const initAuth = async () => {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                };
+                
+                await initAuth();
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        subscribeToData();
+                    }
+                });
+
             } catch (error) {
-                console.warn("Firebase offline mode.", error);
+                console.warn("Firebase 연결 실패, 오프라인 모드로 전환합니다.", error);
                 useFirebase = false;
+                loadLocalData();
             }
 
             const savedAdminState = localStorage.getItem('isAdminMode') === 'true';
@@ -332,12 +364,27 @@
             });
         }
 
+        let permissionErrorAlerted = false;
+        function handlePermissionError() {
+            if (!permissionErrorAlerted) {
+                permissionErrorAlerted = true;
+                alert("데이터베이스 권한 오류가 발생했습니다.\n파이어베이스 콘솔에서 Firestore '규칙(Rules)' 탭으로 이동하여\n'allow read, write: if true;' 로 설정이 만료되지 않았는지 확인해주세요.");
+                useFirebase = false;
+                loadLocalData();
+            }
+        }
+
         function subscribeToData() {
+            if (!auth || !auth.currentUser) return;
+
             const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
             onSnapshot(postsCollection, (snapshot) => {
                 localContents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderContents();
-            }, (err) => console.error("Firestore Listen Error:", err));
+            }, (err) => {
+                console.error("Firestore Listen Error (Posts):", err);
+                if (err.code === 'permission-denied') handlePermissionError();
+            });
 
             const catsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
             onSnapshot(catsCollection, (snapshot) => {
@@ -348,6 +395,9 @@
                 renderCategorySelect();
                 renderAdminCategories();
                 renderContents();
+            }, (err) => {
+                console.error("Firestore Listen Error (Categories):", err);
+                if (err.code === 'permission-denied') handlePermissionError();
             });
         }
 
@@ -405,11 +455,17 @@
                         ${images.map(src => `<img src="${src}" class="h-48 rounded-lg object-cover cursor-zoom-in hover:opacity-90 transition-opacity" onclick="window.openImageModal('${src}')">`).join('')}
                     </div>` : '';
 
+                let newBadge = '';
+                if (isNew(item.date)) {
+                    newBadge = `<span class="inline-flex items-center justify-center px-2 py-0.5 ml-2 text-xs font-bold text-white bg-theme-color rounded-md new-badge shadow-sm">NEW</span>`;
+                }
+
                 div.innerHTML = `
                     ${mediaHtml}
                     <div class="flex items-center gap-3 mb-4">
                         <span class="text-sm font-bold text-theme-color bg-theme-color/10 px-3 py-1 rounded-full border border-theme-color/20">${item.category}</span>
                         <span class="text-sm text-stone-400 font-bold">${item.date || ''}</span>
+                        ${newBadge}
                     </div>
                     <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-4 text-k-text leading-snug break-keep group-hover:text-theme-color">${item.title}</h2>
                     <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line break-keep">${item.desc}</p>
@@ -428,8 +484,7 @@
         window.checkPassword = async () => {
             if (passwordInput.value === "taegeuk1909#") {
                 try {
-                    // 보안 규칙을 통과하기 위해 익명 로그인을 수행합니다.
-                    await signInAnonymously(auth);
+                    if(!auth.currentUser) await signInAnonymously(auth);
                     toggleAdminState(true);
                     window.closePasswordModal();
                 } catch (e) {
@@ -444,14 +499,14 @@
         window.addCategory = async () => {
             const name = newCategoryInput.value.trim();
             if (!name || localCategories.includes(name)) return;
-            if (useFirebase) await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), { name });
+            if (useFirebase && auth.currentUser) await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), { name });
             newCategoryInput.value = '';
         };
 
         window.deleteCategory = async (name) => {
             if (name === '전체' || !confirm(`'${name}' 삭제하시겠습니까?`)) return;
             const obj = localCategoriesObjects.find(c => c.name === name);
-            if (useFirebase && obj) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', obj.id));
+            if (useFirebase && obj && auth.currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', obj.id));
         };
 
         // 이미지 처리 최적화 (에러 처리 및 퀄리티 조절)
@@ -562,9 +617,24 @@
                 };
 
                 if (window.editingId) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.editingId), postData);
+                    if (useFirebase && auth.currentUser) {
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.editingId), postData);
+                    } else {
+                        // fallback local save
+                        const idx = localContents.findIndex(p => String(p.id) === String(window.editingId));
+                        if (idx !== -1) {
+                            localContents[idx] = { ...postData, id: localContents[idx].id };
+                            saveLocalData(); renderContents();
+                        }
+                    }
                 } else {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), postData);
+                    if (useFirebase && auth.currentUser) {
+                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), postData);
+                    } else {
+                        postData.id = Date.now();
+                        localContents.unshift(postData);
+                        saveLocalData(); renderContents();
+                    }
                 }
                 window.resetForm();
                 alert("저장되었습니다.");
@@ -603,9 +673,12 @@
         window.openDeleteModal = (id) => { window.deleteTargetId = id; deleteModal.classList.remove('hidden'); };
         window.closeDeleteModal = () => deleteModal.classList.add('hidden');
         confirmDeleteBtn.addEventListener('click', async () => {
-            if (window.deleteTargetId && useFirebase) {
+            if (window.deleteTargetId && useFirebase && auth.currentUser) {
                 await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.deleteTargetId));
                 window.closeDeleteModal();
+            } else if (!useFirebase) {
+                localContents = localContents.filter(p => String(p.id) !== String(window.deleteTargetId));
+                saveLocalData(); renderContents(); window.closeDeleteModal();
             }
         });
 
