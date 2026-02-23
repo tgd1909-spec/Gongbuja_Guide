@@ -122,7 +122,11 @@
                     </div>
                     관리자 패널
                 </h3>
-                <button onclick="window.resetForm()" class="text-sm font-bold text-stone-500 hover:text-theme-color underline decoration-2 underline-offset-4">입력 초기화</button>
+                <div class="flex gap-4">
+                    <!-- 데이터 복구 버튼 (임시 추가) -->
+                    <button onclick="window.forceRestoreData()" class="text-sm font-bold text-red-500 hover:text-red-700 underline decoration-2 underline-offset-4" title="로컬 저장소의 데이터를 파이어베이스로 밀어넣습니다.">데이터 강제 복구</button>
+                    <button onclick="window.resetForm()" class="text-sm font-bold text-stone-500 hover:text-theme-color underline decoration-2 underline-offset-4">입력 초기화</button>
+                </div>
             </div>
 
             <!-- 카테고리 관리 섹션 -->
@@ -133,7 +137,8 @@
                 <div class="flex flex-wrap gap-3 mb-5" id="admin-category-list"></div>
                 <div class="flex gap-3 h-12">
                     <input type="text" id="new-category-input" placeholder="새 카테고리 추가" 
-                        class="flex-1 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-base focus:outline-none focus:border-theme-color focus:bg-white transition-colors text-k-text placeholder-stone-400 font-medium">
+                        class="flex-1 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-base focus:outline-none focus:border-theme-color focus:bg-white transition-colors text-k-text placeholder-stone-400 font-medium"
+                        onkeypress="if(event.key === 'Enter') window.addCategory()">
                     <button onclick="window.addCategory()" class="px-6 bg-theme-color text-white rounded-lg hover:bg-stone-800 text-base font-bold transition-colors whitespace-nowrap shadow-md">
                         추가
                     </button>
@@ -258,7 +263,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 요청하신 법식 순서 고정
         const FIX_ORDER = ['시립', '법배', '평배', '향납읍', '좌배', '국궁', '좌우진보', '법좌', '수련방법', '점호의례', '봉심의례', '부정기휘법'];
@@ -302,6 +307,43 @@
         let db, auth;
         let useFirebase = false;
         let appId = 'tgd-guide-public';
+
+        // 기본 데이터
+        const defaultContents = [
+            {
+                id: 1,
+                category: '국궁',
+                title: '국궁(鞠躬)의 기본 자세',
+                desc: '국궁은 몸을 굽혀 존경을 표하는 동작입니다. 두 손을 공수(拱手)하고 허리를 15도 가량 굽히며, 시선은 자신의 발끝 전방 1~2미터 지점을 향합니다. 이때 마음을 차분히 가라앉히고 공경하는 마음을 담는 것이 중요합니다.',
+                image: 'https://images.unsplash.com/photo-1518330666324-4286280b3328?auto=format&fit=crop&q=80&w=800', 
+                date: '2023.10.15'
+            },
+            {
+                id: 2,
+                category: '배례',
+                title: '배례(拜禮) 행하는 법',
+                desc: '배례는 상제님께 올리는 가장 큰 경의의 표시입니다. 국궁 자세에서 시작하여 무릎을 꿇고 엎드려 절을 올립니다. 손의 위치와 일어나는 순서가 중요하며, 처음 공부하시는 분들은 무릎에 무리가 가지 않도록 천천히 연습하시기 바랍니다.',
+                image: '', 
+                date: '2023.10.16'
+            },
+            {
+                id: 3,
+                category: '봉심',
+                title: '봉심(奉審)의 마음가짐',
+                desc: '봉심은 성전을 살피고 받드는 의식입니다. 정해진 시간에 의관을 정제하고 엄숙한 마음으로 행해야 합니다. 단순히 건물을 둘러보는 것이 아니라, 도(道)와 하나 되는 경건한 마음가짐이 핵심입니다.',
+                image: 'https://images.unsplash.com/photo-1598556885318-48b495922312?auto=format&fit=crop&q=80&w=800',
+                date: '2023.10.20'
+            },
+            {
+                id: 4,
+                category: '강식',
+                title: '강식(講式) 참여 예절',
+                desc: '강식은 진리를 공부하고 토론하는 시간입니다. 경청하는 자세를 유지하며, 질문이나 발언 시에는 예의를 갖추어야 합니다. 복장은 단정해야 하며, 강의 시작 10분 전에는 착석하여 마음을 정돈합니다.',
+                image: '',
+                date: '2023.11.01'
+            }
+        ];
+        const defaultCategories = ['국궁', '배례', '봉심', '강식'];
 
         async function initialize() {
             try {
@@ -368,9 +410,47 @@
         function handlePermissionError() {
             if (!permissionErrorAlerted) {
                 permissionErrorAlerted = true;
-                alert("데이터베이스 권한 오류가 발생했습니다.\n파이어베이스 콘솔에서 Firestore '규칙(Rules)' 탭으로 이동하여\n'allow read, write: if true;' 로 설정이 만료되지 않았는지 확인해주세요.");
+                alert("데이터베이스 권한 오류가 발생했습니다.\n파이어베이스 콘솔에서 설정이 만료되었는지 확인해주세요.\n\n안전을 위해 현재 내 컴퓨터에 백업된 로컬 데이터로 전환합니다.");
                 useFirebase = false;
                 loadLocalData();
+            }
+        }
+
+        // --- 백업 데이터 강제 복구 (Rescue Data) ---
+        window.forceRestoreData = async () => {
+            if (!useFirebase || !auth.currentUser) {
+                alert("파이어베이스에 연결되어 있지 않습니다.");
+                return;
+            }
+            
+            const localPostsData = localStorage.getItem('taegeukdo_posts');
+            if (!localPostsData) {
+                alert("복구할 로컬 데이터가 없습니다.");
+                return;
+            }
+
+            try {
+                const posts = JSON.parse(localPostsData);
+                if (posts.length === 0) return alert("복구할 게시글이 없습니다.");
+                
+                if(!confirm(`내 컴퓨터에 저장된 ${posts.length}개의 게시글을 파이어베이스로 복구하시겠습니까?`)) return;
+
+                const batch = writeBatch(db);
+                const postsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
+                
+                posts.forEach(post => {
+                    // id는 새로 부여하고 내용은 복사
+                    const docRef = doc(postsCollectionRef); 
+                    const postData = { ...post };
+                    delete postData.id; // 기존 로컬용 숫자 ID 삭제
+                    batch.set(docRef, postData);
+                });
+
+                await batch.commit();
+                alert("데이터 강제 복구가 완료되었습니다!");
+            } catch (err) {
+                console.error("복구 실패:", err);
+                alert("복구 중 오류가 발생했습니다: " + err.message);
             }
         }
 
@@ -380,6 +460,8 @@
             const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
             onSnapshot(postsCollection, (snapshot) => {
                 localContents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // 로컬 백업 최신화
+                saveLocalData();
                 renderContents();
             }, (err) => {
                 console.error("Firestore Listen Error (Posts):", err);
@@ -391,6 +473,8 @@
                 let cats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 localCategoriesObjects = sortCategories(cats);
                 localCategories = localCategoriesObjects.map(c => c.name);
+                // 로컬 백업 최신화
+                saveLocalData();
                 renderCategories();
                 renderCategorySelect();
                 renderAdminCategories();
@@ -399,6 +483,33 @@
                 console.error("Firestore Listen Error (Categories):", err);
                 if (err.code === 'permission-denied') handlePermissionError();
             });
+        }
+
+        function loadLocalData() {
+            const savedContents = localStorage.getItem('taegeukdo_posts');
+            const savedCategories = localStorage.getItem('taegeukdo_categories');
+
+            if (savedContents) {
+                localContents = JSON.parse(savedContents);
+            } else {
+                localContents = JSON.parse(JSON.stringify(defaultContents));
+            }
+
+            if (savedCategories) {
+                localCategories = JSON.parse(savedCategories);
+            } else {
+                localCategories = [...defaultCategories];
+            }
+
+            renderContents();
+            renderCategories();
+            renderCategorySelect();
+            renderAdminCategories();
+        }
+
+        function saveLocalData() {
+            localStorage.setItem('taegeukdo_posts', JSON.stringify(localContents));
+            localStorage.setItem('taegeukdo_categories', JSON.stringify(localCategories));
         }
 
         function renderCategories() {
