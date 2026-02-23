@@ -163,11 +163,17 @@
 
                 <div class="p-4 bg-stone-50 rounded-lg border-2 border-stone-200">
                     <label class="block text-sm font-bold text-stone-600 mb-2 flex items-center gap-2">
-                        <i data-lucide="image" class="w-4 h-4"></i> 사진/영상 첨부
+                        <i data-lucide="image" class="w-4 h-4"></i> 사진/영상 첨부 (여러장 가능)
                     </label>
                     <input type="file" id="input-file" accept="image/*,video/*" multiple class="w-full bg-white border-2 border-stone-300 rounded-lg p-2 text-sm focus:outline-none focus:border-theme-color file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-stone-200 file:text-stone-700 hover:file:bg-stone-300 cursor-pointer">
-                    <div id="file-preview-info" class="mt-3 text-sm text-theme-color font-bold hidden flex items-center gap-2">
-                        <i data-lucide="check-circle" class="w-4 h-4"></i><span id="file-name-display"></span>
+                    
+                    <!-- 여러장 선택 시 미리보기 영역 -->
+                    <div id="file-preview-info" class="mt-3 text-sm text-theme-color font-bold hidden flex flex-col gap-2 bg-white p-3 border border-stone-200 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
+                            <span id="file-name-display"></span>
+                        </div>
+                        <div id="file-thumbnails" class="flex flex-wrap gap-2 mt-1"></div>
                     </div>
                 </div>
                 
@@ -400,14 +406,34 @@
                 div.className = 'p-6 sm:p-8 bg-white border-2 border-stone-200 rounded-xl shadow-card transition-all group relative mb-6 hover:border-theme-color';
                 
                 const images = item.images || (item.image ? [item.image] : []);
-                let mediaHtml = images.length > 0 ? `
-                    <div class="mb-6 w-full overflow-x-auto flex gap-3 pb-2 scrollbar-thin scrollbar-thumb-stone-300">
-                        ${images.map(src => `<img src="${src}" class="h-48 rounded-lg object-cover cursor-zoom-in hover:opacity-90 transition-opacity" onclick="window.openImageModal('${src}')">`).join('')}
-                    </div>` : '';
+                
+                // 다중 이미지 배열을 예쁜 그리드로 배치
+                let mediaHtml = '';
+                if (images.length > 0) {
+                    if (images.length === 1) {
+                        mediaHtml = `<div class="mb-6"><img src="${images[0]}" class="w-full max-h-[500px] rounded-xl object-cover sm:object-contain bg-stone-100 cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${images[0]}')"></div>`;
+                    } else if (images.length === 2) {
+                        mediaHtml = `<div class="grid grid-cols-2 gap-3 mb-6">
+                            ${images.map(src => `<img src="${src}" class="w-full h-48 sm:h-64 rounded-xl object-cover cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${src}')">`).join('')}
+                        </div>`;
+                    } else if (images.length === 3) {
+                        // 3장일 경우 1장은 크게, 2장은 작게 배치
+                        mediaHtml = `<div class="grid grid-cols-2 gap-3 mb-6">
+                            <img src="${images[0]}" class="w-full h-full object-cover rounded-xl col-span-2 sm:col-span-1 sm:row-span-2 cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${images[0]}')">
+                            <img src="${images[1]}" class="w-full h-32 sm:h-40 object-cover rounded-xl cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${images[1]}')">
+                            <img src="${images[2]}" class="w-full h-32 sm:h-40 object-cover rounded-xl cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${images[2]}')">
+                        </div>`;
+                    } else {
+                        // 4장 이상일 경우 균일한 그리드 배치
+                        mediaHtml = `<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+                            ${images.map(src => `<img src="${src}" class="w-full h-32 sm:h-40 rounded-xl object-cover cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${src}')">`).join('')}
+                        </div>`;
+                    }
+                }
 
                 div.innerHTML = `
                     ${mediaHtml}
-                    <div class="flex items-center gap-3 mb-4">
+                    <div class="flex items-center gap-3 mb-4 mt-2">
                         <span class="text-sm font-bold text-theme-color bg-theme-color/10 px-3 py-1 rounded-full border border-theme-color/20">${item.category}</span>
                         <span class="text-sm text-stone-400 font-bold">${item.date || ''}</span>
                     </div>
@@ -454,8 +480,8 @@
             if (useFirebase && obj) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', obj.id));
         };
 
-        // 이미지 처리 최적화 (에러 처리 및 퀄리티 조절)
-        function processFile(file) {
+        // 이미지 처리 최적화 (다중 이미지일 경우 해상도와 퀄리티를 동적으로 낮춰 1MB 제한 대비)
+        function processFile(file, maxDim = 800, quality = 0.6) {
             return new Promise((resolve, reject) => {
                 if (file.type.startsWith('video')) {
                     if (file.size > 700 * 1024) {
@@ -474,27 +500,28 @@
                             const canvas = document.createElement('canvas');
                             let width = img.width;
                             let height = img.height;
-                            const MAX_DIM = 1200;
+                            
                             if (width > height) {
-                                if (width > MAX_DIM) {
-                                    height *= MAX_DIM / width;
-                                    width = MAX_DIM;
+                                if (width > maxDim) {
+                                    height *= maxDim / width;
+                                    width = maxDim;
                                 }
                             } else {
-                                if (height > MAX_DIM) {
-                                    width *= MAX_DIM / height;
-                                    height = MAX_DIM;
+                                if (height > maxDim) {
+                                    width *= maxDim / height;
+                                    height = maxDim;
                                 }
                             }
                             canvas.width = width;
                             canvas.height = height;
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
-                            // 품질을 0.6으로 낮추어 용량 초과 방지
-                            let dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                            
+                            // 여러 장 올릴 때 용량 제한을 우회하기 위해 인자로 받은 quality 사용
+                            let dataUrl = canvas.toDataURL('image/jpeg', quality);
                             resolve(dataUrl);
                         };
-                        // 아이폰 HEIC 등 지원하지 않는 이미지 폼맷 업로드 시 무한로딩 방지
+                        // 아이폰 HEIC 등 지원하지 않는 이미지 포맷 업로드 시 무한로딩 방지
                         img.onerror = () => {
                             reject("브라우저에서 지원하지 않는 이미지 형식(예: HEIC)이거나 손상된 파일입니다. 일반 사진(JPG, PNG) 형식으로 올려주세요.");
                         };
@@ -524,16 +551,21 @@
             try {
                 let processedImages = [];
                 let totalSize = 0;
+                
+                // 파일 개수가 많을 경우 (3장 이상), 1MB 제한에 걸리지 않도록 이미지 크기와 화질을 더 줄입니다.
+                const fileCount = files.length;
+                const dynamicMaxDim = fileCount > 2 ? 600 : 800;
+                const dynamicQuality = fileCount > 2 ? 0.5 : 0.6;
 
                 for (const f of files) {
-                    const dataUrl = await processFile(f);
+                    const dataUrl = await processFile(f, dynamicMaxDim, dynamicQuality);
                     totalSize += dataUrl.length;
                     processedImages.push(dataUrl);
                 }
 
                 // Firestore Document Size 안전 체크 (약 1MB 제한 대비)
                 if (totalSize > 900000) {
-                    throw new Error(`파일 용량이 너무 큽니다. 여러 장일 경우 나누어서 올리거나, 더 작은 해상도의 사진을 사용해주세요.`);
+                    throw new Error(`파일 용량이 너무 큽니다. 여러 장일 경우 나누어서 올리거나, 더 적은 수의 사진을 선택해주세요.`);
                 }
 
                 if (url) processedImages.push(url);
@@ -585,16 +617,20 @@
             document.getElementById('input-title').value = p.title;
             document.getElementById('input-desc').value = p.desc;
             
-            // 기존 이미지/영상이 있으면 파일 입력란 아래에 안내 문구를 띄워줍니다.
+            // 기존 이미지/영상이 있으면 파일 입력란 아래에 썸네일과 안내 문구를 띄워줍니다.
             const images = p.images || (p.image ? [p.image] : []);
             const previewInfo = document.getElementById('file-preview-info');
             const nameDisplay = document.getElementById('file-name-display');
+            const thumbnailsContainer = document.getElementById('file-thumbnails');
             
             if (images.length > 0) {
                 previewInfo.classList.remove('hidden');
                 nameDisplay.innerText = `기존 파일 ${images.length}개가 유지됩니다. (새 파일 선택 시 덮어쓰기 됨)`;
+                // 기존 썸네일 작게 표시
+                thumbnailsContainer.innerHTML = images.map(src => `<img src="${src}" class="w-16 h-16 object-cover rounded-md border-2 border-stone-200 shadow-sm opacity-60">`).join('');
             } else {
                 previewInfo.classList.add('hidden');
+                thumbnailsContainer.innerHTML = '';
             }
             
             adminPanelEl.scrollIntoView({ behavior: 'smooth' });
@@ -614,6 +650,8 @@
             window.editingId = null; 
             postFormEl.reset(); 
             document.getElementById('file-preview-info').classList.add('hidden');
+            const thumbnailsContainer = document.getElementById('file-thumbnails');
+            if(thumbnailsContainer) thumbnailsContainer.innerHTML = '';
         };
         window.closePasswordModal = () => passwordModal.classList.add('hidden');
         
@@ -631,13 +669,39 @@
             setTimeout(() => document.getElementById('image-modal').classList.add('hidden'), 300);
         };
 
+        // 다중 파일 선택 시 썸네일 미리보기 이벤트
         fileInput.addEventListener('change', () => {
-            const count = fileInput.files.length;
+            const files = Array.from(fileInput.files);
             const previewInfo = document.getElementById('file-preview-info');
             const nameDisplay = document.getElementById('file-name-display');
-            if (count > 0) {
+            const thumbnailsContainer = document.getElementById('file-thumbnails');
+            
+            thumbnailsContainer.innerHTML = ''; // 이전 썸네일 비우기
+
+            if (files.length > 0) {
                 previewInfo.classList.remove('hidden');
-                nameDisplay.innerText = `${count}개의 파일 선택됨`;
+                nameDisplay.innerText = `${files.length}개의 파일이 선택되었습니다.`;
+                
+                files.forEach(file => {
+                    if (file.type.startsWith('image')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'w-16 h-16 object-cover rounded-md border-2 border-stone-200 shadow-sm';
+                            thumbnailsContainer.appendChild(img);
+                        };
+                        reader.readAsDataURL(file);
+                    } else if (file.type.startsWith('video')) {
+                        const videoIcon = document.createElement('div');
+                        videoIcon.className = 'w-16 h-16 bg-stone-100 rounded-md border-2 border-stone-200 shadow-sm flex items-center justify-center text-stone-400';
+                        videoIcon.innerHTML = '<i data-lucide="video" class="w-6 h-6"></i>';
+                        thumbnailsContainer.appendChild(videoIcon);
+                    }
+                });
+                
+                setTimeout(() => lucide.createIcons(), 50); // 새로 추가된 비디오 아이콘 렌더링
+                
             } else {
                 // 수정을 취소하고 파일을 비웠을 때 상태를 원래대로
                 if (!window.editingId) {
