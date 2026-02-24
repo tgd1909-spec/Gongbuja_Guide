@@ -489,7 +489,18 @@
     <script>
         let isGlobalSundayMode = false;
 
+        // Data - Weekday Schedule (입실 당일 저녁부터 다음 날까지 순서대로 배치)
         const weekdayItems = [
+            // --- 입실 당일 (전날 저녁) ---
+            { time: "20:00", title: "사수 교대", loc: "별관", note: "소감 발표", role: "sasu" },
+            { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "learner_only" },
+            { time: "20:30", title: "공지사항 및 명상", loc: "대강전 2층", note: "21:10까지 진행", role: "all" },
+            { time: "21:30", title: "점호", loc: "대강전 1층", note: "점호 전까지 혈압 체크 완료하기", role: "all" },
+            { time: "22:30", title: "드는 봉심", loc: "대강전 2층 승정문 앞", note: "22:20까지 시립", role: "all" },
+            { time: "23:30", title: "퇴배 봉심", loc: "대강전 2층 승정문", note: "23:20까지 정렬, 하루 일과 마무리", role: "all" },
+            { time: "23:50", title: "퇴배 종료", loc: "대강전 1층", note: "인사 후 귀가", role: "all" },
+            { time: "24:00", title: "취침", loc: "숙소", note: "", role: "all" },
+            // --- 공부 당일 ---
             { time: "01:30", title: "축시 기도", loc: "대강전 1층", note: "01:20까지 대기 및 명상", role: "all" },
             { time: "02:00", title: "취침", loc: "숙소", note: "", role: "all" },
             { time: "07:10", title: "체조", loc: "대강전 1층", note: "", role: "all" },
@@ -514,46 +525,52 @@
             { time: "17:00", title: "사수 회의", loc: "별관", note: "사수 일정 종료 보고", role: "sasu" },
             { time: "17:30", title: "저녁 식사", loc: "식당", note: "", role: "all" },
             { time: "19:30", title: "술시 기도", loc: "대강전 1층", note: "19:20까지 대기 및 명상", role: "all" },
-            { time: "19:50", title: "체조", loc: "대강전 1층", note: "20:00까지", role: "all" },
-            { time: "20:00", title: "사수 교대", loc: "별관", note: "소감 발표", role: "sasu" },
-            { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "learner_only" },
-            { time: "20:30", title: "명상", loc: "대강전 2층", note: "21:10까지 진행", role: "all" },
-            { time: "21:30", title: "점호", loc: "대강전 1층", note: "21:20까지 도착", role: "all" },
-            { time: "22:30", title: "드는 봉심", loc: "대강전 2층 승정문 앞", note: "22:20까지 시립", role: "all" },
-            { time: "23:30", title: "퇴배 봉심", loc: "대강전 2층 승정문", note: "23:20까지 정렬, 하루 일과 마무리", role: "all" },
-            { time: "23:50", title: "퇴배 종료", loc: "대강전 1층", note: "인사 후 귀가", role: "all" },
-            { time: "24:00", title: "취침", loc: "숙소", note: "", role: "all" },
+            { time: "19:50", title: "체조", loc: "대강전 1층", note: "20:00까지", role: "all" }
         ];
 
+        // Data - Sunday Schedule
         const sundayItems = [
-            { time: "23:30", title: "자시 기도 (전날)", loc: "대강전 1층", note: "주일 드는 날, 23:20까지 대기 및 명상", role: "all" },
-            { time: "23:50", title: "취침 (전날)", loc: "숙소", note: "", role: "all" },
+            // --- 입실 당일 (주일 전날 저녁) ---
+            { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "all" },
+            { time: "20:00", title: "사수 교대", loc: "별관 1층", note: "사수 필수 참석", role: "sasu" },
+            { time: "20:30", title: "공지사항", loc: "별관 1층", note: "들어온 공부자만 21:00까지 진행", role: "all" },
+            { time: "20:30", title: "명상", loc: "대강전 2층", note: "21:10까지 진행", role: "all" },
+            { time: "21:30", title: "점호", loc: "대강전 1층", note: "21:20분까지 대기. 점호 전까지 혈압 체크 완료하기", role: "all" },
+            { time: "22:30", title: "드는 봉심", loc: "대강전 2층", note: "22:20까지 승정문 앞 대기", role: "all" },
+            { time: "23:30", title: "자시 기도", loc: "대강전 1층", note: "주일 드는 날, 23:20까지 대기 및 명상", role: "all" },
+            { time: "23:30", title: "퇴배 봉심", loc: "대강전 2층", note: "23:20까지 승정문 앞 대기", role: "all" },
+            // --- 공부 당일 (주일) ---
             { time: "01:30", title: "축시 기도", loc: "대강전 1층", note: "01:20까지 대기 및 명상", role: "all" },
-            { time: "01:50", title: "취침", loc: "숙소", note: "", role: "all" },
-            { time: "05:20", title: "기상", loc: "-", note: "", role: "all" },
             { time: "05:30", title: "묘시 기도", loc: "대강전 1층", note: "05:20까지 대기 및 명상", role: "all" },
-            { time: "05:50", title: "취침", loc: "숙소", note: "혹은 각자 할 일", role: "all" },
-            { time: "07:15", title: "기상", loc: "-", note: "", role: "all" },
+            { time: "07:10", title: "아침 체조", loc: "-", note: "", role: "all" },
             { time: "07:30", title: "진시 기도", loc: "대강전 1층", note: "07:20까지 대기 및 명상", role: "all" },
             { time: "07:50", title: "아침 식사", loc: "식당", note: "", role: "all" },
             { time: "08:15", title: "방장 회의", loc: "별관", note: "사수 필수 참석", role: "sasu" },
+            { time: "09:50", title: "사수 회의", loc: "별관", role: "sasu" }
             { time: "09:00", title: "청소", loc: "지정 구역", note: "", role: "learner_only" },
+            { time: "10:05", title: "수련 대기 및 환영", loc: "대강전 2층", note: "공부자 환영 준비", role: "sasu" }
+            { time: "10:20", title: "사수 스피치", loc: "대강전 2층", role: "sasu" }
             { time: "10:30", title: "오전 수련", loc: "대강전 2층", note: "10:10까지 대기", role: "all" },
             { time: "11:30", title: "오시 기도", loc: "대강전 1층", note: "", role: "all" },
             { time: "12:00", title: "점심 식사", loc: "식당", note: "", role: "all" },
             { time: "12:20", title: "토론", loc: "청학관", note: "", role: "all" },
             { time: "13:30", title: "미시 기도", loc: "대강전 1층", note: "13:20까지 대기 및 명상", role: "all" },
             { time: "14:00", title: "일대일 만남", loc: "청학관", note: "", role: "all" },
-            { time: "15:00", title: "일대일 만남", loc: "청학관", note: "", role: "all" },
+            { time: "16:05", title: "수련 대기 및 환영", loc: "대강전 2층", note: "공부자 환영 준비", role: "sasu" }
+            { time: "16:20", title: "사수 스피치", loc: "대강전 2층", role: "sasu" }
             { time: "16:30", title: "오후 수련", loc: "대강전 2층", note: "16:10까지 대기", role: "all" },
+            { time: "17:00", title: "사수 회의", loc: "별관", note: "사수 일정 종료 보고", role: "sasu" }
             { time: "17:30", title: "유시 기도", loc: "대강전 1층", note: "17:20까지 대기 및 명상", role: "all" },
             { time: "18:00", title: "저녁 식사", loc: "식당", note: "", role: "all" },
             { time: "19:30", title: "술시 기도", loc: "대강전 1층", note: "19:20까지 대기 및 명상", role: "all" },
-            { time: "19:50", title: "체조", loc: "대강전 1층", note: "20:00까지", role: "all" },
+            { time: "19:50", title: "체조", loc: "대강전 1층", note: "20:00까지", role: "all" }
             { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "all" },
-            { time: "21:30", title: "점호", loc: "대강전 1층", note: "21:20까지 도착", role: "all" },
+            { time: "20:00", title: "사수 교대", loc: "별관", note: "사수 필수 참석", role: "sasu" }
+            { time: "20:30", title: "명상", loc: "대강전 2층", note: "21:10까지 진행", role: "all" },
+            { time: "21:30", title: "점호", loc: "대강전 1층", note: "21:20분까지 대기. 점호 전까지 혈압 체크 완료하기", role: "all" },
             { time: "22:30", title: "드는 봉심", loc: "대강전 2층", note: "22:20까지 승정문 앞 대기", role: "all" },
-            { time: "23:30", title: "퇴배 봉심", loc: "대강전 2층", note: "23:20까지 승정문 앞 대기", role: "all" },
+            { time: "23:30", title: "자시 기도", loc: "대강전 1층", note: "주일 드는 날, 23:20까지 대기 및 명상", role: "all" },
+            { time: "23:30", title: "퇴배 봉심", loc: "대강전 2층", note: "23:20까지 승정문 앞 대기", role: "all" }
         ];
 
         let currentTab = 'schedule';
@@ -615,8 +632,8 @@
             const isSasuMode = document.getElementById('sasu-toggle').checked;
             const nowMinutes = getCurrentTimeInMinutes();
             
+            // 기존의 .sort()를 삭제하여 배열 작성 순서(입실 당일 -> 공부 당일)를 유지합니다.
             let itemsToRender = isGlobalSundayMode ? [...sundayItems] : [...weekdayItems];
-            itemsToRender.sort((a, b) => a.time.localeCompare(b.time));
 
             const filteredData = itemsToRender.filter(item => {
                 if (item.role === 'all') return true;
@@ -626,17 +643,27 @@
             });
             
             let activeIndex = -1;
+            // 자정(00시)이 넘어가는 스케줄을 정상적으로 계산하는 로직
             for (let i = 0; i < filteredData.length; i++) {
                 const itemTime = timeStringToMinutes(filteredData[i].time);
-                if (nowMinutes >= itemTime) {
-                    if (i < filteredData.length - 1) {
-                        const nextItemTime = timeStringToMinutes(filteredData[i+1].time);
-                        if (nowMinutes < nextItemTime) {
+                const isLast = (i === filteredData.length - 1);
+                
+                if (isLast) {
+                    if (nowMinutes >= itemTime) activeIndex = i;
+                } else {
+                    const nextItemTime = timeStringToMinutes(filteredData[i+1].time);
+                    if (itemTime <= nextItemTime) {
+                        // 정상 구간 (예: 07:30 -> 08:30)
+                        if (nowMinutes >= itemTime && nowMinutes < nextItemTime) {
                             activeIndex = i;
                             break;
                         }
                     } else {
-                        activeIndex = i;
+                        // 자정이 넘어가는 구간 (예: 23:50 -> 01:30)
+                        if (nowMinutes >= itemTime || nowMinutes < nextItemTime) {
+                            activeIndex = i;
+                            break;
+                        }
                     }
                 }
             }
@@ -685,7 +712,6 @@
                 }, 500);
             }
         }
-
         function setRoleFilter(role) {
             currentRoleFilter = role;
             
