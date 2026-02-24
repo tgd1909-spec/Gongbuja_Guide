@@ -92,18 +92,75 @@
                 </div>
                 <div class="w-24 h-1 bg-theme-color mt-4 mb-6 rounded-full"></div>
                 
-                <p class="text-stone-700 font-medium text-lg sm:text-xl break-keep leading-relaxed">
+                <p class="text-stone-700 font-medium text-lg sm:text-xl break-keep leading-relaxed mb-6">
                     도인들이 갖추어야 할 기본 예법과<br class="hidden sm:block"> 도인으로서의 마음가짐을 안내합니다.
                 </p>
+
+                <!-- 시뮬레이터 토글 버튼 -->
+                <button id="simulator-toggle-btn" onclick="window.toggleSimulator()" class="flex items-center gap-2 px-6 py-3 bg-theme-color text-white rounded-full shadow-md hover:bg-[#1a252f] transition-all transform hover:-translate-y-1 font-bold group">
+                    <span id="simulator-toggle-icon"><i data-lucide="play-circle" class="w-5 h-5"></i></span>
+                    <span id="simulator-toggle-text">입실 시뮬레이터 실행하기</span>
+                </button>
             </div>
         </header>
 
         <!-- 탭 네비게이션 -->
-        <nav class="sticky top-0 z-10 bg-white/95 backdrop-blur border-b-2 border-stone-200 px-4 sm:px-8 py-4 overflow-x-auto shadow-sm">
+        <nav class="sticky top-0 z-10 bg-white/95 backdrop-blur border-y-2 border-stone-200 px-4 sm:px-8 py-4 overflow-x-auto shadow-sm">
             <div class="flex gap-3 min-w-max sm:justify-start" id="category-container">
                 <div class="px-5 py-2.5 text-stone-400 text-base font-bold">로딩 중...</div>
             </div>
         </nav>
+
+        <!-- 시뮬레이터 영역 (초기 숨김) -->
+        <section id="view-simulator" class="hidden p-4 sm:p-8 bg-stone-50 border-b-2 border-stone-200 space-y-8 animate-in slide-in-from-top-4 fade-in duration-500">
+            <!-- 시뮬레이터 설명 박스 -->
+            <div class="bg-white border-2 border-stone-200 rounded-xl p-6 sm:p-8 shadow-card">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="px-3 py-1 bg-theme-color/10 text-theme-color text-sm font-bold rounded-full border border-theme-color/20">교육</span>
+                    <h2 class="text-2xl font-serif font-bold text-k-text">공부방 입실 시뮬레이터</h2>
+                </div>
+                <div class="space-y-6">
+                    <p class="text-lg text-stone-600 font-medium leading-relaxed">
+                        복잡한 입실 동선을 시각적으로 익혀보세요.<br class="hidden sm:block">
+                        회원과 내수는 뒤로 물러나고, 들어오는 사람은 기존 사람들의 뒤로 돌아갑니다.
+                    </p>
+                    
+                    <div class="bg-stone-50 border border-stone-200 rounded-lg p-6 text-base text-k-text font-medium leading-loose">
+                        <ul class="list-disc pl-5 space-y-3">
+                            <li><strong class="text-theme-color bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm">과한 인사 지양</strong> 입실 후에는 너무 과한 인사를 하지 않습니다. 좌배(坐拜)로 시작해서 좌배로 끝날 수 있도록 과한 부복(엎드려 절함)은 하지 않습니다.</li>
+                            <li><strong class="text-theme-color bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm">회원에게 속도 맞춤</strong> 옆의 회원이 자리에 앉으면 청소를 멈추고 정돈합니다. 모든 행동의 속도는 회원에게 맞춰야 합니다.</li>
+                            <li><strong class="text-theme-color bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm">교대 시 거리 확보</strong> 회원과 내수가 엉덩이를 뒤로 물릴 때, 다음 공부자가 지나갈 수 있는 거리를 확보하고 물러나야 합니다. 너무 뒤로 물러나면 벽과의 공간이 없어 통행이 어렵습니다.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 시뮬레이터 캔버스 및 조작 버튼 -->
+            <div class="bg-white border-2 border-stone-200 rounded-xl p-6 sm:p-8 shadow-card flex flex-col items-center">
+                <!-- 캔버스 영역 -->
+                <div class="relative w-full max-w-[500px] aspect-square bg-[#F5F5DC] border-4 border-[#8D6E63] rounded-lg mb-6 overflow-hidden shadow-inner">
+                    <div class="absolute top-0 left-[60%] -translate-x-1/2 w-1/3 h-3 bg-[#5D4037] rounded-b-md shadow-sm"></div>
+                    <div class="absolute top-4 left-[60%] -translate-x-1/2 text-[#5D4037] text-sm font-bold bg-[#F5F5DC]/80 px-2 rounded">향 탁자 (앞)</div>
+                    <div class="absolute top-1/2 left-0 -translate-y-1/2 w-3 h-20 bg-[#3E2723] rounded-r shadow-md"></div>
+                    <div class="absolute top-1/2 left-5 -translate-y-1/2 text-[#3E2723] text-sm font-bold -rotate-90">출입문</div>
+                    <canvas id="simCanvas" width="500" height="500" class="w-full h-full"></canvas>
+                </div>
+
+                <!-- 조작 버튼 영역 -->
+                <div class="w-full max-w-[500px] flex flex-col gap-4">
+                    <div class="bg-stone-50 p-6 rounded-xl border border-stone-200 min-h-[100px] flex items-center justify-center text-center shadow-sm">
+                        <p id="step-description" class="text-lg font-bold text-k-text transition-all break-keep leading-relaxed">시뮬레이션을 시작하려면 아래 버튼을 누르세요.</p>
+                    </div>
+
+                    <div class="flex justify-between gap-3">
+                        <button onclick="window.simController.prev()" class="flex-1 py-4 text-base sm:text-lg text-k-text rounded-lg font-bold bg-white border-2 border-stone-200 hover:border-theme-color hover:text-theme-color transition-all duration-300 transform hover:-translate-y-1 shadow-sm">◀ 이전</button>
+                        <button onclick="window.simController.play()" class="flex-1 py-4 text-base sm:text-lg text-white rounded-lg font-bold bg-theme-color hover:bg-[#1a252f] transition-all duration-300 transform hover:-translate-y-1 shadow-md">▶ 재생/정지</button>
+                        <button onclick="window.simController.next()" class="flex-1 py-4 text-base sm:text-lg text-k-text rounded-lg font-bold bg-white border-2 border-stone-200 hover:border-theme-color hover:text-theme-color transition-all duration-300 transform hover:-translate-y-1 shadow-sm">다음 ▶</button>
+                    </div>
+                    <button onclick="window.simController.reset()" class="w-full py-3 text-stone-500 font-medium hover:text-theme-color text-sm underline decoration-stone-300 underline-offset-4 transition-colors">↺ 처음으로 리셋</button>
+                </div>
+            </div>
+        </section>
 
         <!-- 컨텐츠 리스트 영역 -->
         <section id="content-list" class="p-4 sm:p-8 space-y-6 bg-stone-50 min-h-[500px]">
@@ -122,7 +179,11 @@
                     </div>
                     관리자 패널
                 </h3>
-                <button onclick="window.resetForm()" class="text-sm font-bold text-stone-500 hover:text-theme-color underline decoration-2 underline-offset-4">입력 초기화</button>
+                <div class="flex gap-4">
+                    <!-- 데이터 복구 버튼 (임시 추가) -->
+                    <button onclick="window.forceRestoreData()" class="text-sm font-bold text-red-500 hover:text-red-700 underline decoration-2 underline-offset-4" title="로컬 저장소의 데이터를 파이어베이스로 밀어넣습니다.">데이터 강제 복구</button>
+                    <button onclick="window.resetForm()" class="text-sm font-bold text-stone-500 hover:text-theme-color underline decoration-2 underline-offset-4">입력 초기화</button>
+                </div>
             </div>
 
             <!-- 카테고리 관리 섹션 -->
@@ -133,7 +194,8 @@
                 <div class="flex flex-wrap gap-3 mb-5" id="admin-category-list"></div>
                 <div class="flex gap-3 h-12">
                     <input type="text" id="new-category-input" placeholder="새 카테고리 추가" 
-                        class="flex-1 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-base focus:outline-none focus:border-theme-color focus:bg-white transition-colors text-k-text placeholder-stone-400 font-medium">
+                        class="flex-1 bg-stone-50 border-2 border-stone-300 rounded-lg px-4 text-base focus:outline-none focus:border-theme-color focus:bg-white transition-colors text-k-text placeholder-stone-400 font-medium"
+                        onkeypress="if(event.key === 'Enter') window.addCategory()">
                     <button onclick="window.addCategory()" class="px-6 bg-theme-color text-white rounded-lg hover:bg-stone-800 text-base font-bold transition-colors whitespace-nowrap shadow-md">
                         추가
                     </button>
@@ -163,17 +225,11 @@
 
                 <div class="p-4 bg-stone-50 rounded-lg border-2 border-stone-200">
                     <label class="block text-sm font-bold text-stone-600 mb-2 flex items-center gap-2">
-                        <i data-lucide="image" class="w-4 h-4"></i> 사진/영상 첨부 (여러장 가능)
+                        <i data-lucide="image" class="w-4 h-4"></i> 사진/영상 첨부
                     </label>
                     <input type="file" id="input-file" accept="image/*,video/*" multiple class="w-full bg-white border-2 border-stone-300 rounded-lg p-2 text-sm focus:outline-none focus:border-theme-color file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-bold file:bg-stone-200 file:text-stone-700 hover:file:bg-stone-300 cursor-pointer">
-                    
-                    <!-- 여러장 선택 시 미리보기 영역 -->
-                    <div id="file-preview-info" class="mt-3 text-sm text-theme-color font-bold hidden flex flex-col gap-2 bg-white p-3 border border-stone-200 rounded-lg">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="check-circle" class="w-4 h-4 text-green-600"></i>
-                            <span id="file-name-display"></span>
-                        </div>
-                        <div id="file-thumbnails" class="flex flex-wrap gap-2 mt-1"></div>
+                    <div id="file-preview-info" class="mt-3 text-sm text-theme-color font-bold hidden flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i><span id="file-name-display"></span>
                     </div>
                 </div>
                 
@@ -263,11 +319,276 @@
     <!-- Firebase SDK 및 앱 로직 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 요청하신 법식 순서 고정
-        const FIX_ORDER = ['시립', '법배', '평배', '향남읍', '좌배', '국궁', '좌·우진보', '법좌', '수련방법', '점호의례', '봉심의례', '부정기휘법'];
+        // ==========================================
+        // 시뮬레이터(Simulator) 로직
+        // ==========================================
+        const canvas = document.getElementById('simCanvas');
+        let ctx = null;
+        if(canvas) ctx = canvas.getContext('2d');
+
+        const C_MEMBER = '#d97706';
+        const C_OESU = '#2563eb';
+        const C_NAESU = '#dc2626';
+
+        window.lerp = function(start, end, t) {
+            return start * (1 - t) + end * t;
+        }
+
+        const simSteps = [
+            {
+                text: "1. 공부 진행 중 (현재 시간)",
+                setup: (s) => {
+                    s.p_oesu = {x: 200, y: 150, label: '현 외수', c: C_OESU};
+                    s.p_member = {x: 300, y: 150, label: '현 회원', c: C_MEMBER};
+                    s.p_naesu = {x: 400, y: 150, label: '현 내수', c: C_NAESU};
+                    s.n_oesu = {x: 40, y: 150, label: '다음 외수', c: C_OESU, alpha: 1};   
+                    s.n_member = {x: 40, y: 200, label: '다음 회원', c: C_MEMBER, alpha: 1}; 
+                    s.n_naesu = {x: 40, y: 320, label: '다음 내수', c: C_NAESU, alpha: 1};   
+                }
+            },
+            {
+                text: "2. 교대 준비: 회원과 내수 후퇴",
+                desc: "종이 울리면 회원과 내수는 뒤로 물러나 앞자리를 비웁니다. 외수는 가만히 있습니다.",
+                animate: (s, p) => {
+                    s.p_member.y = window.lerp(150, 350, p);
+                    s.p_naesu.y = window.lerp(150, 350, p);
+                }
+            },
+            {
+                text: "3. 다음 회원 입장",
+                desc: "다음 회원이 들어와 외수 뒤를 돌아 중앙 자리로 갑니다.",
+                animate: (s, p) => {
+                    if(p < 0.2) {
+                        const lp = p / 0.2;
+                        s.n_member.x = window.lerp(40, 120, lp);
+                        s.n_member.y = window.lerp(200, 250, lp);
+                    } else if (p < 0.5) {
+                        const lp = (p - 0.2) / 0.3;
+                        s.n_member.x = window.lerp(120, 300, lp);
+                        s.n_member.y = 250;
+                    } else {
+                        const lp = (p - 0.5) / 0.5;
+                        s.n_member.x = 300;
+                        s.n_member.y = window.lerp(250, 150, lp);
+                    }
+                }
+            },
+            {
+                text: "4. 다음 내수 입장",
+                desc: "다음 내수가 들어와 기존 인원들의 등 뒤를 지나, 오른쪽 끝으로 크게 돌아 자리로 갑니다.",
+                animate: (s, p) => {
+                    if(p < 0.15) {
+                        const lp = p / 0.15;
+                        s.n_naesu.x = window.lerp(40, 120, lp);
+                        s.n_naesu.y = window.lerp(320, 250, lp);
+                    } else if (p < 0.35) {
+                        const lp = (p - 0.15) / 0.2;
+                        s.n_naesu.x = window.lerp(120, 180, lp);
+                        s.n_naesu.y = window.lerp(250, 450, lp); 
+                    } else if (p < 0.65) {
+                        const lp = (p - 0.35) / 0.3;
+                        s.n_naesu.x = window.lerp(180, 460, lp);
+                        s.n_naesu.y = 450;
+                    } else if (p < 0.85) {
+                        const lp = (p - 0.65) / 0.2;
+                        s.n_naesu.x = 460;
+                        s.n_naesu.y = window.lerp(450, 150, lp);
+                    } else {
+                        const lp = (p - 0.85) / 0.15;
+                        s.n_naesu.x = window.lerp(460, 400, lp);
+                        s.n_naesu.y = 150;
+                    }
+                }
+            },
+            {
+                text: "5. 외수 교대",
+                desc: "이전 외수가 뒤로 물러나고, 다음 외수가 문을 닫으며 들어와 앉습니다.",
+                animate: (s, p) => {
+                    if(p < 0.3) {
+                        const lp = p / 0.3;
+                        s.p_oesu.y = window.lerp(150, 350, lp);
+                    } else {
+                        s.p_oesu.y = 350;
+                        const lp = (p - 0.3) / 0.7;
+                        if(lp < 0.3) {
+                            s.n_oesu.x = window.lerp(40, 120, lp/0.3);
+                            s.n_oesu.y = window.lerp(150, 250, lp/0.3);
+                        } else {
+                            s.n_oesu.x = window.lerp(120, 200, (lp-0.3)/0.7);
+                            s.n_oesu.y = window.lerp(250, 150, (lp-0.3)/0.7);
+                        }
+                    }
+                }
+            },
+            {
+                text: "완료: 공부 시작 / 퇴실",
+                desc: "새로운 조가 자리를 잡았습니다. 이전 조는 퇴실합니다.",
+                animate: (s, p) => {
+                    s.p_member.alpha = 1 - p;
+                    s.p_oesu.alpha = 1 - p;
+                    s.p_naesu.alpha = 1 - p;
+                }
+            }
+        ];
+
+        window.simController = {
+            initialized: false,
+            stepIndex: 0,
+            progress: 0,
+            isPlaying: false,
+            lastTime: 0,
+            state: {},
+            init: function() {
+                this.reset();
+                requestAnimationFrame((t) => this.loop(t));
+            },
+            reset: function() {
+                this.stepIndex = 0;
+                this.progress = 0;
+                this.isPlaying = false;
+                simSteps[0].setup(this.state);
+                this.draw();
+                this.updateText();
+            },
+            next: function() {
+                if (this.stepIndex < simSteps.length - 1) {
+                    if(simSteps[this.stepIndex].animate) simSteps[this.stepIndex].animate(this.state, 1.0);
+                    this.stepIndex++;
+                    this.progress = 0;
+                    this.updateText();
+                    this.draw();
+                }
+            },
+            prev: function() {
+                if (this.stepIndex > 0) {
+                    this.stepIndex--;
+                    this.progress = 0;
+                    simSteps[0].setup(this.state);
+                    for(let i=1; i<this.stepIndex; i++) {
+                        if(simSteps[i].animate) simSteps[i].animate(this.state, 1.0);
+                    }
+                    this.updateText();
+                    this.draw();
+                }
+            },
+            play: function() {
+                this.isPlaying = !this.isPlaying;
+            },
+            updateText: function() {
+                const el = document.getElementById('step-description');
+                const step = simSteps[this.stepIndex];
+                el.innerHTML = `<span class="block text-sm text-theme-color font-bold mb-2 tracking-widest">STEP ${this.stepIndex}</span>${step.text}<br><span class="text-base font-normal text-stone-500 mt-1 block">${step.desc || ''}</span>`;
+            },
+            loop: function(timestamp) {
+                const dt = timestamp - this.lastTime;
+                this.lastTime = timestamp;
+                if (this.isPlaying) {
+                    this.progress += dt * 0.0005;
+                    if (this.progress >= 1) {
+                        this.progress = 1;
+                        if(this.stepIndex < simSteps.length - 1) {
+                            this.next();
+                        } else {
+                            this.isPlaying = false;
+                        }
+                    }
+                    if(simSteps[this.stepIndex].animate) {
+                        simSteps[this.stepIndex].animate(this.state, this.progress);
+                    }
+                    this.draw();
+                }
+                requestAnimationFrame((t) => this.loop(t));
+            },
+            draw: function() {
+                if(!ctx) return;
+                ctx.clearRect(0, 0, 500, 500);
+                
+                ctx.fillStyle = '#f5f5f4'; 
+                ctx.fillRect(0, 0, 100, 500);
+                
+                ctx.strokeStyle = '#e7e5e4'; 
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for(let i=100; i<500; i+=50) {
+                    ctx.moveTo(i, 0); ctx.lineTo(i, 500);
+                }
+                for(let i=0; i<500; i+=50) {
+                    ctx.moveTo(100, i); ctx.lineTo(500, i);
+                }
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#57534e';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(100, 0); ctx.lineTo(100, 230);
+                ctx.moveTo(100, 270); ctx.lineTo(100, 500);
+                ctx.stroke();
+                
+                const drawBall = (obj) => {
+                    if (obj.alpha === 0) return;
+                    ctx.globalAlpha = obj.alpha !== undefined ? obj.alpha : 1;
+                    ctx.fillStyle = obj.c;
+                    ctx.beginPath();
+                    ctx.arc(obj.x, obj.y, 22, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 11px Noto Sans KR'; 
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    let short = obj.label.includes('회원') ? '회' : (obj.label.includes('외수') ? '외' : '내');
+                    ctx.fillText(obj.label.includes('다음') ? '다음' : '기존', obj.x, obj.y - 9);
+                    ctx.fillText(short, obj.x, obj.y + 7);
+                    ctx.globalAlpha = 1;
+                };
+
+                drawBall(this.state.p_oesu);
+                drawBall(this.state.p_member);
+                drawBall(this.state.p_naesu);
+                drawBall(this.state.n_member);
+                drawBall(this.state.n_naesu);
+                drawBall(this.state.n_oesu);
+            }
+        };
+
+        // 시뮬레이터 숨김/표시 토글 로직
+        window.toggleSimulator = () => {
+            const simEl = document.getElementById('view-simulator');
+            const btnText = document.getElementById('simulator-toggle-text');
+            const iconContainer = document.getElementById('simulator-toggle-icon');
+
+            if (simEl.classList.contains('hidden')) {
+                simEl.classList.remove('hidden');
+                btnText.innerText = '입실 시뮬레이터 닫기';
+                iconContainer.innerHTML = '<i data-lucide="x-circle" class="w-5 h-5"></i>';
+                
+                // 처음 열 때만 캔버스 초기화 (버그 방지)
+                if(!window.simController.initialized && ctx) {
+                    window.simController.init();
+                    window.simController.initialized = true;
+                }
+                
+                // 부드럽게 스크롤 이동
+                simEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                simEl.classList.add('hidden');
+                btnText.innerText = '입실 시뮬레이터 실행하기';
+                iconContainer.innerHTML = '<i data-lucide="play-circle" class="w-5 h-5"></i>';
+            }
+            
+            // 새 아이콘 렌더링
+            lucide.createIcons();
+        };
+
+        // ==========================================
+        // 기존 게시판 및 Firebase 로직
+        // ==========================================
+        const FIX_ORDER = ['시립', '법배', '평배', '향납읍', '좌배', '국궁', '좌우진보', '법좌', '수련방법', '점호의례', '봉심의례', '부정기휘법'];
 
         const YOUR_FIREBASE_CONFIG = {
             apiKey: "AIzaSyAoUdyZJQjcT81_2YKzX1rzMJlNAoHcbAw",
@@ -282,6 +603,7 @@
         window.currentCategory = '전체';
         window.editingId = null;
         window.deleteTargetId = null;
+        
         let localContents = [];
         let localCategories = [];
         let localCategoriesObjects = [];
@@ -310,17 +632,50 @@
         let appId = 'tgd-guide-public';
 
         async function initialize() {
+            loadLocalData();
+
             try {
-                const app = initializeApp(YOUR_FIREBASE_CONFIG);
+                let firebaseConfig;
+
+                if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                    appId = __app_id;
+                    console.log("Canvas Firebase 연결");
+                } 
+                else if (YOUR_FIREBASE_CONFIG && YOUR_FIREBASE_CONFIG.apiKey) {
+                    firebaseConfig = YOUR_FIREBASE_CONFIG;
+                    appId = 'tgd-guide-public';
+                    console.log("외부 Firebase 설정 연결");
+                } 
+                else {
+                    throw new Error("환경 설정이 없습니다. (로컬 모드 전환)");
+                }
+
+                const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
                 useFirebase = true;
 
-                subscribeToData();
-                console.log("Firebase connected.");
+                const initAuth = async () => {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                };
+                
+                await initAuth();
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        subscribeToData();
+                    }
+                });
+
             } catch (error) {
-                console.warn("Firebase offline mode.", error);
+                console.warn("Firebase 연결 실패, 오프라인 모드로 전환합니다.", error);
                 useFirebase = false;
+                loadLocalData();
             }
 
             const savedAdminState = localStorage.getItem('isAdminMode') === 'true';
@@ -338,23 +693,134 @@
             });
         }
 
+        let permissionErrorAlerted = false;
+        function handlePermissionError() {
+            if (!permissionErrorAlerted) {
+                permissionErrorAlerted = true;
+                alert("데이터베이스 권한 오류가 발생했습니다.\n파이어베이스 콘솔에서 설정이 만료되었는지 확인해주세요.\n\n안전을 위해 현재 내 컴퓨터에 백업된 로컬 데이터로 전환합니다.");
+                useFirebase = false;
+                loadLocalData();
+            }
+        }
+
+        window.forceRestoreData = async () => {
+            if (!useFirebase || !auth.currentUser) {
+                alert("파이어베이스에 연결되어 있지 않습니다.");
+                return;
+            }
+            
+            const localPostsData = localStorage.getItem('taegeukdo_posts');
+            if (!localPostsData || localPostsData === "[]") {
+                alert("복구할 수 있는 백업 데이터가 없습니다.");
+                return;
+            }
+
+            try {
+                const posts = JSON.parse(localPostsData);
+                if (posts.length === 0) return alert("복구할 게시글이 없습니다.");
+                
+                if(!confirm(`내 컴퓨터에 저장된 ${posts.length}개의 게시글을 파이어베이스 서버로 복구하시겠습니까?`)) return;
+
+                const batch = writeBatch(db);
+                const postsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
+                
+                posts.forEach(post => {
+                    const docRef = doc(postsCollectionRef); 
+                    const postData = { ...post };
+                    delete postData.id; 
+                    batch.set(docRef, postData);
+                });
+
+                await batch.commit();
+                alert("데이터 강제 복구가 완료되었습니다!");
+            } catch (err) {
+                console.error("복구 실패:", err);
+                alert("복구 중 오류가 발생했습니다: " + err.message);
+            }
+        }
+
         function subscribeToData() {
+            if (!auth || !auth.currentUser) return;
+
             const postsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
             onSnapshot(postsCollection, (snapshot) => {
-                localContents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const incoming = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                if (incoming.length === 0 && localContents.length > 0) {
+                    console.warn("파이어베이스 DB가 비어있어 컴퓨터의 임시 백업을 지우지 않고 보호합니다.");
+                } else {
+                    localContents = incoming;
+                    saveLocalData();
+                }
                 renderContents();
-            }, (err) => console.error("Firestore Listen Error:", err));
+            }, (err) => {
+                console.error("Firestore Listen Error (Posts):", err);
+                if (err.code === 'permission-denied') handlePermissionError();
+            });
 
             const catsCollection = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
             onSnapshot(catsCollection, (snapshot) => {
-                let cats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                localCategoriesObjects = sortCategories(cats);
-                localCategories = localCategoriesObjects.map(c => c.name);
+                const incomingCats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                if (incomingCats.length === 0 && localCategories.length > 0) {
+                    console.warn("파이어베이스 카테고리가 비어있어 로컬 데이터를 보호합니다.");
+                } else {
+                    localCategoriesObjects = sortCategories(incomingCats);
+                    localCategories = localCategoriesObjects.map(c => c.name);
+                    saveLocalData();
+                }
                 renderCategories();
                 renderCategorySelect();
                 renderAdminCategories();
                 renderContents();
+            }, (err) => {
+                console.error("Firestore Listen Error (Categories):", err);
+                if (err.code === 'permission-denied') handlePermissionError();
             });
+        }
+
+        function loadLocalData() {
+            const savedContents = localStorage.getItem('taegeukdo_posts');
+            const savedCategories = localStorage.getItem('taegeukdo_categories');
+
+            if (savedContents && savedContents !== "[]") {
+                try {
+                    localContents = JSON.parse(savedContents);
+                } catch (e) {
+                    console.error("로컬 데이터 파싱 에러:", e);
+                    localContents = [];
+                }
+            } else {
+                localContents = [];
+            }
+
+            if (savedCategories && savedCategories !== "[]") {
+                try {
+                    localCategories = JSON.parse(savedCategories);
+                } catch (e) {
+                    console.error("로컬 카테고리 파싱 에러:", e);
+                    localCategories = [...FIX_ORDER];
+                }
+            } else {
+                localCategories = [...FIX_ORDER];
+            }
+
+            renderContents();
+            renderCategories();
+            renderCategorySelect();
+            renderAdminCategories();
+        }
+
+        function saveLocalData() {
+            try {
+                const postsToSave = localContents.map(post => {
+                   return post; 
+                });
+                localStorage.setItem('taegeukdo_posts', JSON.stringify(postsToSave));
+                localStorage.setItem('taegeukdo_categories', JSON.stringify(localCategories));
+            } catch (error) {
+                console.error("로컬 스토리지 저장 용량 초과 에러:", error);
+            }
         }
 
         function renderCategories() {
@@ -406,36 +872,22 @@
                 div.className = 'p-6 sm:p-8 bg-white border-2 border-stone-200 rounded-xl shadow-card transition-all group relative mb-6 hover:border-theme-color';
                 
                 const images = item.images || (item.image ? [item.image] : []);
-                
-                // 다중 이미지 배열을 예쁜 그리드로 배치
-                let mediaHtml = '';
-                if (images.length > 0) {
-                    if (images.length === 1) {
-                        mediaHtml = `<div class="mb-6"><img src="${images[0]}" class="w-full max-h-[500px] rounded-xl object-cover sm:object-contain bg-stone-100 cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${images[0]}')"></div>`;
-                    } else if (images.length === 2) {
-                        mediaHtml = `<div class="grid grid-cols-2 gap-3 mb-6">
-                            ${images.map(src => `<img src="${src}" class="w-full h-48 sm:h-64 rounded-xl object-cover cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${src}')">`).join('')}
-                        </div>`;
-                    } else if (images.length === 3) {
-                        // 3장일 경우 1장은 크게, 2장은 작게 배치
-                        mediaHtml = `<div class="grid grid-cols-2 gap-3 mb-6">
-                            <img src="${images[0]}" class="w-full h-full object-cover rounded-xl col-span-2 sm:col-span-1 sm:row-span-2 cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${images[0]}')">
-                            <img src="${images[1]}" class="w-full h-32 sm:h-40 object-cover rounded-xl cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${images[1]}')">
-                            <img src="${images[2]}" class="w-full h-32 sm:h-40 object-cover rounded-xl cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${images[2]}')">
-                        </div>`;
-                    } else {
-                        // 4장 이상일 경우 균일한 그리드 배치
-                        mediaHtml = `<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-                            ${images.map(src => `<img src="${src}" class="w-full h-32 sm:h-40 rounded-xl object-cover cursor-zoom-in hover:opacity-90 transition-opacity border border-stone-200" onclick="window.openImageModal('${src}')">`).join('')}
-                        </div>`;
-                    }
+                let mediaHtml = images.length > 0 ? `
+                    <div class="mb-6 w-full overflow-x-auto flex gap-3 pb-2 scrollbar-thin scrollbar-thumb-stone-300">
+                        ${images.map(src => `<img src="${src}" class="h-48 rounded-lg object-cover cursor-zoom-in hover:opacity-90 transition-opacity" onclick="window.openImageModal('${src}')">`).join('')}
+                    </div>` : '';
+
+                let newBadge = '';
+                if (isNew(item.date)) {
+                    newBadge = `<span class="inline-flex items-center justify-center px-2 py-0.5 ml-2 text-xs font-bold text-white bg-theme-color rounded-md new-badge shadow-sm">NEW</span>`;
                 }
 
                 div.innerHTML = `
                     ${mediaHtml}
-                    <div class="flex items-center gap-3 mb-4 mt-2">
+                    <div class="flex items-center gap-3 mb-4">
                         <span class="text-sm font-bold text-theme-color bg-theme-color/10 px-3 py-1 rounded-full border border-theme-color/20">${item.category}</span>
                         <span class="text-sm text-stone-400 font-bold">${item.date || ''}</span>
+                        ${newBadge}
                     </div>
                     <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-4 text-k-text leading-snug break-keep group-hover:text-theme-color">${item.title}</h2>
                     <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line break-keep">${item.desc}</p>
@@ -454,13 +906,12 @@
         window.checkPassword = async () => {
             if (passwordInput.value === "taegeuk1909#") {
                 try {
-                    // 보안 규칙을 통과하기 위해 익명 로그인을 수행합니다.
-                    await signInAnonymously(auth);
+                    if(!auth || !auth.currentUser) await signInAnonymously(auth);
                     toggleAdminState(true);
                     window.closePasswordModal();
                 } catch (e) {
                     console.error("Auth Error:", e);
-                    alert("인증 오류가 발생했습니다.");
+                    alert("관리자 인증 중 오류가 발생했습니다.");
                 }
             } else {
                 passwordError.classList.remove('opacity-0');
@@ -470,27 +921,45 @@
         window.addCategory = async () => {
             const name = newCategoryInput.value.trim();
             if (!name || localCategories.includes(name)) return;
-            if (useFirebase) await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), { name });
+            
+            if (useFirebase && auth && auth.currentUser) {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'categories'), { name });
+            } else {
+                localCategories.push(name);
+                saveLocalData();
+                renderCategories();
+                renderCategorySelect();
+                renderAdminCategories();
+            }
             newCategoryInput.value = '';
         };
 
         window.deleteCategory = async (name) => {
             if (name === '전체' || !confirm(`'${name}' 삭제하시겠습니까?`)) return;
             const obj = localCategoriesObjects.find(c => c.name === name);
-            if (useFirebase && obj) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', obj.id));
+            if (useFirebase && obj && auth && auth.currentUser) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', obj.id));
+            } else {
+                localCategories = localCategories.filter(c => c !== name);
+                if (window.currentCategory === name) window.currentCategory = '전체';
+                saveLocalData();
+                renderCategories();
+                renderCategorySelect();
+                renderAdminCategories();
+                renderContents();
+            }
         };
 
-        // 이미지 처리 최적화 (다중 이미지일 경우 해상도와 퀄리티를 동적으로 낮춰 1MB 제한 대비)
-        function processFile(file, maxDim = 800, quality = 0.6) {
+        function processFile(file) {
             return new Promise((resolve, reject) => {
                 if (file.type.startsWith('video')) {
                     if (file.size > 700 * 1024) {
-                        reject("동영상 파일은 700KB 이하여야 합니다.");
+                        reject("동영상은 700KB 이하만 가능합니다.");
                         return;
                     }
                     const reader = new FileReader();
                     reader.onload = (e) => resolve(e.target.result);
-                    reader.onerror = () => reject("동영상 파일 읽기 실패");
+                    reader.onerror = () => reject("동영상을 읽을 수 없습니다.");
                     reader.readAsDataURL(file);
                 } else if (file.type.startsWith('image')) {
                     const reader = new FileReader();
@@ -500,34 +969,28 @@
                             const canvas = document.createElement('canvas');
                             let width = img.width;
                             let height = img.height;
-                            
+                            const MAX_DIM = 800;
                             if (width > height) {
-                                if (width > maxDim) {
-                                    height *= maxDim / width;
-                                    width = maxDim;
+                                if (width > MAX_DIM) {
+                                    height *= MAX_DIM / width;
+                                    width = MAX_DIM;
                                 }
                             } else {
-                                if (height > maxDim) {
-                                    width *= maxDim / height;
-                                    height = maxDim;
+                                if (height > MAX_DIM) {
+                                    width *= MAX_DIM / height;
+                                    height = MAX_DIM;
                                 }
                             }
                             canvas.width = width;
                             canvas.height = height;
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
-                            
-                            // 여러 장 올릴 때 용량 제한을 우회하기 위해 인자로 받은 quality 사용
-                            let dataUrl = canvas.toDataURL('image/jpeg', quality);
-                            resolve(dataUrl);
+                            resolve(canvas.toDataURL('image/jpeg', 0.5));
                         };
-                        // 아이폰 HEIC 등 지원하지 않는 이미지 포맷 업로드 시 무한로딩 방지
-                        img.onerror = () => {
-                            reject("브라우저에서 지원하지 않는 이미지 형식(예: HEIC)이거나 손상된 파일입니다. 일반 사진(JPG, PNG) 형식으로 올려주세요.");
-                        };
+                        img.onerror = () => reject("아이폰 사진(HEIC)이거나 지원하지 않는 파일 형식입니다.");
                         img.src = e.target.result;
                     };
-                    reader.onerror = () => reject("이미지 파일 읽기 실패");
+                    reader.onerror = () => reject("사진을 읽을 수 없습니다.");
                     reader.readAsDataURL(file);
                 } else {
                     reject("지원하지 않는 파일 형식입니다.");
@@ -546,31 +1009,24 @@
             if (!title || !desc) return alert("제목과 내용을 입력해주세요.");
 
             submitBtn.disabled = true;
-            submitBtnText.innerText = "저장 중...";
+            submitBtnText.innerText = "사진 압축 및 저장 중...";
 
             try {
                 let processedImages = [];
                 let totalSize = 0;
-                
-                // 파일 개수가 많을 경우 (3장 이상), 1MB 제한에 걸리지 않도록 이미지 크기와 화질을 더 줄입니다.
-                const fileCount = files.length;
-                const dynamicMaxDim = fileCount > 2 ? 600 : 800;
-                const dynamicQuality = fileCount > 2 ? 0.5 : 0.6;
 
                 for (const f of files) {
-                    const dataUrl = await processFile(f, dynamicMaxDim, dynamicQuality);
+                    const dataUrl = await processFile(f);
                     totalSize += dataUrl.length;
                     processedImages.push(dataUrl);
                 }
 
-                // Firestore Document Size 안전 체크 (약 1MB 제한 대비)
                 if (totalSize > 900000) {
-                    throw new Error(`파일 용량이 너무 큽니다. 여러 장일 경우 나누어서 올리거나, 더 적은 수의 사진을 선택해주세요.`);
+                    throw new Error("사진 용량이 너무 큽니다. 사진 장수를 줄여서 다시 시도해주세요.");
                 }
 
                 if (url) processedImages.push(url);
 
-                // --- 기존 이미지 유지 로직 ---
                 let finalImages = processedImages;
                 let finalDate = new Date().toISOString().split('T')[0].replace(/-/g, '.');
                 let finalCreatedAt = Date.now();
@@ -594,12 +1050,27 @@
                 };
 
                 if (window.editingId) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.editingId), postData);
+                    if (useFirebase && auth && auth.currentUser) {
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.editingId), postData);
+                    } else {
+                        const idx = localContents.findIndex(p => String(p.id) === String(window.editingId));
+                        if (idx !== -1) {
+                            localContents[idx] = { ...postData, id: window.editingId };
+                            saveLocalData(); renderContents();
+                        }
+                    }
                 } else {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), postData);
+                    if (useFirebase && auth && auth.currentUser) {
+                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), postData);
+                    } else {
+                        postData.id = Date.now();
+                        localContents.unshift(postData);
+                        saveLocalData(); renderContents();
+                    }
                 }
+                
                 window.resetForm();
-                alert("저장되었습니다.");
+                alert("게시글이 성공적으로 등록되었습니다!");
             } catch (err) {
                 alert("업로드 실패: " + (err.message || err));
             } finally {
@@ -608,7 +1079,6 @@
             }
         });
 
-        // --- 수정 모드 진입 시 기존 이미지 안내 UI 추가 ---
         window.editPost = (id) => {
             const p = localContents.find(x => String(x.id) === String(id));
             if (!p) return;
@@ -617,30 +1087,29 @@
             document.getElementById('input-title').value = p.title;
             document.getElementById('input-desc').value = p.desc;
             
-            // 기존 이미지/영상이 있으면 파일 입력란 아래에 썸네일과 안내 문구를 띄워줍니다.
             const images = p.images || (p.image ? [p.image] : []);
             const previewInfo = document.getElementById('file-preview-info');
             const nameDisplay = document.getElementById('file-name-display');
-            const thumbnailsContainer = document.getElementById('file-thumbnails');
             
             if (images.length > 0) {
                 previewInfo.classList.remove('hidden');
-                nameDisplay.innerText = `기존 파일 ${images.length}개가 유지됩니다. (새 파일 선택 시 덮어쓰기 됨)`;
-                // 기존 썸네일 작게 표시
-                thumbnailsContainer.innerHTML = images.map(src => `<img src="${src}" class="w-16 h-16 object-cover rounded-md border-2 border-stone-200 shadow-sm opacity-60">`).join('');
+                nameDisplay.innerText = `기존 파일 ${images.length}개가 유지됩니다.`;
             } else {
                 previewInfo.classList.add('hidden');
-                thumbnailsContainer.innerHTML = '';
             }
-            
             adminPanelEl.scrollIntoView({ behavior: 'smooth' });
         };
 
         window.openDeleteModal = (id) => { window.deleteTargetId = id; deleteModal.classList.remove('hidden'); };
         window.closeDeleteModal = () => deleteModal.classList.add('hidden');
         confirmDeleteBtn.addEventListener('click', async () => {
-            if (window.deleteTargetId && useFirebase) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.deleteTargetId));
+            if (window.deleteTargetId) {
+                if (useFirebase && auth && auth.currentUser) {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'posts', window.deleteTargetId));
+                } else {
+                    localContents = localContents.filter(p => String(p.id) !== String(window.deleteTargetId));
+                    saveLocalData(); renderContents(); 
+                }
                 window.closeDeleteModal();
             }
         });
@@ -650,8 +1119,6 @@
             window.editingId = null; 
             postFormEl.reset(); 
             document.getElementById('file-preview-info').classList.add('hidden');
-            const thumbnailsContainer = document.getElementById('file-thumbnails');
-            if(thumbnailsContainer) thumbnailsContainer.innerHTML = '';
         };
         window.closePasswordModal = () => passwordModal.classList.add('hidden');
         
@@ -661,7 +1128,6 @@
             m.classList.remove('hidden'); i.src = s;
             setTimeout(() => { i.classList.remove('scale-95', 'opacity-0'); i.classList.add('scale-100', 'opacity-100'); }, 10);
         };
-        
         window.closeImageModal = () => {
             const i = document.getElementById('modal-image');
             i.classList.replace('scale-100', 'scale-95');
@@ -669,44 +1135,15 @@
             setTimeout(() => document.getElementById('image-modal').classList.add('hidden'), 300);
         };
 
-        // 다중 파일 선택 시 썸네일 미리보기 이벤트
         fileInput.addEventListener('change', () => {
-            const files = Array.from(fileInput.files);
+            const count = fileInput.files.length;
             const previewInfo = document.getElementById('file-preview-info');
             const nameDisplay = document.getElementById('file-name-display');
-            const thumbnailsContainer = document.getElementById('file-thumbnails');
-            
-            thumbnailsContainer.innerHTML = ''; // 이전 썸네일 비우기
-
-            if (files.length > 0) {
+            if (count > 0) {
                 previewInfo.classList.remove('hidden');
-                nameDisplay.innerText = `${files.length}개의 파일이 선택되었습니다.`;
-                
-                files.forEach(file => {
-                    if (file.type.startsWith('image')) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            const img = document.createElement('img');
-                            img.src = e.target.result;
-                            img.className = 'w-16 h-16 object-cover rounded-md border-2 border-stone-200 shadow-sm';
-                            thumbnailsContainer.appendChild(img);
-                        };
-                        reader.readAsDataURL(file);
-                    } else if (file.type.startsWith('video')) {
-                        const videoIcon = document.createElement('div');
-                        videoIcon.className = 'w-16 h-16 bg-stone-100 rounded-md border-2 border-stone-200 shadow-sm flex items-center justify-center text-stone-400';
-                        videoIcon.innerHTML = '<i data-lucide="video" class="w-6 h-6"></i>';
-                        thumbnailsContainer.appendChild(videoIcon);
-                    }
-                });
-                
-                setTimeout(() => lucide.createIcons(), 50); // 새로 추가된 비디오 아이콘 렌더링
-                
+                nameDisplay.innerText = `${count}개의 사진 선택됨`;
             } else {
-                // 수정을 취소하고 파일을 비웠을 때 상태를 원래대로
-                if (!window.editingId) {
-                    previewInfo.classList.add('hidden');
-                }
+                if (!window.editingId) previewInfo.classList.add('hidden');
             }
         });
 
@@ -730,6 +1167,7 @@
             else passwordModal.classList.remove('hidden');
         });
 
+        // 앱 시작
         initialize();
         lucide.createIcons();
     </script>
