@@ -82,7 +82,7 @@
         
         <!-- 상단 컨트롤 -->
         <div class="absolute top-6 right-6 sm:top-8 sm:right-8 z-20 flex items-center gap-3">
-            <a href="#" onclick="location.reload()" class="flex items-center gap-2 px-4 py-2 bg-white border-2 border-stone-200 rounded-full shadow-card text-stone-600 hover:text-k-text hover:border-theme-color transition-all duration-300 group">
+            <a href="index.html" class="flex items-center gap-2 px-4 py-2 bg-white border-2 border-stone-200 rounded-full shadow-card text-stone-600 hover:text-k-text hover:border-theme-color transition-all duration-300 group">
                 <i data-lucide="home" class="w-5 h-5"></i>
                 <span class="hidden sm:inline font-serif text-base font-bold pt-0.5 group-hover:underline decoration-theme-color underline-offset-4 decoration-2">홈으로</span>
             </a>
@@ -219,7 +219,8 @@
 
     <!-- 플로팅 버튼 -->
     <div class="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
-        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-card text-theme-color hover:bg-theme-color hover:text-white transition-all"><i data-lucide="arrow-up" class="w-6 h-6"></i></button>
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-card text-theme-color hover:bg-theme-color hover:text-white transition-all" aria-label="맨 위로"><i data-lucide="arrow-up" class="w-6 h-6"></i></button>
+        <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-card text-theme-color hover:bg-theme-color hover:text-white transition-all" aria-label="맨 아래로"><i data-lucide="arrow-down" class="w-6 h-6"></i></button>
     </div>
 
     <!-- 관리자 모드 토글 -->
