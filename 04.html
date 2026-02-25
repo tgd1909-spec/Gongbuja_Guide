@@ -180,7 +180,7 @@
                     관리자 패널
                 </h3>
                 <div class="flex gap-4">
-                    <!-- 데이터 복구 버튼 (임시 추가) -->
+                    <!-- 데이터 복구 버튼 -->
                     <button onclick="window.forceRestoreData()" class="text-sm font-bold text-red-500 hover:text-red-700 underline decoration-2 underline-offset-4" title="로컬 저장소의 데이터를 파이어베이스로 밀어넣습니다.">데이터 강제 복구</button>
                     <button onclick="window.resetForm()" class="text-sm font-bold text-stone-500 hover:text-theme-color underline decoration-2 underline-offset-4">입력 초기화</button>
                 </div>
@@ -567,13 +567,11 @@
                 btnText.innerText = '입실 시뮬레이터 닫기';
                 iconContainer.innerHTML = '<i data-lucide="x-circle" class="w-5 h-5"></i>';
                 
-                // 처음 열 때만 캔버스 초기화 (버그 방지)
                 if(!window.simController.initialized && ctx) {
                     window.simController.init();
                     window.simController.initialized = true;
                 }
                 
-                // 부드럽게 스크롤 이동
                 simEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else {
                 simEl.classList.add('hidden');
@@ -581,7 +579,6 @@
                 iconContainer.innerHTML = '<i data-lucide="play-circle" class="w-5 h-5"></i>';
             }
             
-            // 새 아이콘 렌더링
             lucide.createIcons();
         };
 
@@ -589,6 +586,7 @@
         // 기존 게시판 및 Firebase 로직
         // ==========================================
         const FIX_ORDER = ['시립', '법배', '평배', '향납읍', '좌배', '국궁', '좌우진보', '법좌', '수련방법', '점호의례', '봉심의례', '부정기휘법'];
+        const defaultContents = [];
 
         const YOUR_FIREBASE_CONFIG = {
             apiKey: "AIzaSyAoUdyZJQjcT81_2YKzX1rzMJlNAoHcbAw",
@@ -788,10 +786,10 @@
                     localContents = JSON.parse(savedContents);
                 } catch (e) {
                     console.error("로컬 데이터 파싱 에러:", e);
-                    localContents = [];
+                    localContents = JSON.parse(JSON.stringify(defaultContents));
                 }
             } else {
-                localContents = [];
+                localContents = JSON.parse(JSON.stringify(defaultContents));
             }
 
             if (savedCategories && savedCategories !== "[]") {
