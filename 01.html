@@ -51,9 +51,9 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 시뮬레이터 노드 전환 */
+        /* 시뮬레이터 노드 전환 (애니메이션 핵심) */
         .formation-node {
-            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1);
         }
 
         /* 스크롤바 스타일 */
@@ -361,7 +361,7 @@
                                         <div class="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
                                             <span class="font-bold text-stone-500 w-16">👣 ↑</span>
                                             <div class="flex-1">
-                                                <div class="text-xs text-stone-500 font-bold">갱진 1보 (왼쪽 1걸음)</div>
+                                                <div class="text-xs text-stone-500 font-bold">갱진 1보 (앞으로 1걸음)</div>
                                                 <div class="font-bold text-k-text">평배 2배</div>
                                             </div>
                                         </div>
@@ -461,7 +461,7 @@
 
                             <div class="bg-white p-5 rounded-xl border border-stone-200">
                                 <strong class="block text-theme-color text-xl font-bold mb-3">2. 퇴장 시작</strong>
-                                <p class="text-stone-700 mb-2">가장 뒤쪽 줄인 <strong>내수(여성)</strong> 줄부터 퇴장합니다.</p>
+                                <p class="text-stone-700 mb-2">가장 안쪽 줄인 <strong>내수(여성)</strong> 줄부터 퇴장합니다.</p>
                                 <p class="text-stone-700 mb-3 bg-stone-50 p-2 rounded"><strong>방법:</strong> 중앙의 2명(6번, 7번)을 선두로 <strong>2명씩 짝을 지어</strong> 나갑니다.</p>
                                 <div class="flex items-center gap-2 text-sm font-bold text-stone-500 bg-stone-100 p-3 rounded-lg justify-center">
                                     <span>내수 줄</span>
@@ -614,6 +614,9 @@
             return tabsHtml;
         }
 
+        // 시뮬레이터 생성 확인용 플래그
+        let isSimInitialized = false;
+
         // 탭 이벤트 및 시뮬레이터 주입
         function attachTabEvents() {
             const buttons = document.querySelectorAll('.tab-btn');
@@ -623,6 +626,7 @@
             const simContainer = document.getElementById('simulation-placeholder');
             if (simContainer) {
                 simContainer.innerHTML = renderSimulationUI();
+                isSimInitialized = false; // 탭을 그릴 때마다 초기화되게 설정
                 setTimeout(() => updateSim('initial'), 100);
             }
 
@@ -642,7 +646,7 @@
             });
         }
 
-        // 시뮬레이터 UI
+        // 시뮬레이터 기본 껍데기 UI
         function renderSimulationUI() {
             return `
                 <div class="mt-2 border-t border-stone-200 pt-4">
@@ -651,7 +655,6 @@
                         <button onclick="updateSim('final')" class="flex-1 px-4 py-3 bg-theme-color text-white font-bold rounded-lg shadow-md text-sm active:bg-[#b45309] hover:bg-[#c26a05] transition-colors">6열 전환</button>
                     </div>
 
-                    <!-- p-4 삭제, 완벽한 너비 제어를 위해 패딩 제거 -->
                     <div id="sim-container" class="bg-white border border-stone-200 rounded-xl mx-auto w-full relative h-[350px] overflow-hidden shadow-inner">
                         <div class="absolute inset-0 pointer-events-none opacity-10" style="background-image: linear-gradient(#1a1a1a 1px, transparent 1px), linear-gradient(90deg, #1a1a1a 1px, transparent 1px); background-size: 40px 40px;"></div>
                         
@@ -662,14 +665,15 @@
                             <span class="text-theme-color font-serif font-bold text-sm tracking-widest pr-8 md:pr-10">영대</span>
                         </div>
                         
-                        <!-- 노드가 배치되는 기준이 되는 영역 -->
+                        <!-- 애니메이션 요소들이 올라갈 바탕 -->
                         <div id="nodes-area" class="relative w-full h-full"></div>
                     </div>
                 </div>
             `;
         }
 
-        function updateSim(state) {
+        // [New] 요소들을 최초에만 렌더링하도록 분리한 함수
+        function initSimNodes() {
             const area = document.getElementById('nodes-area');
             if (!area) return;
             
@@ -684,11 +688,47 @@
             const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
             const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-            // 모바일 화면에서도 잘림 없도록 안전 영역 계산값 최적화
-            const startLeft = 76; // 우측부터 시작 지점 (법단과의 충돌 방지)
-            const horizontalSpacing = 6.2; // 노드 간격 조정하여 화면 내 100% 안착
-
             roles.forEach((role, rIndex) => {
+                const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
+
+                for (let i = 0; i < 12; i++) {
+                    const num = currentLabels[i]; 
+
+                    // 경로선(점선) 미리 생성하여 숨겨두기
+                    if (num % 2 === 0) {
+                        const path = document.createElement('div');
+                        path.id = `path-${role.name}-${num}`;
+                        path.className = 'absolute z-0 arrow-path transition-opacity duration-700 opacity-0';
+                        area.appendChild(path);
+                    }
+
+                    // 사람(노드) 생성
+                    const node = document.createElement('div');
+                    node.id = `node-${role.name}-${num}`;
+                    node.className = `formation-node absolute w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md z-10 ${role.colorClass}`;
+                    node.innerText = num;
+                    if (num % 2 === 0) {
+                        node.style.boxShadow = 'inset 0 0 0 2px rgba(255,255,255,0.7)'; 
+                    }
+                    area.appendChild(node);
+                }
+            });
+
+            isSimInitialized = true;
+        }
+
+        // [Update] 위치값(CSS)만 변경하여 애니메이션 유발
+        function updateSim(state) {
+            if (!isSimInitialized) initSimNodes();
+
+            const roles = ['member', 'oesu', 'naesu'];
+            const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+            const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+            const startLeft = 76; 
+            const horizontalSpacing = 6.2; 
+
+            roles.forEach((roleName, rIndex) => {
                 const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
 
                 for (let i = 0; i < 12; i++) {
@@ -704,45 +744,47 @@
                     let finalLeftVal = (startLeft - (effectiveColIndex * horizontalSpacing)); 
                     
                     let left = (state === 'final') ? finalLeftVal + '%' : leftVal + '%';
-                    const rowBaseTop = 15 + (rIndex * 26); // 세로 간격 조절
+                    const rowBaseTop = 15 + (rIndex * 26); 
                     let top = rowBaseTop + '%';
 
-                    if (state === 'final' && num % 2 === 0) {
-                        const pathContainer = document.createElement('div');
-                        pathContainer.className = 'absolute z-0 arrow-path';
-                        const offset = 2.5; // 화살표 경로 중심 교정
-
-                        pathContainer.style.left = (leftVal + offset) + '%';
-                        pathContainer.style.top = (rowBaseTop + offset) + '%';
-                        pathContainer.style.width = ((finalLeftVal - leftVal)) + '%';
-                        pathContainer.style.height = '12%'; 
+                    // 1. 사람(노드) 이동 애니메이션 반영
+                    const node = document.getElementById(`node-${roleName}-${num}`);
+                    if (node) {
+                        if (state === 'final') {
+                            node.style.transform = 'rotate(90deg)'; 
+                            if (num % 2 === 0) {
+                                top = (rowBaseTop + 12) + '%';
+                            }
+                        } else {
+                            node.style.transform = 'rotate(0deg)';
+                        }
                         
-                        pathContainer.style.borderLeft = '2px dotted #d97706'; 
-                        pathContainer.style.borderBottom = '2px dotted #d97706';
-                        pathContainer.style.borderBottomLeftRadius = '12px'; 
-
-                        area.appendChild(pathContainer);
-                        top = (rowBaseTop + 12) + '%';
+                        // 위치 업데이트
+                        node.style.left = left;
+                        node.style.top = top;
                     }
 
-                    const node = document.createElement('div');
-                    node.className = `formation-node absolute w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md z-10 ${role.colorClass}`;
-                    node.innerText = num;
-
-                    if (state === 'final') {
-                        node.style.transform = 'rotate(90deg)'; 
-                    } else {
-                        node.style.transform = 'rotate(0deg)';
-                    }
-
-                    node.style.left = left;
-                    node.style.top = top;
-
+                    // 2. 이동 경로선(점선) 표시/숨김 처리
                     if (num % 2 === 0) {
-                        node.style.boxShadow = 'inset 0 0 0 2px rgba(255,255,255,0.7)'; 
-                    }
+                        const path = document.getElementById(`path-${roleName}-${num}`);
+                        if (path) {
+                            const offset = 2.5;
+                            path.style.left = (leftVal + offset) + '%';
+                            path.style.top = (rowBaseTop + offset) + '%';
+                            path.style.width = ((finalLeftVal - leftVal)) + '%';
+                            path.style.height = '12%'; 
+                            path.style.borderLeft = '2px dotted #d97706'; 
+                            path.style.borderBottom = '2px dotted #d97706';
+                            path.style.borderBottomLeftRadius = '12px'; 
 
-                    area.appendChild(node);
+                            if (state === 'final') {
+                                // 사람들이 거의 도착했을 무렵 경로를 서서히 보여줍니다.
+                                setTimeout(() => { path.style.opacity = '1'; }, 300);
+                            } else {
+                                path.style.opacity = '0';
+                            }
+                        }
+                    }
                 }
             });
         }
