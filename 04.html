@@ -823,45 +823,59 @@
         initialize();
         lucide.createIcons();
     </script>
-<!-- 검색어 형광펜 및 자동 스크롤 기능 -->
+<!-- 검색어 형광펜 및 자동 스크롤 기능 (수정됨) -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. 넘어온 링크에서 검색어(search) 정보를 꺼냅니다.
     const params = new URLSearchParams(window.location.search);
     const keyword = params.get('search');
     
     if (keyword) {
-        // 2. 본문 내용 중 텍스트만 쏙쏙 골라냅니다.
-        const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-        let node;
-        const textNodes = [];
-        while (node = walk.nextNode()) {
-            if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
-                textNodes.push(node);
-            }
-        }
-        
-        let found = false;
-        // 3. 골라낸 텍스트 중에 검색어가 있으면 노란색 형광펜(<mark>)을 칠합니다.
-        textNodes.forEach(textNode => {
-            if (textNode.nodeValue.includes(keyword)) {
-                const span = document.createElement('span');
-                const regex = new RegExp(`(${keyword})`, 'gi');
-                span.innerHTML = textNode.nodeValue.replace(regex, '<mark style="background-color: #fef08a; color: #1a1a1a; padding: 0 2px; border-radius: 2px; font-weight: bold;">$1</mark>');
-                textNode.parentNode.replaceChild(span, textNode);
-                found = true;
-            }
-        });
-
-        // 4. 형광펜이 칠해졌다면, 그 위치로 화면을 부드럽게 스크롤해 내려줍니다.
-        if (found) {
-            setTimeout(() => {
-                const firstMark = document.querySelector('mark');
-                if (firstMark) {
-                    firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 본문이 자바스크립트로 생성될 시간을 벌어주기 위해 0.5초 대기합니다.
+        setTimeout(() => {
+            const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            const textNodes = [];
+            while (node = walk.nextNode()) {
+                if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
+                    textNodes.push(node);
                 }
-            }, 100);
-        }
+            }
+            
+            let found = false;
+            textNodes.forEach(textNode => {
+                if (textNode.nodeValue.includes(keyword)) {
+                    const span = document.createElement('span');
+                    const regex = new RegExp(`(${keyword})`, 'gi');
+                    span.innerHTML = textNode.nodeValue.replace(regex, '<mark class="search-highlight" style="background-color: #fef08a; color: #1a1a1a; padding: 0 2px; border-radius: 2px; font-weight: bold;">$1</mark>');
+                    textNode.parentNode.replaceChild(span, textNode);
+                    found = true;
+                }
+            });
+
+            if (found) {
+                setTimeout(() => {
+                    const firstMark = document.querySelector('mark.search-highlight');
+                    if (firstMark) {
+                        // 1. 숨겨진 아코디언(리스트) 안에 있다면 자동으로 열어주기
+                        const detailsParent = firstMark.closest('details');
+                        if (detailsParent) {
+                            detailsParent.setAttribute('open', '');
+                        }
+                        
+                        // 2. 숨겨진 탭 안에 있다면 해당 탭 클릭해서 열어주기
+                        const tabParent = firstMark.closest('.tab-content');
+                        if (tabParent) {
+                            const tabId = tabParent.id.replace('tab-', '');
+                            const tabBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+                            if (tabBtn) tabBtn.click();
+                        }
+
+                        // 3. 해당 위치로 부드럽게 스크롤
+                        firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+        }, 500); // 0.5초(500ms) 대기 후 실행
     }
 });
 </script>
