@@ -126,7 +126,7 @@
             <div class="w-16 h-1 bg-theme-color mx-auto rounded-full mb-4"></div>
             
             <p class="text-stone-500 font-sans text-base md:text-lg tracking-wider">
-                종도 여러분께 중요한 소식을 전합니다
+                도인 여러분께 중요한 소식을 전합니다
             </p>
         </header>
     </div>
@@ -249,11 +249,24 @@
                 }
             },
 
-            // Firestore 컬렉션 참조 반환 (Canvas 규격 경로 사용)
+            // Firestore 컬렉션 참조 반환 (환경에 따라 자동 분기)
             getCollectionRef: function() {
                 const { collection } = window.firebaseModules;
-                // 안전한 데이터 구역 지정
-                return collection(state.db, 'artifacts', state.appId, 'public', 'data', 'posts');
+                // Canvas 뷰어 환경일 경우에만 artifact 경로 사용
+                if (typeof __firebase_config !== 'undefined') {
+                    return collection(state.db, 'artifacts', state.appId, 'public', 'data', 'posts');
+                }
+                // 실제 깃허브 등 외부 환경일 경우 원래 경로인 'posts' 사용
+                return collection(state.db, 'posts');
+            },
+
+            // Firestore 문서 참조 반환 (환경에 따라 자동 분기)
+            getDocRef: function(id) {
+                const { doc } = window.firebaseModules;
+                if (typeof __firebase_config !== 'undefined') {
+                    return doc(state.db, 'artifacts', state.appId, 'public', 'data', 'posts', id);
+                }
+                return doc(state.db, 'posts', id);
             },
 
             // Firestore 리스너
@@ -347,10 +360,10 @@
             },
 
             confirmDelete: async function() {
-                const { deleteDoc, doc } = window.firebaseModules;
+                const { deleteDoc } = window.firebaseModules;
                 if (!state.deleteTargetId) return;
                 try {
-                    const postRef = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'posts', state.deleteTargetId);
+                    const postRef = this.getDocRef(state.deleteTargetId);
                     await deleteDoc(postRef);
                     if (state.selectedPostId === state.deleteTargetId) state.selectedPostId = null;
                     this.showToast("게시글이 안전하게 삭제되었습니다.");
@@ -362,12 +375,12 @@
             },
 
             toggleArchive: async function(id) {
-                const { updateDoc, doc } = window.firebaseModules;
+                const { updateDoc } = window.firebaseModules;
                 const post = state.posts.find(p => p.id === id);
                 if (!post) return;
                 const newStatus = !post.isArchived;
                 try {
-                    const postRef = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'posts', id);
+                    const postRef = this.getDocRef(id);
                     await updateDoc(postRef, { isArchived: newStatus });
                     this.showToast(newStatus ? "보관함으로 이동되었습니다." : "공지사항으로 복원되었습니다.");
                     if (newStatus && state.viewMode === 'current' && state.selectedPostId) state.selectedPostId = null;
@@ -894,7 +907,7 @@
                 }
 
                 try {
-                    const postRef = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'posts', state.editTargetId);
+                    const postRef = this.getDocRef(state.editTargetId);
                     
                     const updateData = {
                         title: title,
