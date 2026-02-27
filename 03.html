@@ -42,10 +42,7 @@
 
     <style>
         /* 기본 설정 */
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-        }
-        
+        body { font-family: 'Noto Sans KR', sans-serif; }
         .break-keep { word-break: keep-all; }
 
         @keyframes slideDown {
@@ -78,21 +75,27 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .search-highlight {
+            background-color: #fef08a; 
+            color: #1a1a1a; 
+            padding: 0 2px; 
+            border-radius: 2px; 
+            font-weight: bold;
+        }
     </style>
 
     <!-- Firebase SDK (Version 11.6.1) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 전역 변수로 할당
         window.firebaseModules = {
             initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken,
-            getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp
+            getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, serverTimestamp
         };
         
-        // 초기화 트리거
         if (window.app && window.app.initFirebase) {
             window.app.initFirebase();
         }
@@ -101,16 +104,17 @@
 <body class="bg-k-bg bg-hanji-pattern bg-[length:24px_24px] text-k-text min-h-screen flex flex-col items-center py-8 px-4 relative">
 
     <!-- 홈 버튼 -->
-    <a href="index.html" class="fixed top-6 right-6 z-50 bg-white/90 backdrop-blur-sm border-2 border-stone-200 text-stone-600 hover:text-theme-color hover:border-theme-color hover:bg-theme-light rounded-full px-5 py-2.5 flex items-center gap-2 shadow-custom transition-all duration-300 font-bold text-sm md:text-base group font-sans">
+    <button onclick="app.goHome()" class="fixed top-6 right-6 z-50 bg-white/90 backdrop-blur-sm border-2 border-stone-200 text-stone-600 hover:text-theme-color hover:border-theme-color hover:bg-theme-light rounded-full px-5 py-2.5 flex items-center gap-2 shadow-custom transition-all duration-300 font-bold text-sm md:text-base group font-sans">
         <i data-lucide="home" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
         <span class="hidden md:inline">홈으로</span>
-    </a>
+    </button>
 
     <!-- 토스트 알림 컨테이너 -->
     <div id="toast-container"></div>
 
     <!-- 헤더 영역 -->
     <div class="w-full max-w-4xl relative mb-12 animate-fade-in text-center">
+        <!-- 헤더 클릭 시 홈으로 이동 -->
         <header class="pt-4 cursor-pointer select-none inline-block" onclick="app.goHome()">
             <div class="flex items-center justify-center gap-3 mb-4">
                 <i data-lucide="bell-ring" class="w-8 h-8 text-theme-color"></i>
@@ -122,14 +126,14 @@
             <div class="w-16 h-1 bg-theme-color mx-auto rounded-full mb-4"></div>
             
             <p class="text-stone-500 font-sans text-base md:text-lg tracking-wider">
-                도인 여러분께 중요한 소식을 전합니다
+                종도 여러분께 중요한 소식을 전합니다
             </p>
         </header>
     </div>
 
     <!-- 메인 콘텐츠 영역 -->
     <main id="main-content" class="w-full max-w-4xl bg-white shadow-custom border border-stone-200 rounded-3xl min-h-[600px] flex flex-col transition-all duration-300 p-6 md:p-10 relative overflow-hidden">
-        <!-- 초기 로딩 상태 (깔끔한 버전) -->
+        <!-- 초기 로딩 상태 -->
         <div id="initial-loader" class="absolute inset-0 flex items-center justify-center bg-white/95 z-10 rounded-3xl">
             <div class="flex flex-col items-center gap-4 p-6 text-center">
                 <div class="loader w-10 h-10 border-4"></div>
@@ -155,12 +159,25 @@
         </div>
     </div>
 
+    <!-- 플로팅 버튼 -->
+    <div class="fixed bottom-8 right-8 z-50 flex flex-col gap-3 animate-fade-in">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-3 bg-white border-2 border-theme-color/30 rounded-full shadow-custom text-theme-color hover:bg-theme-color hover:text-white hover:border-theme-color transition-all duration-300 group transform hover:-translate-y-1" aria-label="맨 위로">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+            </svg>
+        </button>
+        <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" class="p-3 bg-white border-2 border-theme-color/30 rounded-full shadow-custom text-theme-color hover:bg-theme-color hover:text-white hover:border-theme-color transition-all duration-300 group transform hover:-translate-y-1" aria-label="맨 아래로">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+    </div>
+
     <script>
         /**
          * Constants & State
          */
         const ADMIN_PASSWORD = "taegeuk1909#";
-        const COLLECTION_NAME = "posts";
 
         const state = {
             isAdmin: false,
@@ -173,26 +190,30 @@
             isLoading: true,
             user: null,
             db: null,
-            appId: null
+            appId: null,
+            currentImageDataUrl: null // 이미지 업로드 상태 저장용
         };
 
         /**
          * Application Logic
          */
-        const app = {
+        window.app = {
             // Firebase 초기화
             initFirebase: async function() {
-                // 모듈 로드 대기
                 if (!window.firebaseModules) {
                     setTimeout(() => this.initFirebase(), 100);
                     return;
                 }
 
-                const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, onSnapshot, query, orderBy } = window.firebaseModules;
+                const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore } = window.firebaseModules;
 
+                // Canvas 환경 및 사용자 환경 대응 Config
+                state.appId = typeof __app_id !== 'undefined' ? __app_id : 'taegukdo-notice-app';
+                let firebaseConfig;
                 try {
-                    // Config
-                    const firebaseConfig = {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                } catch (e) {
+                    firebaseConfig = {
                         apiKey: "AIzaSyDe1mpaPcDfiNG63peU7EFNXXNJQmKc2rM",
                         authDomain: "taegukdo-notice.firebaseapp.com",
                         projectId: "taegukdo-notice",
@@ -200,21 +221,20 @@
                         messagingSenderId: "322790351041",
                         appId: "1:322790351041:web:aa43db9559a99792d3f440"
                     };
-                    
-                    state.appId = 'taegukdo-notice'; 
+                }
 
+                try {
                     const firebaseApp = initializeApp(firebaseConfig);
                     const auth = getAuth(firebaseApp);
                     state.db = getFirestore(firebaseApp);
 
-                    // 인증 시도
-                    try {
+                    // 인증 처리 (Canvas 규격 준수: Auth First)
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
                         await signInAnonymously(auth);
-                    } catch (authError) {
-                        console.error("Auth Failed:", authError);
                     }
 
-                    // 인증 상태 감지 및 데이터 연결
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
                             state.user = user;
@@ -229,14 +249,20 @@
                 }
             },
 
+            // Firestore 컬렉션 참조 반환 (Canvas 규격 경로 사용)
+            getCollectionRef: function() {
+                const { collection } = window.firebaseModules;
+                // 안전한 데이터 구역 지정
+                return collection(state.db, 'artifacts', state.appId, 'public', 'data', 'posts');
+            },
+
             // Firestore 리스너
             subscribeToPosts: function() {
-                const { collection, onSnapshot, query } = window.firebaseModules;
-                
-                if (!state.db) return;
+                const { onSnapshot, query } = window.firebaseModules;
+                if (!state.user || !state.db) return;
 
-                const postsRef = collection(state.db, COLLECTION_NAME);
-                const q = query(postsRef);
+                const postsRef = this.getCollectionRef();
+                const q = query(postsRef); // 복합 쿼리 방지 규칙 준수
 
                 onSnapshot(q, (snapshot) => {
                     const loadedPosts = [];
@@ -244,13 +270,10 @@
                         loadedPosts.push({ id: doc.id, ...doc.data() });
                     });
 
-                    // 정렬 로직 수정: 필독 우선 -> 최신순
+                    // JS 메모리 상에서 정렬 로직 수행
                     loadedPosts.sort((a, b) => {
-                        // 1. 필독 공지 우선 정렬 (isMustRead가 true인 것이 앞으로)
                         if (a.isMustRead && !b.isMustRead) return -1;
                         if (!a.isMustRead && b.isMustRead) return 1;
-
-                        // 2. 날짜/시간 정렬 (최신순)
                         const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (new Date(a.date).getTime() || 0);
                         const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (new Date(b.date).getTime() || 0);
                         return timeB - timeA;
@@ -268,7 +291,6 @@
                     console.error("Firestore Listen Error:", error);
                     this.stopLoading();
                     this.showToast("데이터를 불러올 수 없습니다.", 'error');
-                    this.renderMainContent(); 
                 });
             },
 
@@ -281,7 +303,7 @@
             // --- 데이터 조작 ---
             
             submitPost: async function() {
-                const { addDoc, collection, serverTimestamp } = window.firebaseModules;
+                const { addDoc, serverTimestamp } = window.firebaseModules;
                 
                 const title = document.getElementById('title-input').value;
                 const content = document.getElementById('content-input').value;
@@ -296,16 +318,23 @@
                 const dateString = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
 
                 try {
-                    const postsRef = collection(state.db, COLLECTION_NAME);
+                    const postsRef = this.getCollectionRef();
                     
-                    await addDoc(postsRef, {
+                    const postData = {
                         title: title,
                         content: content,
                         date: dateString,
                         timestamp: serverTimestamp(),
                         isArchived: false,
                         isMustRead: isMustRead
-                    });
+                    };
+
+                    // 이미지가 있으면 추가
+                    if (state.currentImageDataUrl) {
+                        postData.imageUrl = state.currentImageDataUrl;
+                    }
+
+                    await addDoc(postsRef, postData);
 
                     this.showToast(isMustRead ? "중요 필독 공지가 등록되었습니다." : "새로운 공지사항이 등록되었습니다.");
                     state.viewMode = 'current';
@@ -321,7 +350,7 @@
                 const { deleteDoc, doc } = window.firebaseModules;
                 if (!state.deleteTargetId) return;
                 try {
-                    const postRef = doc(state.db, COLLECTION_NAME, state.deleteTargetId);
+                    const postRef = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'posts', state.deleteTargetId);
                     await deleteDoc(postRef);
                     if (state.selectedPostId === state.deleteTargetId) state.selectedPostId = null;
                     this.showToast("게시글이 안전하게 삭제되었습니다.");
@@ -338,7 +367,7 @@
                 if (!post) return;
                 const newStatus = !post.isArchived;
                 try {
-                    const postRef = doc(state.db, COLLECTION_NAME, id);
+                    const postRef = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'posts', id);
                     await updateDoc(postRef, { isArchived: newStatus });
                     this.showToast(newStatus ? "보관함으로 이동되었습니다." : "공지사항으로 복원되었습니다.");
                     if (newStatus && state.viewMode === 'current' && state.selectedPostId) state.selectedPostId = null;
@@ -347,6 +376,53 @@
                     console.error(e);
                     this.showToast("상태 변경 실패", 'error');
                 }
+            },
+
+            // --- 이미지 처리 로직 ---
+            handleImageSelect: function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                // FileReader로 이미지 읽기 후 Canvas를 이용해 리사이징/압축
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1000; // 최대 가로 픽셀
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > MAX_WIDTH) {
+                            height = Math.round((height * MAX_WIDTH) / width);
+                            width = MAX_WIDTH;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // JPEG 포맷, 품질 70%로 압축하여 base64 문자열 생성 (Firestore 용량 방지)
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        state.currentImageDataUrl = dataUrl;
+
+                        // UI 업데이트
+                        document.getElementById('image-preview').src = dataUrl;
+                        document.getElementById('image-preview-container').classList.remove('hidden');
+                        document.getElementById('remove-image-btn').classList.remove('hidden');
+                    };
+                };
+            },
+
+            removeSelectedImage: function() {
+                state.currentImageDataUrl = null;
+                document.getElementById('image-input').value = "";
+                document.getElementById('image-preview').src = "";
+                document.getElementById('image-preview-container').classList.add('hidden');
+                document.getElementById('remove-image-btn').classList.add('hidden');
             },
 
             isNewPost: function(post) {
@@ -360,23 +436,24 @@
                 return diff < (3 * 24 * 60 * 60 * 1000); 
             },
 
-            // --- 렌더링 로직 (Tailwind & 테마 적용) ---
-
+            // --- 렌더링 로직 ---
             init: function() {
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && state.modalType) this.closeModal();
-                });
-                document.addEventListener('keydown', (e) => {
                     if (e.ctrlKey && e.key === 'q') this.toggleAdmin();
                 });
-                this.initFirebase();
+                
+                if (window.firebaseModules) {
+                    this.initFirebase();
+                }
             },
 
             renderApp: function() {
                 this.renderMainContent();
                 this.renderFooterIcon();
                 this.renderModal();
-                lucide.createIcons();
+                if(window.lucide) window.lucide.createIcons();
+                this.applySearchHighlight();
             },
 
             renderMainContent: function() {
@@ -394,8 +471,17 @@
                 const post = state.posts.find(p => p.id === state.selectedPostId);
                 if (!post) { state.selectedPostId = null; return this.renderApp(); }
                 
+                let imageHtml = '';
+                if (post.imageUrl) {
+                    imageHtml = `
+                        <div class="mb-8 rounded-2xl overflow-hidden bg-stone-50 border border-stone-100 flex justify-center py-4 px-2">
+                            <img src="${post.imageUrl}" alt="첨부 이미지" class="max-h-[600px] max-w-full object-contain rounded-lg shadow-sm">
+                        </div>
+                    `;
+                }
+
                 container.innerHTML = `
-                    <div class="h-full flex flex-col animate-fade-in">
+                    <div class="h-full flex flex-col animate-fade-in pb-12">
                         <!-- 툴바 -->
                         <div class="flex justify-between items-center mb-8 border-b border-stone-200 pb-6">
                             <button onclick="app.goList()" class="group flex items-center gap-2 text-stone-500 hover:text-k-text transition font-sans font-bold text-lg">
@@ -426,7 +512,7 @@
                                         <i data-lucide="megaphone" class="w-4 h-4 fill-current"></i> 필독
                                      </span>` : ''}
                                 ${post.isArchived ? `<span class="bg-stone-100 text-stone-500 px-3 py-1.5 rounded-full text-sm font-bold font-sans">보관됨</span>` : ''}
-                                <span class="bg-stone-50 text-stone-500 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 font-sans">
+                                <span class="bg-stone-50 text-stone-500 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 font-sans border border-stone-200">
                                     <i data-lucide="calendar" class="w-4 h-4"></i> ${post.date}
                                 </span>
                             </div>
@@ -435,7 +521,8 @@
 
                         <!-- 본문 -->
                         <div class="flex-grow font-sans text-k-text text-lg leading-loose whitespace-pre-wrap break-keep bg-[#fdfdfd] p-8 rounded-2xl border border-stone-100 shadow-sm min-h-[300px]">
-${post.content}
+                            ${imageHtml}
+                            <div id="post-content-area">${post.content}</div>
                         </div>
                     </div>
                 `;
@@ -465,9 +552,7 @@ ${post.content}
                     `;
                 }
 
-                const filteredPosts = state.posts
-                    .filter(p => state.viewMode === 'current' ? !p.isArchived : p.isArchived)
-                    .sort((a, b) => 0); 
+                const filteredPosts = state.posts.filter(p => state.viewMode === 'current' ? !p.isArchived : p.isArchived);
 
                 html += `<ul class="space-y-5 pb-4">`;
                 
@@ -484,6 +569,7 @@ ${post.content}
                     filteredPosts.forEach((post, index) => {
                         const isHighlighted = post.isMustRead && state.viewMode === 'current';
                         const isNew = this.isNewPost(post);
+                        const hasImage = !!post.imageUrl;
                         
                         const delayClass = index < 5 ? `animate-fade-in` : '';
                         const styleDelay = index < 5 ? `animation-delay: ${index * 0.05}s` : '';
@@ -512,6 +598,11 @@ ${post.content}
                                             
                                             ${isNew && !post.isArchived ? 
                                                 `<span class="bg-theme-color text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse-custom shadow-sm font-sans">NEW</span>` : ''}
+                                                
+                                            ${hasImage ? 
+                                                `<span class="bg-stone-100 text-stone-600 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 font-sans">
+                                                    <i data-lucide="image" class="w-3.5 h-3.5"></i> 사진
+                                                 </span>` : ''}
                                         </div>
                                         <h3 class="text-xl md:text-2xl font-serif font-bold text-k-text group-hover:text-theme-color transition-colors break-keep leading-snug">
                                             ${post.title}
@@ -560,6 +651,7 @@ ${post.content}
                     container.classList.add('hidden');
                     return;
                 }
+                
                 container.classList.remove('hidden');
                 requestAnimationFrame(() => {
                     content.classList.remove('scale-95', 'opacity-0');
@@ -594,6 +686,11 @@ ${post.content}
                     const safeTitle = targetPost ? targetPost.title.replace(/"/g, '&quot;') : '';
                     const safeContent = targetPost ? targetPost.content.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
                     const isChecked = targetPost && targetPost.isMustRead ? 'checked' : '';
+                    
+                    // 기존 이미지가 있다면 초기 상태로 저장
+                    state.currentImageDataUrl = targetPost && targetPost.imageUrl ? targetPost.imageUrl : null;
+                    const previewClass = state.currentImageDataUrl ? '' : 'hidden';
+                    const imageSrc = state.currentImageDataUrl ? state.currentImageDataUrl : '';
 
                     html = `
                         <div class="bg-white px-8 py-6 flex justify-between items-center border-b border-stone-100">
@@ -603,7 +700,7 @@ ${post.content}
                             </h3>
                             <button onclick="app.closeModal()" class="hover:bg-stone-100 p-2 rounded-full transition text-k-text"><i data-lucide="x" class="w-6 h-6"></i></button>
                         </div>
-                        <div class="p-8 font-sans bg-white">
+                        <div class="p-8 font-sans bg-white max-h-[80vh] overflow-y-auto">
                             <div class="mb-6 bg-theme-light/30 p-4 rounded-xl border border-theme-color/20 hover:border-theme-color/50 transition-colors">
                                 <label class="flex items-center gap-3 cursor-pointer select-none">
                                     <div class="relative flex items-center">
@@ -622,6 +719,21 @@ ${post.content}
                                 <input type="text" id="title-input" class="w-full border-2 border-stone-200 p-4 rounded-xl focus:outline-none focus:border-theme-color transition-all text-lg font-medium placeholder-stone-400" placeholder="제목을 입력하세요" value="${safeTitle}">
                             </div>
                             
+                            <!-- 이미지 업로드 추가 -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-bold text-k-text mb-2 ml-1">이미지 첨부 (선택)</label>
+                                <div class="flex items-center gap-4">
+                                    <label class="cursor-pointer bg-stone-100 hover:bg-stone-200 text-stone-600 px-4 py-2 rounded-lg transition font-bold text-sm flex items-center gap-2">
+                                        <i data-lucide="image-plus" class="w-4 h-4"></i> 사진 선택
+                                        <input type="file" id="image-input" accept="image/*" class="hidden" onchange="app.handleImageSelect(event)">
+                                    </label>
+                                    <button id="remove-image-btn" onclick="app.removeSelectedImage()" class="${previewClass} text-red-500 hover:text-red-700 text-sm font-bold transition">이미지 지우기</button>
+                                </div>
+                                <div id="image-preview-container" class="mt-4 ${previewClass} relative w-full h-48 bg-stone-50 rounded-xl overflow-hidden border-2 border-dashed border-stone-200 flex items-center justify-center">
+                                    <img id="image-preview" src="${imageSrc}" class="max-h-full max-w-full object-contain">
+                                </div>
+                            </div>
+
                             <div class="mb-8">
                                 <label class="block text-sm font-bold text-k-text mb-2 ml-1">내용</label>
                                 <textarea id="content-input" class="w-full border-2 border-stone-200 p-4 rounded-xl h-48 resize-none focus:outline-none focus:border-theme-color transition-all leading-relaxed text-lg font-medium placeholder-stone-400" placeholder="공지 내용을 입력하세요">${safeContent}</textarea>
@@ -676,7 +788,7 @@ ${post.content}
                 `;
                 
                 container.appendChild(toast);
-                lucide.createIcons();
+                if(window.lucide) window.lucide.createIcons();
 
                 setTimeout(() => {
                     toast.style.opacity = '0';
@@ -687,9 +799,10 @@ ${post.content}
             },
 
             // --- Action Handlers ---
-            
+            // 새로고침 방식 대신 SPA 형식으로 홈 상태 복구 (URL 문법 에러 및 캔버스 제한 방지)
             goHome: function() {
                 state.selectedPostId = null;
+                state.viewMode = 'current'; // 진행 중인 공지 탭으로 초기화
                 this.renderApp();
                 window.scrollTo({top: 0, behavior: 'smooth'});
             },
@@ -721,6 +834,7 @@ ${post.content}
             },
 
             openModal: function(type) {
+                state.currentImageDataUrl = null; // 초기화
                 state.modalType = type;
                 this.renderApp();
             },
@@ -735,6 +849,7 @@ ${post.content}
                 state.modalType = null;
                 state.deleteTargetId = null;
                 state.editTargetId = null;
+                state.currentImageDataUrl = null;
                 this.renderApp();
             },
 
@@ -779,13 +894,23 @@ ${post.content}
                 }
 
                 try {
-                    const postRef = doc(state.db, COLLECTION_NAME, state.editTargetId);
+                    const postRef = doc(state.db, 'artifacts', state.appId, 'public', 'data', 'posts', state.editTargetId);
                     
-                    await updateDoc(postRef, {
+                    const updateData = {
                         title: title,
                         content: content,
                         isMustRead: isMustRead
-                    });
+                    };
+
+                    if (state.currentImageDataUrl) {
+                        updateData.imageUrl = state.currentImageDataUrl;
+                    } else if (state.currentImageDataUrl === null && document.getElementById('image-preview').src === "") {
+                        // 이미지가 삭제된 상태라면
+                        const { deleteField } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+                        updateData.imageUrl = deleteField();
+                    }
+
+                    await updateDoc(postRef, updateData);
 
                     this.showToast("게시글이 성공적으로 수정되었습니다.");
                     this.closeModal();
@@ -794,83 +919,54 @@ ${post.content}
                     console.error(e);
                     this.showToast("수정 실패: " + e.message, 'error');
                 }
+            },
+
+            applySearchHighlight: function() {
+                const params = new URLSearchParams(window.location.search);
+                const keyword = params.get('search');
+                
+                if (keyword && state.selectedPostId) {
+                    setTimeout(() => {
+                        const contentArea = document.getElementById('post-content-area');
+                        if(!contentArea) return;
+
+                        const walk = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT, null, false);
+                        let node;
+                        const textNodes = [];
+                        while (node = walk.nextNode()) {
+                            if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
+                                textNodes.push(node);
+                            }
+                        }
+                        
+                        let found = false;
+                        textNodes.forEach(textNode => {
+                            if (textNode.nodeValue.includes(keyword)) {
+                                const span = document.createElement('span');
+                                const regex = new RegExp(`(${keyword})`, 'gi');
+                                span.innerHTML = textNode.nodeValue.replace(regex, '<mark class="search-highlight">$1</mark>');
+                                textNode.parentNode.replaceChild(span, textNode);
+                                found = true;
+                            }
+                        });
+
+                        if (found) {
+                            setTimeout(() => {
+                                const firstMark = document.querySelector('mark.search-highlight');
+                                if (firstMark) {
+                                    firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            }, 100);
+                        }
+                    }, 200);
+                }
             }
         };
 
-        // 앱 시작
-        app.init();
+        // DOM 로드 시 초기화
+        window.addEventListener('DOMContentLoaded', () => {
+            window.app.init();
+        });
     </script>
-
-    <!-- 플로팅 버튼 (최상단/최하단 이동) -->
-    <div class="fixed bottom-8 right-8 z-50 flex flex-col gap-3 animate-fade-in">
-        <!-- Top Scroll -->
-        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-3 bg-white border-2 border-theme-color/30 rounded-full shadow-custom text-theme-color hover:bg-theme-color hover:text-white hover:border-theme-color transition-all duration-300 group transform hover:-translate-y-1" aria-label="맨 위로">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-            </svg>
-        </button>
-        <!-- Bottom Scroll -->
-        <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" class="p-3 bg-white border-2 border-theme-color/30 rounded-full shadow-custom text-theme-color hover:bg-theme-color hover:text-white hover:border-theme-color transition-all duration-300 group transform hover:-translate-y-1" aria-label="맨 아래로">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-        </button>
-    </div>
-<!-- 검색어 형광펜 및 자동 스크롤 기능 (수정됨) -->
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const params = new URLSearchParams(window.location.search);
-    const keyword = params.get('search');
-    
-    if (keyword) {
-        // 본문이 자바스크립트로 생성될 시간을 벌어주기 위해 0.5초 대기합니다.
-        setTimeout(() => {
-            const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-            let node;
-            const textNodes = [];
-            while (node = walk.nextNode()) {
-                if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
-                    textNodes.push(node);
-                }
-            }
-            
-            let found = false;
-            textNodes.forEach(textNode => {
-                if (textNode.nodeValue.includes(keyword)) {
-                    const span = document.createElement('span');
-                    const regex = new RegExp(`(${keyword})`, 'gi');
-                    span.innerHTML = textNode.nodeValue.replace(regex, '<mark class="search-highlight" style="background-color: #fef08a; color: #1a1a1a; padding: 0 2px; border-radius: 2px; font-weight: bold;">$1</mark>');
-                    textNode.parentNode.replaceChild(span, textNode);
-                    found = true;
-                }
-            });
-
-            if (found) {
-                setTimeout(() => {
-                    const firstMark = document.querySelector('mark.search-highlight');
-                    if (firstMark) {
-                        // 1. 숨겨진 아코디언(리스트) 안에 있다면 자동으로 열어주기
-                        const detailsParent = firstMark.closest('details');
-                        if (detailsParent) {
-                            detailsParent.setAttribute('open', '');
-                        }
-                        
-                        // 2. 숨겨진 탭 안에 있다면 해당 탭 클릭해서 열어주기
-                        const tabParent = firstMark.closest('.tab-content');
-                        if (tabParent) {
-                            const tabId = tabParent.id.replace('tab-', '');
-                            const tabBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-                            if (tabBtn) tabBtn.click();
-                        }
-
-                        // 3. 해당 위치로 부드럽게 스크롤
-                        firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 100);
-            }
-        }, 500); // 0.5초(500ms) 대기 후 실행
-    }
-});
-</script>
 </body>
 </html>
