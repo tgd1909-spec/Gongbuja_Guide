@@ -86,14 +86,13 @@
     </style>
 
     <!-- Firebase SDK (Version 11.6.1) -->
-    <!-- 보안 강화를 위해 Email/Password 인증 모듈인 signInWithEmailAndPassword, signOut 추가 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.firebaseModules = {
-            initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, signInWithEmailAndPassword, signOut,
+            initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken,
             getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, serverTimestamp
         };
         
@@ -178,8 +177,7 @@
         /**
          * Constants & State
          */
-        // 하드코딩된 ADMIN_PASSWORD 삭제 (이제 Firebase 인증에서 관리합니다)
-        const ADMIN_EMAIL = "admin@taegukdo.com"; // Firebase에 추가한 관리자 이메일
+        const ADMIN_PASSWORD = "taegeuk1909#";
 
         const state = {
             isAdmin: false,
@@ -191,7 +189,6 @@
             posts: [],
             isLoading: true,
             user: null,
-            auth: null, // 인증 객체 저장용
             db: null,
             appId: null,
             currentImageDataUrl: null // 이미지 업로드 상태 저장용
@@ -229,32 +226,19 @@
                 try {
                     const firebaseApp = initializeApp(firebaseConfig);
                     const auth = getAuth(firebaseApp);
-                    state.auth = auth;
                     state.db = getFirestore(firebaseApp);
 
-                    // 인증 처리
+                    // 인증 처리 (Canvas 규격 준수: Auth First)
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
-                    } else if (!auth.currentUser) {
-                        // 최초 로딩 시 기본 도인(익명)으로 로그인
+                    } else {
                         await signInAnonymously(auth);
                     }
 
-                    // 로그인 상태 변화 감지 리스너
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
                             state.user = user;
-                            
-                            // 사용자 익명 여부로 관리자와 일반 도인 구분
-                            // 이메일/비밀번호로 로그인한 경우 isAnonymous는 false가 됩니다.
-                            state.isAdmin = !user.isAnonymous;
-                            
                             this.subscribeToPosts();
-                            this.renderApp();
-                        } else {
-                            state.isAdmin = false;
-                            // 로그아웃 되었을 때 다시 일반 도인(익명) 권한 획득
-                            signInAnonymously(auth);
                         }
                     });
 
@@ -268,9 +252,11 @@
             // Firestore 컬렉션 참조 반환 (환경에 따라 자동 분기)
             getCollectionRef: function() {
                 const { collection } = window.firebaseModules;
+                // Canvas 뷰어 환경일 경우에만 artifact 경로 사용
                 if (typeof __firebase_config !== 'undefined') {
                     return collection(state.db, 'artifacts', state.appId, 'public', 'data', 'posts');
                 }
+                // 실제 깃허브 등 외부 환경일 경우 원래 경로인 'posts' 사용
                 return collection(state.db, 'posts');
             },
 
@@ -289,7 +275,7 @@
                 if (!state.user || !state.db) return;
 
                 const postsRef = this.getCollectionRef();
-                const q = query(postsRef);
+                const q = query(postsRef); // 복합 쿼리 방지 규칙 준수
 
                 onSnapshot(q, (snapshot) => {
                     const loadedPosts = [];
@@ -328,6 +314,7 @@
             },
 
             // --- 데이터 조작 ---
+            
             submitPost: async function() {
                 const { addDoc, serverTimestamp } = window.firebaseModules;
                 
@@ -355,6 +342,7 @@
                         isMustRead: isMustRead
                     };
 
+                    // 이미지가 있으면 추가
                     if (state.currentImageDataUrl) {
                         postData.imageUrl = state.currentImageDataUrl;
                     }
@@ -367,12 +355,7 @@
 
                 } catch (e) {
                     console.error(e);
-                    // 권한 부족(보안 규칙 위반) 에러 처리
-                    if(e.code === 'permission-denied') {
-                        this.showToast("권한이 없습니다. 관리자 로그인을 확인해주세요.", 'error');
-                    } else {
-                        this.showToast("저장 실패: " + e.message, 'error');
-                    }
+                    this.showToast("저장 실패: " + e.message, 'error');
                 }
             },
 
@@ -387,7 +370,7 @@
                     this.closeModal();
                 } catch (e) {
                     console.error(e);
-                    this.showToast("삭제 권한이 없거나 실패했습니다.", 'error');
+                    this.showToast("삭제 실패", 'error');
                 }
             },
 
@@ -404,7 +387,7 @@
                     if (!newStatus && state.viewMode === 'archived' && state.selectedPostId) state.selectedPostId = null;
                 } catch (e) {
                     console.error(e);
-                    this.showToast("권한 부족으로 상태 변경 실패", 'error');
+                    this.showToast("상태 변경 실패", 'error');
                 }
             },
 
@@ -413,6 +396,7 @@
                 const file = event.target.files[0];
                 if (!file) return;
 
+                // FileReader로 이미지 읽기 후 Canvas를 이용해 리사이징/압축
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = (e) => {
@@ -420,7 +404,7 @@
                     img.src = e.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1000;
+                        const MAX_WIDTH = 1000; // 최대 가로 픽셀
                         let width = img.width;
                         let height = img.height;
 
@@ -434,9 +418,11 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
+                        // JPEG 포맷, 품질 70%로 압축하여 base64 문자열 생성 (Firestore 용량 방지)
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                         state.currentImageDataUrl = dataUrl;
 
+                        // UI 업데이트
                         document.getElementById('image-preview').src = dataUrl;
                         document.getElementById('image-preview-container').classList.remove('hidden');
                         document.getElementById('remove-image-btn').classList.remove('hidden');
@@ -601,6 +587,7 @@
                         const delayClass = index < 5 ? `animate-fade-in` : '';
                         const styleDelay = index < 5 ? `animation-delay: ${index * 0.05}s` : '';
                         
+                        // 카드 디자인
                         html += `
                             <li onclick="app.selectPost('${post.id}')" 
                                 class="group bg-white rounded-2xl border-2 ${isHighlighted ? 'border-theme-color/40 bg-theme-light/10' : 'border-stone-100'} p-6 md:p-8 cursor-pointer shadow-sm hover:shadow-lg transition-all duration-300 hover:border-theme-color hover:-translate-y-1 relative overflow-hidden ${delayClass}" 
@@ -694,7 +681,7 @@
                                 <i data-lucide="shield-check" class="w-8 h-8"></i>
                             </div>
                             <h3 class="font-serif font-bold text-2xl mb-2 text-k-text">관리자 로그인</h3>
-                            <p class="text-stone-500 mb-8 break-keep text-sm">보안을 위해 관리자용 이메일과 비밀번호를 인증합니다.</p>
+                            <p class="text-stone-500 mb-8 break-keep text-sm">관리자 권한으로 접근하려면 비밀번호를 입력하세요.</p>
                             
                             <div class="relative mb-8 group">
                                 <input type="password" id="pw-input" placeholder="비밀번호 입력"
@@ -702,7 +689,7 @@
                                     onkeydown="if(event.key === 'Enter') app.submitLogin()">
                             </div>
                             
-                            <button onclick="app.submitLogin()" class="w-full py-4 bg-k-text text-white rounded-xl hover:bg-black transition font-bold shadow-lg hover:-translate-y-1 text-lg">인증하기</button>
+                            <button onclick="app.submitLogin()" class="w-full py-4 bg-k-text text-white rounded-xl hover:bg-black transition font-bold shadow-lg hover:-translate-y-1 text-lg">확인</button>
                         </div>
                     `;
                 } else if (state.modalType === 'write' || state.modalType === 'edit') {
@@ -713,6 +700,7 @@
                     const safeContent = targetPost ? targetPost.content.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
                     const isChecked = targetPost && targetPost.isMustRead ? 'checked' : '';
                     
+                    // 기존 이미지가 있다면 초기 상태로 저장
                     state.currentImageDataUrl = targetPost && targetPost.imageUrl ? targetPost.imageUrl : null;
                     const previewClass = state.currentImageDataUrl ? '' : 'hidden';
                     const imageSrc = state.currentImageDataUrl ? state.currentImageDataUrl : '';
@@ -744,6 +732,7 @@
                                 <input type="text" id="title-input" class="w-full border-2 border-stone-200 p-4 rounded-xl focus:outline-none focus:border-theme-color transition-all text-lg font-medium placeholder-stone-400" placeholder="제목을 입력하세요" value="${safeTitle}">
                             </div>
                             
+                            <!-- 이미지 업로드 추가 -->
                             <div class="mb-6">
                                 <label class="block text-sm font-bold text-k-text mb-2 ml-1">이미지 첨부 (선택)</label>
                                 <div class="flex items-center gap-4">
@@ -823,9 +812,10 @@
             },
 
             // --- Action Handlers ---
+            // 새로고침 방식 대신 SPA 형식으로 홈 상태 복구 (URL 문법 에러 및 캔버스 제한 방지)
             goHome: function() {
                 state.selectedPostId = null;
-                state.viewMode = 'current';
+                state.viewMode = 'current'; // 진행 중인 공지 탭으로 초기화
                 this.renderApp();
                 window.scrollTo({top: 0, behavior: 'smooth'});
             },
@@ -846,22 +836,18 @@
                 this.renderApp();
             },
 
-            toggleAdmin: async function() {
-                const { signOut } = window.firebaseModules;
+            toggleAdmin: function() {
                 if (state.isAdmin) {
-                    try {
-                        await signOut(state.auth);
-                        this.showToast("관리자 모드가 종료되었습니다.");
-                    } catch (e) {
-                        console.error("로그아웃 에러", e);
-                    }
+                    state.isAdmin = false;
+                    this.showToast("관리자 모드가 종료되었습니다.");
+                    this.renderApp();
                 } else {
                     this.openModal('login');
                 }
             },
 
             openModal: function(type) {
-                state.currentImageDataUrl = null; 
+                state.currentImageDataUrl = null; // 초기화
                 state.modalType = type;
                 this.renderApp();
             },
@@ -880,26 +866,20 @@
                 this.renderApp();
             },
 
-            // Firebase의 Email/Password 로그인을 호출하도록 변경
-            submitLogin: async function() {
-                const { signInWithEmailAndPassword } = window.firebaseModules;
+            submitLogin: function() {
                 const input = document.getElementById('pw-input');
-                const password = input.value;
                 const container = input.parentElement;
                 
-                try {
-                    // Firebase Auth를 이용해 백그라운드에서 이메일과 비밀번호로 인증
-                    await signInWithEmailAndPassword(state.auth, ADMIN_EMAIL, password);
-                    
+                if (input.value === ADMIN_PASSWORD) {
+                    state.isAdmin = true;
                     this.showToast("관리자 모드로 전환되었습니다.");
                     this.closeModal();
-                } catch (error) {
-                    console.error("로그인 에러:", error);
+                } else {
                     container.classList.remove('animate-shake');
                     void container.offsetWidth;
                     container.classList.add('animate-shake');
                     input.classList.add('border-theme-color', 'text-theme-color');
-                    this.showToast("인증에 실패했습니다. (비밀번호 오류)", 'error');
+                    this.showToast("비밀번호가 일치하지 않습니다.", 'error');
                     
                     setTimeout(() => {
                         input.classList.remove('border-theme-color', 'text-theme-color');
@@ -915,7 +895,7 @@
             },
 
             submitEdit: async function() {
-                const { updateDoc } = window.firebaseModules;
+                const { updateDoc, doc } = window.firebaseModules;
                 
                 const title = document.getElementById('title-input').value;
                 const content = document.getElementById('content-input').value;
@@ -938,6 +918,7 @@
                     if (state.currentImageDataUrl) {
                         updateData.imageUrl = state.currentImageDataUrl;
                     } else if (state.currentImageDataUrl === null && document.getElementById('image-preview').src === "") {
+                        // 이미지가 삭제된 상태라면
                         const { deleteField } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
                         updateData.imageUrl = deleteField();
                     }
@@ -949,7 +930,7 @@
 
                 } catch (e) {
                     console.error(e);
-                    this.showToast("수정 권한이 없거나 실패했습니다.", 'error');
+                    this.showToast("수정 실패: " + e.message, 'error');
                 }
             },
 
