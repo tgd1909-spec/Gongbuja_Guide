@@ -144,45 +144,7 @@
     </style>
 </head>
 <body class="font-sans text-k-text antialiased text-lg bg-k-bg bg-hanji-pattern relative">
-<div>
-  <input type="text" id="searchInput" placeholder="검색어를 입력하세요 (예: 예시)">
-  <button onclick="searchContent()">검색하기</button>
-</div>
-<div id="searchResults" style="margin-top: 20px;"></div>
 
-<script>
-  async function searchContent() {
-    const keyword = document.getElementById('searchInput').value.trim();
-    const resultsContainer = document.getElementById('searchResults');
-    
-    if (!keyword) {
-      resultsContainer.innerHTML = "<p>검색어를 입력해 주세요.</p>";
-      return;
-    }
-
-    try {
-      const response = await fetch('search-data.json');
-      const data = await response.json();
-      const filteredData = data.filter(page => 
-        page.title.includes(keyword) || page.content.includes(keyword)
-      );
-
-      if (filteredData.length > 0) {
-        let resultHTML = "<h3>검색 결과:</h3><ul>";
-        filteredData.forEach(page => {
-          resultHTML += `<li><a href="${page.url}">${page.title}</a></li>`;
-        });
-        resultHTML += "</ul>";
-        resultsContainer.innerHTML = resultHTML;
-      } else {
-        resultsContainer.innerHTML = "<p>검색 결과가 없습니다.</p>";
-      }
-    } catch (error) {
-      resultsContainer.innerHTML = "<p>검색 데이터를 불러오는 데 실패했습니다.</p>";
-    }
-  }
-</script>
-    
     <!-- 헤더 -->
     <header class="sticky top-0 z-50 w-full bg-white/95 border-b border-stone-200 shadow-sm h-20" id="main-header">
         <div class="max-w-4xl mx-auto px-6 h-full flex items-center justify-between">
