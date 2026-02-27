@@ -107,7 +107,7 @@
                 태극도 공부 길라잡이
             </h1>
             <p class="font-sans text-stone-600 text-sm md:text-lg font-medium tracking-wide keep-all leading-relaxed px-2">
-                도를 구하는 마음으로 <span class="text-stone-800 font-bold underline decoration-stone-300 decoration-2 underline-offset-4">공부에 첫걸음</span>을 내디딘 종도분들을 환영합니다.<br class="hidden md:block"/>
+                도를 구하는 마음으로 <span class="text-stone-800 font-bold underline decoration-stone-300 decoration-2 underline-offset-4">공부에 첫걸음</span>을 내디딘 도인분들을 환영합니다.<br class="hidden md:block"/>
                 올바른 예법과 마음가짐을 위한 안내서입니다.
             </p>
         </header>
@@ -196,12 +196,16 @@
                         // 연결된 실제 제목을 가져옵니다. (없으면 파일명 사용)
                         const pageName = pageTitles[page] || page;
 
+                        // ★ 링크 클릭 시 검색한 단어가 있는 위치로 바로 스크롤 되도록 URL 생성
+                        // Text Fragment 기능: URL 끝에 #:~:text=단어 를 붙여줍니다.
+                        const textFragmentUrl = `${page}#:~:text=${encodeURIComponent(keyword)}`;
+
                         // 디자인이 적용된 결과물
                         finalHTML += `
                             <div class="mb-3 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-theme-navy transition-colors duration-300">
                                 <h3 class="font-bold text-theme-navy mb-1.5 flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                    <a href="${page}" class="hover:underline underline-offset-4 decoration-2">${pageName}</a>
+                                    <a href="${textFragmentUrl}" class="hover:underline underline-offset-4 decoration-2">${pageName}</a>
                                 </h3>
                                 <p class="text-sm text-stone-600 leading-relaxed break-keep">...${snippet}...</p>
                             </div>
