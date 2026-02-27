@@ -197,15 +197,15 @@
                         const pageName = pageTitles[page] || page;
 
                         // ★ 링크 클릭 시 검색한 단어가 있는 위치로 바로 스크롤 되도록 URL 생성
-                        // Text Fragment 기능: URL 끝에 #:~:text=단어 를 붙여줍니다.
-                        const textFragmentUrl = `${page}#:~:text=${encodeURIComponent(keyword)}`;
+                        // Text Fragment 기능(#:~:text=)과 함께 수동 스크롤을 위한 파라미터(?search=)를 추가합니다.
+                        const targetUrl = `${page}?search=${encodeURIComponent(keyword)}#:~:text=${encodeURIComponent(keyword)}`;
 
                         // 디자인이 적용된 결과물
                         finalHTML += `
                             <div class="mb-3 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-theme-navy transition-colors duration-300">
                                 <h3 class="font-bold text-theme-navy mb-1.5 flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                    <a href="${textFragmentUrl}" class="hover:underline underline-offset-4 decoration-2">${pageName}</a>
+                                    <a href="${targetUrl}" class="hover:underline underline-offset-4 decoration-2">${pageName}</a>
                                 </h3>
                                 <p class="text-sm text-stone-600 leading-relaxed break-keep">...${snippet}...</p>
                             </div>
