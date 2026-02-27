@@ -823,5 +823,47 @@
         initialize();
         lucide.createIcons();
     </script>
+<!-- 검색어 형광펜 및 자동 스크롤 기능 -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. 넘어온 링크에서 검색어(search) 정보를 꺼냅니다.
+    const params = new URLSearchParams(window.location.search);
+    const keyword = params.get('search');
+    
+    if (keyword) {
+        // 2. 본문 내용 중 텍스트만 쏙쏙 골라냅니다.
+        const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        const textNodes = [];
+        while (node = walk.nextNode()) {
+            if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
+                textNodes.push(node);
+            }
+        }
+        
+        let found = false;
+        // 3. 골라낸 텍스트 중에 검색어가 있으면 노란색 형광펜(<mark>)을 칠합니다.
+        textNodes.forEach(textNode => {
+            if (textNode.nodeValue.includes(keyword)) {
+                const span = document.createElement('span');
+                const regex = new RegExp(`(${keyword})`, 'gi');
+                span.innerHTML = textNode.nodeValue.replace(regex, '<mark style="background-color: #fef08a; color: #1a1a1a; padding: 0 2px; border-radius: 2px; font-weight: bold;">$1</mark>');
+                textNode.parentNode.replaceChild(span, textNode);
+                found = true;
+            }
+        });
+
+        // 4. 형광펜이 칠해졌다면, 그 위치로 화면을 부드럽게 스크롤해 내려줍니다.
+        if (found) {
+            setTimeout(() => {
+                const firstMark = document.querySelector('mark');
+                if (firstMark) {
+                    firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+    }
+});
+</script>
 </body>
 </html>
