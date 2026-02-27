@@ -158,13 +158,13 @@
         <header class="sticky top-0 z-50 bg-k-bg/95 backdrop-blur-sm border-b border-stone-200 px-6 py-5">
             <div class="flex justify-between items-start">
                 <div class="flex flex-col gap-2">
-                    <div class="flex items-center gap-3">
+                    <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
                         <!-- Modern Guide Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-theme flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
                         <h1 class="text-2xl md:text-3xl font-serif font-bold text-k-text tracking-tight break-keep">공부자 가이드</h1>
-                    </div>
+                    </a>
                     <!-- Divider -->
                     <div class="h-1 w-12 bg-theme rounded-full"></div>
                     <p class="text-sm text-sub font-medium mt-1">오늘의 마음가짐: 정성(精誠)</p>
@@ -1133,12 +1133,15 @@
     </script>
 <!-- 검색어 형광펜 및 자동 스크롤 기능 (수정됨) -->
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+window.addEventListener("load", function() {
     const params = new URLSearchParams(window.location.search);
     const keyword = params.get('search');
     
     if (keyword) {
-        // 본문이 자바스크립트로 생성될 시간을 벌어주기 위해 0.5초 대기합니다.
+        // 검색 기능으로 들어왔을 때는 현재 시간 기준 자동 스크롤을 막아 충돌을 방지합니다.
+        window.hasScrolledToActive = true;
+
+        // 본문 렌더링이 완료될 시간을 위해 약간 대기합니다. (DOM이 js로 생성되므로)
         setTimeout(() => {
             const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
             let node;
@@ -1164,26 +1167,21 @@ document.addEventListener("DOMContentLoaded", function() {
                 setTimeout(() => {
                     const firstMark = document.querySelector('mark.search-highlight');
                     if (firstMark) {
-                        // 1. 숨겨진 아코디언(리스트) 안에 있다면 자동으로 열어주기
-                        const detailsParent = firstMark.closest('details');
-                        if (detailsParent) {
-                            detailsParent.setAttribute('open', '');
-                        }
-                        
-                        // 2. 숨겨진 탭 안에 있다면 해당 탭 클릭해서 열어주기
-                        const tabParent = firstMark.closest('.tab-content');
-                        if (tabParent) {
-                            const tabId = tabParent.id.replace('tab-', '');
-                            const tabBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-                            if (tabBtn) tabBtn.click();
+                        // 02.html의 고유한 탭(섹션) 구조에 맞게 화면을 열어주는 로직
+                        const sectionParent = firstMark.closest('section[id^="view-"]');
+                        if (sectionParent) {
+                            const tabId = sectionParent.id.replace('view-', '');
+                            if (typeof switchTab === 'function') {
+                                switchTab(tabId); // 02.html 내부 함수를 직접 호출
+                            }
                         }
 
-                        // 3. 해당 위치로 부드럽게 스크롤
+                        // 요소가 화면에 보이도록 스크롤
                         firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }, 100);
             }
-        }, 500); // 0.5초(500ms) 대기 후 실행
+        }, 300); // 탭 내용들이 렌더링될 시간 0.3초 대기
     }
 });
 </script>
