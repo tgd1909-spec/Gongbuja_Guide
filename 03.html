@@ -813,7 +813,6 @@
                 try {
                     // Canvas 프리뷰(blob:) 환경에서는 상대 경로 이동 시 에러가 발생하므로 분기 처리합니다.
                     if (window.location.href.startsWith('blob:')) {
-                        // 프리뷰 환경용 Fallback (SPA 방식)
                         state.selectedPostId = null;
                         state.viewMode = 'current';
                         this.renderApp();
@@ -975,40 +974,42 @@
                 const params = new URLSearchParams(window.location.search);
                 const keyword = params.get('search');
                 
-                if (keyword && state.selectedPostId) {
+                if (!keyword) return;
+
+                // 상세 보기(post-content-area)가 있으면 상세에서, 없으면 전체 목록 뷰(main-content)에서 검색
+                const contentArea = document.getElementById('post-content-area') || document.getElementById('main-content');
+                if(!contentArea) return;
+
+                const walk = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT, null, false);
+                let node;
+                const textNodes = [];
+                
+                while (node = walk.nextNode()) {
+                    // SCRIPT, STYLE 태그 및 이미 하이라이트된 텍스트 제외
+                    if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE' && node.parentNode.nodeName !== 'MARK') {
+                        textNodes.push(node);
+                    }
+                }
+                
+                let found = false;
+                textNodes.forEach(textNode => {
+                    if (textNode.nodeValue.includes(keyword)) {
+                        const span = document.createElement('span');
+                        const regex = new RegExp(`(${keyword})`, 'gi');
+                        span.innerHTML = textNode.nodeValue.replace(regex, '<mark class="search-highlight">$1</mark>');
+                        textNode.parentNode.replaceChild(span, textNode);
+                        found = true;
+                    }
+                });
+
+                if (found) {
+                    // 화면 렌더링 후 스크롤 이동
                     setTimeout(() => {
-                        const contentArea = document.getElementById('post-content-area');
-                        if(!contentArea) return;
-
-                        const walk = document.createTreeWalker(contentArea, NodeFilter.SHOW_TEXT, null, false);
-                        let node;
-                        const textNodes = [];
-                        while (node = walk.nextNode()) {
-                            if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
-                                textNodes.push(node);
-                            }
+                        const firstMark = document.querySelector('mark.search-highlight');
+                        if (firstMark) {
+                            firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
-                        
-                        let found = false;
-                        textNodes.forEach(textNode => {
-                            if (textNode.nodeValue.includes(keyword)) {
-                                const span = document.createElement('span');
-                                const regex = new RegExp(`(${keyword})`, 'gi');
-                                span.innerHTML = textNode.nodeValue.replace(regex, '<mark class="search-highlight">$1</mark>');
-                                textNode.parentNode.replaceChild(span, textNode);
-                                found = true;
-                            }
-                        });
-
-                        if (found) {
-                            setTimeout(() => {
-                                const firstMark = document.querySelector('mark.search-highlight');
-                                if (firstMark) {
-                                    firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                }
-                            }, 100);
-                        }
-                    }, 200);
+                    }, 50);
                 }
             }
         };
