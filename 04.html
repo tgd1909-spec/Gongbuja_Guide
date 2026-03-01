@@ -504,6 +504,45 @@
             }
         };
 
+        // 검색어 하이라이트 적용 함수 (렌더링 직후 호출됨)
+        window.applySearchHighlight = () => {
+            const params = new URLSearchParams(window.location.search);
+            const keyword = params.get('search');
+            if (!keyword) return;
+
+            const contentList = document.getElementById('content-list');
+            if (!contentList) return;
+
+            const walk = document.createTreeWalker(contentList, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            const textNodes = [];
+            
+            while (node = walk.nextNode()) {
+                if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
+                    textNodes.push(node);
+                }
+            }
+            
+            let found = false;
+            textNodes.forEach(textNode => {
+                if (textNode.nodeValue.includes(keyword)) {
+                    const span = document.createElement('span');
+                    const regex = new RegExp(`(${keyword})`, 'gi');
+                    span.innerHTML = textNode.nodeValue.replace(regex, '<mark class="search-highlight" style="background-color: #fef08a; color: #1a1a1a; padding: 0 2px; border-radius: 2px; font-weight: bold;">$1</mark>');
+                    textNode.parentNode.replaceChild(span, textNode);
+                    found = true;
+                }
+            });
+
+            if (found) {
+                // 부드러운 스크롤 이동
+                const firstMark = document.querySelector('mark.search-highlight');
+                if (firstMark) {
+                    firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        };
+
         // 완전히 개선된 초기화 루틴
         async function initialize() {
             try {
@@ -675,7 +714,11 @@ service cloud.firestore {
                 `;
                 contentListEl.appendChild(div);
             });
+            
             lucide.createIcons();
+            
+            // 데이터가 화면에 전부 그려진 후 검색어 하이라이트를 즉시 실행합니다.
+            window.applySearchHighlight();
         }
 
         function renderCategorySelect() {
@@ -952,53 +995,5 @@ service cloud.firestore {
         initialize();
         lucide.createIcons();
     </script>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const params = new URLSearchParams(window.location.search);
-    const keyword = params.get('search');
-    
-    if (keyword) {
-        setTimeout(() => {
-            const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-            let node;
-            const textNodes = [];
-            while (node = walk.nextNode()) {
-                if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
-                    textNodes.push(node);
-                }
-            }
-            
-            let found = false;
-            textNodes.forEach(textNode => {
-                if (textNode.nodeValue.includes(keyword)) {
-                    const span = document.createElement('span');
-                    const regex = new RegExp(`(${keyword})`, 'gi');
-                    span.innerHTML = textNode.nodeValue.replace(regex, '<mark class="search-highlight" style="background-color: #fef08a; color: #1a1a1a; padding: 0 2px; border-radius: 2px; font-weight: bold;">$1</mark>');
-                    textNode.parentNode.replaceChild(span, textNode);
-                    found = true;
-                }
-            });
-
-            if (found) {
-                setTimeout(() => {
-                    const firstMark = document.querySelector('mark.search-highlight');
-                    if (firstMark) {
-                        const detailsParent = firstMark.closest('details');
-                        if (detailsParent) detailsParent.setAttribute('open', '');
-                        
-                        const tabParent = firstMark.closest('.tab-content');
-                        if (tabParent) {
-                            const tabId = tabParent.id.replace('tab-', '');
-                            const tabBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-                            if (tabBtn) tabBtn.click();
-                        }
-                        firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 100);
-            }
-        }, 500); 
-    }
-});
-</script>
 </body>
 </html>
