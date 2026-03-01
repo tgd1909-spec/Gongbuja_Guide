@@ -119,110 +119,16 @@
                 <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-                <!-- 검색 입력창 -->
-                <input type="text" id="searchInput" onkeypress="if(event.key === 'Enter') searchAllPages()" placeholder="궁금한 내용을 검색해보세요 (예: 예절)" class="w-full pl-11 pr-20 py-3 rounded-full border border-stone-300 bg-white focus:outline-none focus:border-theme-navy focus:ring-2 focus:ring-theme-navy/20 shadow-sm transition-all text-sm md:text-base text-stone-700">
+                <!-- 검색 입력창 (type="module" 대응을 위해 id 활용) -->
+                <input type="text" id="searchInput" placeholder="궁금한 내용을 검색해보세요 (예: 예절)" class="w-full pl-11 pr-20 py-3 rounded-full border border-stone-300 bg-white focus:outline-none focus:border-theme-navy focus:ring-2 focus:ring-theme-navy/20 shadow-sm transition-all text-sm md:text-base text-stone-700">
                 <!-- 검색 버튼 -->
-                <button onclick="searchAllPages()" class="absolute right-1.5 top-1/2 -translate-y-1/2 bg-theme-navy hover:bg-slate-700 text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300 shadow-sm">
+                <button id="searchButton" class="absolute right-1.5 top-1/2 -translate-y-1/2 bg-theme-navy hover:bg-slate-700 text-white px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-300 shadow-sm">
                     검색
                 </button>
             </div>
             <!-- 검색 결과 표시 영역 -->
             <div id="searchResults" class="w-full max-w-md mt-4 text-left text-sm md:text-base text-stone-700 empty:hidden"></div>
         </div>
-
-        <script>
-        async function searchAllPages() {
-            const keyword = document.getElementById('searchInput').value.trim();
-            const resultsDiv = document.getElementById('searchResults');
-            
-            if (!keyword) {
-                resultsDiv.innerHTML = "<p class='text-center text-theme-crimson font-medium bg-rose-50 p-3 rounded-lg'>검색어를 입력해주세요.</p>";
-                return;
-            }
-
-            resultsDiv.innerHTML = "<p class='text-center text-stone-500 bg-slate-50 p-3 rounded-lg animate-pulse'>🔍 문서를 검색 중입니다...</p>";
-
-            const pages = ['01.html', '02.html', '03.html', '04.html'];
-            
-            // 파일명에 맞는 실제 제목을 연결해 줍니다.
-            const pageTitles = {
-                '04.html': '법식 안내',
-                '01.html': '공부 드는 준비',
-                '02.html': '일과표',
-                '03.html': '공지사항'
-            };
-
-            let finalHTML = "";
-
-            /* --- 미리보기 테스트용 가짜 데이터 (실제 깃허브에서는 지우셔도 무방합니다) --- */
-            const mockDataForPreview = {
-                '01.html': '도장에 들어서기 전 갖추어야 할 단정한 복장과 마음가짐 예시를 확인합니다.',
-                '02.html': '수도인으로서 하루의 시작과 끝, 지켜야 할 예절과 일과 예시입니다.',
-                '03.html': '도장의 주요 일정, 행사 소식 및 알림 사항 예시입니다.',
-                '04.html': '배례와 봉심 등 기본 예절 예시입니다.'
-            };
-            /* ----------------------------------------------------------------------- */
-
-            for (let page of pages) {
-                try {
-                    // 실제 깃허브 배포시에는 아래 fetch가 정상 작동합니다.
-                    // 미리보기 창에서는 파일이 없으므로 mockDataForPreview를 사용하도록 처리했습니다.
-                    let text = "";
-                    try {
-                        const response = await fetch(page);
-                        if (response.ok) {
-                            text = await response.text();
-                        } else {
-                            throw new Error('Not found');
-                        }
-                    } catch (e) {
-                        text = mockDataForPreview[page]; // 미리보기 환경을 위한 가짜 데이터
-                    }
-
-                    const tempDiv = document.createElement("div");
-                    tempDiv.innerHTML = text;
-                    const pureText = tempDiv.innerText || tempDiv.textContent;
-
-                    const index = pureText.indexOf(keyword);
-                    
-                    if (index !== -1) {
-                        const start = Math.max(0, index - 30);
-                        const end = Math.min(pureText.length, index + keyword.length + 30);
-                        let snippet = pureText.substring(start, end);
-
-                        const highlightKeyword = new RegExp(keyword, 'g');
-                        snippet = snippet.replace(highlightKeyword, `<b class="text-theme-apricot bg-orange-50 px-1 rounded">${keyword}</b>`);
-
-                        // 연결된 실제 제목을 가져옵니다. (없으면 파일명 사용)
-                        const pageName = pageTitles[page] || page;
-
-                        // ★ 링크 클릭 시 검색한 단어가 있는 위치로 바로 스크롤 되도록 URL 생성
-                        // Text Fragment 기능(#:~:text=)과 함께 수동 스크롤을 위한 파라미터(?search=)를 추가합니다.
-                        const targetUrl = `${page}?search=${encodeURIComponent(keyword)}#:~:text=${encodeURIComponent(keyword)}`;
-
-                        // 디자인이 적용된 결과물
-                        finalHTML += `
-                            <div class="mb-3 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-theme-navy transition-colors duration-300">
-                                <h3 class="font-bold text-theme-navy mb-1.5 flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                    <a href="${targetUrl}" class="hover:underline underline-offset-4 decoration-2">${pageName}</a>
-                                </h3>
-                                <p class="text-sm text-stone-600 leading-relaxed break-keep">...${snippet}...</p>
-                            </div>
-                        `;
-                    }
-                } catch (error) {
-                    console.log(`${page} 파일을 읽어오지 못했습니다.`);
-                }
-            }
-
-            if (finalHTML === "") {
-                resultsDiv.innerHTML = "<p class='text-center text-stone-600 bg-slate-50 p-4 rounded-lg'>일치하는 검색 결과가 없습니다.</p>";
-            } else {
-                resultsDiv.innerHTML = `<div class="max-h-60 overflow-y-auto pr-1 custom-scrollbar">${finalHTML}</div>`;
-            }
-        }
-        </script>
 
         <!-- 네비게이션 그리드 -->
         <nav class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full mx-auto">
@@ -264,7 +170,7 @@
                             <h2 class="font-serif text-xl md:text-2xl font-bold text-k-text group-hover:text-theme-apricot transition-colors">공부 드는 준비</h2>
                         </div>
                         <p class="text-stone-600 text-sm md:text-base leading-relaxed keep-all group-hover:text-stone-800">
-                            도문에 들어서기 전 갖추어야 할 단정한 <strong class="text-theme-apricot font-bold">복장</strong>과 정갈한 <strong class="text-theme-apricot font-bold">마음가짐</strong>을 안내합니다.
+                            도장에 들어서기 전 갖추어야 할 단정한 <strong class="text-theme-apricot font-bold">복장</strong>과 정갈한 <strong class="text-theme-apricot font-bold">마음가짐</strong>을 안내합니다.
                         </p>
                     </div>
                 </div>
@@ -285,7 +191,7 @@
                             <h2 class="font-serif text-xl md:text-2xl font-bold text-k-text group-hover:text-theme-teal transition-colors">일과표</h2>
                         </div>
                         <p class="text-stone-600 text-sm md:text-base leading-relaxed keep-all group-hover:text-stone-800">
-                            수도인으로서 하루의 시작과 끝, 지켜야 할 <strong class="text-theme-teal font-bold">하루 일과</strong>와 <strong class="text-theme-teal font-bold">공부 방법</strong>을 확인합니다.
+                            도인으로서 하루의 시작과 끝, 지켜야 할 <strong class="text-theme-teal font-bold">하루 일과</strong>와 <strong class="text-theme-teal font-bold">공부 방법</strong>을 확인합니다.
                         </p>
                     </div>
                 </div>
@@ -323,5 +229,167 @@
 
     </main>
 
+    <!-- 검색 기능을 위한 Firebase 통합 스크립트 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAoUdyZJQjcT81_2YKzX1rzMJlNAoHcbAw",
+            authDomain: "taegeuk-rules.firebaseapp.com",
+            projectId: "taegeuk-rules",
+            storageBucket: "taegeuk-rules.firebasestorage.app",
+            messagingSenderId: "388014641769",
+            appId: "1:388014641769:web:f9fd06f30a222663b448f8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const targetAppId = 'tgd-guide-public';
+
+        let cachedFirebasePosts = null;
+
+        window.searchAllPages = async function() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!keyword) {
+                resultsDiv.innerHTML = "<p class='text-center text-theme-crimson font-medium bg-rose-50 p-3 rounded-lg'>검색어를 입력해주세요.</p>";
+                return;
+            }
+
+            resultsDiv.innerHTML = "<p class='text-center text-stone-500 bg-slate-50 p-3 rounded-lg animate-pulse'>🔍 문서를 검색 중입니다...</p>";
+
+            let finalHTML = "";
+
+            // --- 1. 정적 문서 검색 (01.html, 02.html) ---
+            const staticPages = ['01.html', '02.html'];
+            const pageTitles = {
+                '01.html': '공부 드는 준비',
+                '02.html': '일과표'
+            };
+
+            const mockDataForPreview = {
+                '01.html': '도장에 들어서기 전 갖추어야 할 단정한 복장과 마음가짐 예시를 확인합니다.',
+                '02.html': '도인으로서 하루의 시작과 끝, 지켜야 할 예절과 일과 예시입니다.'
+            };
+
+            for (let page of staticPages) {
+                try {
+                    let text = "";
+                    try {
+                        const response = await fetch(page);
+                        if (response.ok) text = await response.text();
+                        else throw new Error('Not found');
+                    } catch (e) {
+                        text = mockDataForPreview[page]; 
+                    }
+
+                    const tempDiv = document.createElement("div");
+                    tempDiv.innerHTML = text;
+                    const pureText = tempDiv.innerText || tempDiv.textContent;
+
+                    const index = pureText.indexOf(keyword);
+                    if (index !== -1) {
+                        const start = Math.max(0, index - 30);
+                        const end = Math.min(pureText.length, index + keyword.length + 30);
+                        let snippet = pureText.substring(start, end);
+                        const highlightKeyword = new RegExp(keyword, 'g');
+                        snippet = snippet.replace(highlightKeyword, `<b class="text-theme-apricot bg-orange-50 px-1 rounded">${keyword}</b>`);
+
+                        const pageName = pageTitles[page];
+                        const targetUrl = `${page}?search=${encodeURIComponent(keyword)}#:~:text=${encodeURIComponent(keyword)}`;
+
+                        finalHTML += `
+                            <div class="mb-3 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-theme-navy transition-colors duration-300">
+                                <h3 class="font-bold text-theme-navy mb-1.5 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    <a href="${targetUrl}" class="hover:underline underline-offset-4 decoration-2">${pageName}</a>
+                                </h3>
+                                <p class="text-sm text-stone-600 leading-relaxed break-keep">...${snippet}...</p>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.log(`${page} 처리 중 오류 발생`);
+                }
+            }
+
+            // --- 2. 동적 문서 검색 (03.html, 04.html - Firebase 데이터 조회) ---
+            try {
+                if (!auth.currentUser) {
+                    await signInAnonymously(auth); // Firebase 권한 확보
+                }
+
+                if (!cachedFirebasePosts) {
+                    cachedFirebasePosts = [];
+                    
+                    // 03.html과 04.html이 사용하는 각각의 appId와 연결 정보를 설정합니다.
+                    // (만약 03.html의 appId가 04.html과 다르다면 아래 'tgd-notice-public' 부분을 실제 사용중인 ID로 수정해 주세요)
+                    const dynamicSources = [
+                        { appId: 'tgd-guide-public', pageTitle: '법식 안내', pageUrl: '04.html' },
+                        { appId: 'tgd-notice-public', pageTitle: '공지사항', pageUrl: '03.html' }
+                    ];
+
+                    for (const source of dynamicSources) {
+                        try {
+                            const querySnapshot = await getDocs(collection(db, 'artifacts', source.appId, 'public', 'data', 'posts'));
+                            querySnapshot.docs.forEach(doc => {
+                                cachedFirebasePosts.push({
+                                    ...doc.data(),
+                                    _sourceMeta: source // 게시글 객체에 출처(페이지) 정보 함께 저장
+                                });
+                            });
+                        } catch (e) {
+                            console.warn(`${source.appId} 데이터를 가져오지 못했습니다.`, e);
+                        }
+                    }
+                }
+
+                cachedFirebasePosts.forEach(post => {
+                    const textToSearch = (post.title || "") + " " + (post.desc || "");
+                    const index = textToSearch.indexOf(keyword);
+                    
+                    if (index !== -1) {
+                        const start = Math.max(0, index - 30);
+                        const end = Math.min(textToSearch.length, index + keyword.length + 30);
+                        let snippet = textToSearch.substring(start, end);
+                        const highlightKeyword = new RegExp(keyword, 'g');
+                        snippet = snippet.replace(highlightKeyword, `<b class="text-theme-apricot bg-orange-50 px-1 rounded">${keyword}</b>`);
+
+                        const pageName = `${post._sourceMeta.pageTitle} > ${post.category || '일반'}`;
+                        const targetUrl = `${post._sourceMeta.pageUrl}?search=${encodeURIComponent(keyword)}#:~:text=${encodeURIComponent(keyword)}`;
+
+                        finalHTML += `
+                            <div class="mb-3 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-theme-navy transition-colors duration-300">
+                                <h3 class="font-bold text-theme-navy mb-1.5 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-theme-apricot" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                    <a href="${targetUrl}" class="hover:underline underline-offset-4 decoration-2">${pageName}</a>
+                                </h3>
+                                <p class="text-sm text-stone-600 leading-relaxed break-keep">...${snippet}...</p>
+                            </div>
+                        `;
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase 데이터 로드 실패:", error);
+            }
+
+            // --- 3. 최종 검색 결과 렌더링 ---
+            if (finalHTML === "") {
+                resultsDiv.innerHTML = "<p class='text-center text-stone-600 bg-slate-50 p-4 rounded-lg'>일치하는 검색 결과가 없습니다.</p>";
+            } else {
+                resultsDiv.innerHTML = `<div class="max-h-60 overflow-y-auto pr-1 custom-scrollbar">${finalHTML}</div>`;
+            }
+        };
+
+        // UI 이벤트 바인딩
+        document.getElementById('searchButton').addEventListener('click', window.searchAllPages);
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') window.searchAllPages();
+        });
+    </script>
 </body>
 </html>
