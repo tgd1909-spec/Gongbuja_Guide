@@ -235,7 +235,8 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
+        // 1. 04.html (법식 안내) Firebase 설정
+        const guideConfig = {
             apiKey: "AIzaSyAoUdyZJQjcT81_2YKzX1rzMJlNAoHcbAw",
             authDomain: "taegeuk-rules.firebaseapp.com",
             projectId: "taegeuk-rules",
@@ -244,10 +245,24 @@
             appId: "1:388014641769:web:f9fd06f30a222663b448f8"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const targetAppId = 'tgd-guide-public';
+        // 2. 03.html (공지사항) Firebase 설정
+        const noticeConfig = {
+            apiKey: "AIzaSyDe1mpaPcDfiNG63peU7EFNXXNJQmKc2rM",
+            authDomain: "taegukdo-notice.firebaseapp.com",
+            projectId: "taegukdo-notice",
+            storageBucket: "taegukdo-notice.firebasestorage.app",
+            messagingSenderId: "322790351041",
+            appId: "1:322790351041:web:aa43db9559a99792d3f440"
+        };
+
+        // 두 개의 서로 다른 Firebase 앱을 각각 초기화합니다.
+        const guideApp = initializeApp(guideConfig, "guideApp");
+        const noticeApp = initializeApp(noticeConfig, "noticeApp");
+
+        const guideDb = getFirestore(guideApp);
+        const noticeDb = getFirestore(noticeApp);
+        const guideAuth = getAuth(guideApp);
+        const noticeAuth = getAuth(noticeApp);
 
         let cachedFirebasePosts = null;
 
@@ -261,16 +276,11 @@
             }
 
             resultsDiv.innerHTML = "<p class='text-center text-stone-500 bg-slate-50 p-3 rounded-lg animate-pulse'>🔍 문서를 검색 중입니다...</p>";
-
             let finalHTML = "";
 
             // --- 1. 정적 문서 검색 (01.html, 02.html) ---
             const staticPages = ['01.html', '02.html'];
-            const pageTitles = {
-                '01.html': '공부 드는 준비',
-                '02.html': '일과표'
-            };
-
+            const pageTitles = { '01.html': '공부 드는 준비', '02.html': '일과표' };
             const mockDataForPreview = {
                 '01.html': '도장에 들어서기 전 갖추어야 할 단정한 복장과 마음가짐 예시를 확인합니다.',
                 '02.html': '도인으로서 하루의 시작과 끝, 지켜야 할 예절과 일과 예시입니다.'
@@ -290,8 +300,8 @@
                     const tempDiv = document.createElement("div");
                     tempDiv.innerHTML = text;
                     const pureText = tempDiv.innerText || tempDiv.textContent;
-
                     const index = pureText.indexOf(keyword);
+                    
                     if (index !== -1) {
                         const start = Math.max(0, index - 30);
                         const end = Math.min(pureText.length, index + keyword.length + 30);
@@ -312,44 +322,36 @@
                             </div>
                         `;
                     }
-                } catch (error) {
-                    console.log(`${page} 처리 중 오류 발생`);
-                }
+                } catch (error) { console.log(`${page} 처리 오류`); }
             }
 
-            // --- 2. 동적 문서 검색 (03.html, 04.html - Firebase 데이터 조회) ---
+            // --- 2. 동적 문서 검색 (Firebase 두 곳 모두 조회) ---
             try {
-                if (!auth.currentUser) {
-                    await signInAnonymously(auth); // Firebase 권한 확보
-                }
+                if (!guideAuth.currentUser) await signInAnonymously(guideAuth);
+                if (!noticeAuth.currentUser) await signInAnonymously(noticeAuth);
 
                 if (!cachedFirebasePosts) {
                     cachedFirebasePosts = [];
                     
-                    // 03.html과 04.html이 사용하는 각각의 appId와 연결 정보를 설정합니다.
-                    // (만약 03.html의 appId가 04.html과 다르다면 아래 'tgd-notice-public' 부분을 실제 사용중인 ID로 수정해 주세요)
-                    const dynamicSources = [
-                        { appId: 'tgd-guide-public', pageTitle: '법식 안내', pageUrl: '04.html' },
-                        { appId: 'tgd-notice-public', pageTitle: '공지사항', pageUrl: '03.html' }
-                    ];
+                    // 04.html 데이터 수집 (법식 안내)
+                    try {
+                        const guideSnap = await getDocs(collection(guideDb, 'artifacts', 'tgd-guide-public', 'public', 'data', 'posts'));
+                        guideSnap.docs.forEach(doc => {
+                            cachedFirebasePosts.push({ ...doc.data(), _sourceMeta: { pageTitle: '법식 안내', pageUrl: '04.html' } });
+                        });
+                    } catch (e) { console.warn('법식 안내 데이터를 가져오지 못했습니다.'); }
 
-                    for (const source of dynamicSources) {
-                        try {
-                            const querySnapshot = await getDocs(collection(db, 'artifacts', source.appId, 'public', 'data', 'posts'));
-                            querySnapshot.docs.forEach(doc => {
-                                cachedFirebasePosts.push({
-                                    ...doc.data(),
-                                    _sourceMeta: source // 게시글 객체에 출처(페이지) 정보 함께 저장
-                                });
-                            });
-                        } catch (e) {
-                            console.warn(`${source.appId} 데이터를 가져오지 못했습니다.`, e);
-                        }
-                    }
+                    // 03.html 데이터 수집 (공지사항 - 루트 posts 컬렉션 사용)
+                    try {
+                        const noticeSnap = await getDocs(collection(noticeDb, 'posts'));
+                        noticeSnap.docs.forEach(doc => {
+                            cachedFirebasePosts.push({ ...doc.data(), _sourceMeta: { pageTitle: '공지사항', pageUrl: '03.html' } });
+                        });
+                    } catch (e) { console.warn('공지사항 데이터를 가져오지 못했습니다.'); }
                 }
 
                 cachedFirebasePosts.forEach(post => {
-                    const textToSearch = (post.title || "") + " " + (post.desc || "");
+                    const textToSearch = (post.title || "") + " " + (post.content || post.desc || "");
                     const index = textToSearch.indexOf(keyword);
                     
                     if (index !== -1) {
@@ -359,7 +361,7 @@
                         const highlightKeyword = new RegExp(keyword, 'g');
                         snippet = snippet.replace(highlightKeyword, `<b class="text-theme-apricot bg-orange-50 px-1 rounded">${keyword}</b>`);
 
-                        const pageName = `${post._sourceMeta.pageTitle} > ${post.category || '일반'}`;
+                        const pageName = `${post._sourceMeta.pageTitle} > ${post.category || '새소식'}`;
                         const targetUrl = `${post._sourceMeta.pageUrl}?search=${encodeURIComponent(keyword)}#:~:text=${encodeURIComponent(keyword)}`;
 
                         finalHTML += `
@@ -373,11 +375,9 @@
                         `;
                     }
                 });
-            } catch (error) {
-                console.error("Firebase 데이터 로드 실패:", error);
-            }
+            } catch (error) { console.error("Firebase 데이터 로드 실패:", error); }
 
-            // --- 3. 최종 검색 결과 렌더링 ---
+            // --- 3. 렌더링 ---
             if (finalHTML === "") {
                 resultsDiv.innerHTML = "<p class='text-center text-stone-600 bg-slate-50 p-4 rounded-lg'>일치하는 검색 결과가 없습니다.</p>";
             } else {
@@ -385,7 +385,6 @@
             }
         };
 
-        // UI 이벤트 바인딩
         document.getElementById('searchButton').addEventListener('click', window.searchAllPages);
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') window.searchAllPages();
