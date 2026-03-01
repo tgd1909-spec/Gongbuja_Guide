@@ -285,6 +285,24 @@
                         return timeB - timeA;
                     });
 
+                    // ===== 추가된 핵심 로직: 검색어로 접근 시 해당 공지사항 자동 열람 =====
+                    const params = new URLSearchParams(window.location.search);
+                    const keyword = params.get('search');
+                    
+                    if (keyword && state.isLoading) {
+                        // 제목이나 내용에 검색어가 포함된 첫 번째 게시글 찾기
+                        const matchedPost = loadedPosts.find(p => 
+                            (p.title && p.title.includes(keyword)) || 
+                            (p.content && p.content.includes(keyword))
+                        );
+                        
+                        if (matchedPost) {
+                            state.selectedPostId = matchedPost.id;
+                            state.viewMode = matchedPost.isArchived ? 'archived' : 'current';
+                        }
+                    }
+                    // ======================================================================
+
                     if (!state.isLoading && loadedPosts.length > state.posts.length) {
                         this.showToast("🔔 새로운 공지사항이 도착했습니다!");
                     }
@@ -985,8 +1003,9 @@
                 const textNodes = [];
                 
                 while (node = walk.nextNode()) {
-                    // SCRIPT, STYLE 태그 및 이미 하이라이트된 텍스트 제외
-                    if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE' && node.parentNode.nodeName !== 'MARK') {
+                    // SCRIPT, STYLE, MARK, TEXTAREA, INPUT, BUTTON 태그 제외
+                    const parentName = node.parentNode.nodeName;
+                    if (!['SCRIPT', 'STYLE', 'MARK', 'TEXTAREA', 'INPUT', 'BUTTON'].includes(parentName)) {
                         textNodes.push(node);
                     }
                 }
