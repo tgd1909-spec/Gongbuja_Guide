@@ -297,17 +297,27 @@
                         text = mockDataForPreview[page]; 
                     }
 
-                    // DOMParser를 사용하여 HTML 파싱 후 불필요한 태그(스크립트 등) 제거
+                    // DOMParser를 사용하여 HTML 파싱
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(text, 'text/html');
                     
-                    // script, style 등 화면에 보이지 않아야 할 코드 태그들을 모두 삭제
-                    const elementsToRemove = doc.querySelectorAll('script, style, noscript, svg, iframe');
+                    // 화면에 보이지 않아야 할 스타일, SVG 등만 삭제하고, 
+                    // 데이터가 들어있을 수 있는 script 태그는 지우지 않고 유지합니다.
+                    const elementsToRemove = doc.querySelectorAll('style, svg, iframe, noscript');
                     elementsToRemove.forEach(el => el.remove());
 
-                    // 순수 텍스트만 추출하고, 여러 줄의 공백을 한 칸으로 정제
-                    let pureText = doc.body.textContent || doc.body.innerText || "";
-                    pureText = pureText.replace(/\s+/g, ' ').trim();
+                    // 순수 텍스트 추출 (스크립트 안의 텍스트 포함)
+                    let rawText = doc.documentElement.textContent || "";
+                    
+                    // JS 객체 형식이나 코드를 일반 문장처럼 깔끔하게 정제합니다.
+                    // 예: { time: "21:20", title: "혈압 체크" } -> 21:20 혈압 체크
+                    let pureText = rawText
+                        .replace(/[{}[\]"']/g, ' ') // 괄호, 대괄호, 따옴표 제거
+                        .replace(/\b[a-zA-Z_]+\s*:/g, ' ') // 영문 속성명(예: title:, desc:, loc:) 제거
+                        .replace(/[=;,]/g, ' ') // 등호, 쉼표, 세미콜론 제거
+                        .replace(/\b(const|let|var|function|return|import|export|default|new|console|log)\b/g, ' ') // 기본 JS 예약어 제거
+                        .replace(/\s+/g, ' ') // 여러 공백을 하나로 압축
+                        .trim();
 
                     const index = pureText.indexOf(keyword);
                     
