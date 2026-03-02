@@ -52,7 +52,7 @@
         }
 
         /* 시뮬레이터 노드 전환 (애니메이션 핵심) */
-        .formation-node, .exit-node {
+        .formation-node, .exit-node, .enter-node {
             transition: all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1);
         }
 
@@ -323,7 +323,15 @@
                                         <span class="font-serif font-bold text-lg text-theme-color">"국궁 ~ 1열 앞으로 나솨"</span>
                                     </div>
                                     <p class="text-stone-700 mb-2"><strong>행동:</strong> 전원 국궁 자세 취함 → 회원 줄부터 대동문 통과 → 영대 진입</p>
-                                    <p class="text-stone-600 bg-theme-soft/50 p-2 rounded text-sm">📍 <strong>위치:</strong> 영대 앞 다다미 1장에 2명씩 정렬</p>
+                                    <p class="text-stone-600 bg-theme-soft/50 p-2 rounded text-sm mb-4">📍 <strong>위치:</strong> 영대 앞 다다미 1장에 2명씩 정렬</p>
+                                    
+                                    <!-- 신발 배치도 시뮬레이터 -->
+                                    <div class="mt-4 border-t border-stone-100 pt-5">
+                                        <h5 class="text-lg font-bold text-theme-color mb-3 flex items-center gap-2">
+                                            <span>👞 신발 배치도</span>
+                                        </h5>
+                                        <div id="enter-simulation-placeholder"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -624,6 +632,7 @@
         }
 
         // 시뮬레이터 생성 확인용 플래그
+        let isEnterSimInitialized = false;
         let isSimInitialized = false;
         let isExitSimInitialized = false;
 
@@ -631,6 +640,14 @@
         function attachTabEvents() {
             const buttons = document.querySelectorAll('.tab-btn');
             const contents = document.querySelectorAll('.tab-content');
+
+            // 0. 입장 시뮬레이터 주입
+            const enterSimContainer = document.getElementById('enter-simulation-placeholder');
+            if (enterSimContainer) {
+                enterSimContainer.innerHTML = renderEnterSimulationUI();
+                isEnterSimInitialized = false;
+                setTimeout(() => updateEnterSim(), 100);
+            }
 
             // 1. 대형 전환 시뮬레이터 주입
             const simContainer = document.getElementById('simulation-placeholder');
@@ -663,6 +680,101 @@
                 });
             });
         }
+
+        /* -----------------------------------------------------------------
+           0. 입장 대기 시뮬레이터 관련 로직
+           ----------------------------------------------------------------- */
+        function renderEnterSimulationUI() {
+            return `
+                <div class="bg-white border border-stone-200 rounded-xl mx-auto w-full relative h-[350px] md:h-[400px] overflow-hidden shadow-inner" style="background-image: linear-gradient(#f5f5f4 1px, transparent 1px), linear-gradient(90deg, #f5f5f4 1px, transparent 1px); background-size: 40px 40px;">
+                    
+                    <!-- 가로로 긴 직사각형 발판 -->
+                    <div class="absolute border-2 border-stone-300 bg-stone-50/50" style="top: 15%; left: 10%; width: 60%; height: 50%;"></div>
+                    
+                    <!-- 입구 (윗변 위쪽 중앙) -->
+                    <div class="absolute bg-stone-100 flex items-center justify-center border-x-2 border-t-2 border-stone-400 rounded-t-lg z-10" style="bottom: 85%; left: 40%; width: 12%; height: 8%; transform: translateX(-50%);">
+                        <span class="text-stone-600 font-bold text-xs tracking-wider">입구</span>
+                    </div>
+
+                    <!-- 안내 라벨 -->
+                    <div class="absolute text-yellow-600 font-bold text-xs" style="top: 10%; left: 74%;">회원 신발</div>
+                    <div class="absolute text-blue-600 font-bold text-xs" style="top: calc(75% - 8px); left: 3%;">외수</div>
+                    <div class="absolute text-red-600 font-bold text-xs" style="top: calc(86% - 8px); left: 3%;">내수</div>
+
+                    <!-- 애니메이션 노드 영역 -->
+                    <div id="enter-nodes-area" class="relative w-full h-full"></div>
+                </div>
+            `;
+        }
+
+        function initEnterSimNodes() {
+            const area = document.getElementById('enter-nodes-area');
+            if (!area) return;
+            area.innerHTML = '';
+            
+            const roles = [
+                { name: 'member', colorClass: 'bg-yellow-100 text-yellow-900 border border-yellow-400' },
+                { name: 'oesu', colorClass: 'bg-blue-100 text-blue-900 border border-blue-400' },
+                { name: 'naesu', colorClass: 'bg-red-100 text-red-900 border border-red-400' }
+            ];
+
+            for (let i = 1; i <= 12; i++) {
+                roles.forEach((role) => {
+                    const node = document.createElement('div');
+                    node.id = `enter-node-${role.name}-${i}`;
+                    node.className = `enter-node absolute w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md z-20 ${role.colorClass}`;
+                    node.innerText = i;
+                    area.appendChild(node);
+                });
+            }
+            isEnterSimInitialized = true;
+        }
+
+        function updateEnterSim() {
+            if (!isEnterSimInitialized) initEnterSimNodes();
+
+            // 1. 회원 신발 (오른쪽 변 바깥, 2줄)
+            // 왼쪽 줄: 위에서 아래로 1~6번
+            // 오른쪽 줄: 아래에서 위로 7~12번
+            for (let i = 1; i <= 12; i++) {
+                let node = document.getElementById(`enter-node-member-${i}`);
+                if (!node) continue;
+                
+                let col = i <= 6 ? 0 : 1; // 0: 왼쪽 줄, 1: 오른쪽 줄
+                let row = i <= 6 ? (i - 1) : (12 - i); // 0 ~ 5 (상단부터 0번째)
+                
+                let left = 74 + col * 8; // X 좌표: 74%, 82%
+                let top = 15 + row * 10; // Y 좌표: 15% ~ 65%
+
+                node.style.left = `calc(${left}% - 12px)`;
+                node.style.top = `calc(${top}% - 12px)`;
+            }
+
+            // 2. 외수 및 내수 신발 (아랫변 바깥, 가로 배열)
+            // 배열 순서: 오른쪽부터 11, 12, 1, 2, ..., 10
+            const sequence = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            
+            sequence.forEach((num, j) => {
+                // 외수 신발 (직사각형 바로 아래)
+                let nodeO = document.getElementById(`enter-node-oesu-${num}`);
+                if (nodeO) {
+                    let left = 68 - j * 5.2; // 68%부터 왼쪽으로 5.2% 간격
+                    let top = 75; // 아랫변 바로 밑
+                    nodeO.style.left = `calc(${left}% - 12px)`;
+                    nodeO.style.top = `calc(${top}% - 12px)`;
+                }
+
+                // 내수 신발 (외수 아래)
+                let nodeN = document.getElementById(`enter-node-naesu-${num}`);
+                if (nodeN) {
+                    let left = 68 - j * 5.2;
+                    let top = 86; // 외수보다 조금 더 아래
+                    nodeN.style.left = `calc(${left}% - 12px)`;
+                    nodeN.style.top = `calc(${top}% - 12px)`;
+                }
+            });
+        }
+
 
         /* -----------------------------------------------------------------
            1. 봉심 대형 전환 시뮬레이터 관련 로직
