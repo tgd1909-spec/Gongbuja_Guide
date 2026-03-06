@@ -57,10 +57,23 @@
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.85; transform: scale(1.05); }
         }
+        /* 게시물 스크롤 이동 시 반짝임 하이라이트 효과 (2초) */
+        @keyframes highlightTarget {
+            0% { border-color: inherit; box-shadow: none; }
+            15% { border-color: #be123c; box-shadow: 0 0 0 5px rgba(190, 18, 60, 0.25); }
+            85% { border-color: #be123c; box-shadow: 0 0 0 5px rgba(190, 18, 60, 0.25); }
+            100% { border-color: inherit; box-shadow: none; }
+        }
 
         .animate-slide-down { animation: slideDown 0.4s ease-out forwards; }
         .animate-fade-in { animation: fadeIn 0.4s ease-out; }
         .animate-pulse-custom { animation: pulse-custom 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        
+        .highlight-target {
+            animation: highlightTarget 2s ease-in-out forwards !important;
+            position: relative;
+            z-index: 10;
+        }
         
         textarea { resize: none; }
         .shadow-custom { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08); }
@@ -86,7 +99,6 @@
     </style>
 
     <!-- Firebase SDK (Version 11.6.1) -->
-    <!-- 보안 강화를 위해 Email/Password 인증 모듈인 signInWithEmailAndPassword, signOut 추가 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -188,18 +200,18 @@
             posts: [],
             isLoading: true,
             user: null,
-            auth: null, // 인증 객체 저장용
+            auth: null,
             db: null,
-            currentImageDataUrl: null // 이미지 업로드 상태 저장용
+            currentImageDataUrl: null,
+            _initialScrollDone: false // 최우선 스크롤을 1회만 동작시키기 위한 플래그
         };
 
         /**
          * Application Logic
          */
         window.app = {
-            unsubscribePosts: null, // 중복 리스너 방지용 변수
+            unsubscribePosts: null, 
 
-            // Firebase 초기화
             initFirebase: async function() {
                 if (!window.firebaseModules) {
                     setTimeout(() => this.initFirebase(), 100);
@@ -208,7 +220,6 @@
 
                 const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore } = window.firebaseModules;
 
-                // 캔버스 환경 변수를 덮어쓰지 않고, 사용자의 실제 Firebase 프로젝트로만 강제 연결합니다.
                 const firebaseConfig = {
                     apiKey: "AIzaSyDe1mpaPcDfiNG63peU7EFNXXNJQmKc2rM",
                     authDomain: "taegukdo-notice.firebaseapp.com",
@@ -224,17 +235,13 @@
                     state.auth = auth;
                     state.db = getFirestore(firebaseApp);
 
-                    // 익명 로그인을 시도합니다 (실패해도 보안 규칙 상 읽기는 가능하므로 무시하고 진행합니다)
                     signInAnonymously(auth).catch((error) => {
                         console.log("익명 로그인 안내 (Firebase 콘솔에서 활성화 필요 없음, 읽기 전용 작동):", error.message);
                     });
 
-                    // 로그인 상태 변화 감지 리스너
                     onAuthStateChanged(auth, (user) => {
                         state.user = user;
-                        // 로그인 유저가 존재하고, 그 유저가 익명이 아니면(이메일 비밀번호 로그인) 관리자 권한 부여
                         state.isAdmin = !!user && !user.isAnonymous;
-                        
                         this.subscribeToPosts();
                     });
 
@@ -245,24 +252,20 @@
                 }
             },
 
-            // Firestore 컬렉션 참조 (경로 고정)
             getCollectionRef: function() {
                 const { collection } = window.firebaseModules;
                 return collection(state.db, 'posts');
             },
 
-            // Firestore 문서 참조 (경로 고정)
             getDocRef: function(id) {
                 const { doc } = window.firebaseModules;
                 return doc(state.db, 'posts', id);
             },
 
-            // Firestore 리스너
             subscribeToPosts: function() {
                 const { onSnapshot, query } = window.firebaseModules;
                 if (!state.db) return;
 
-                // 기존 리스너가 있다면 중복 에러를 방지하기 위해 해제합니다.
                 if (this.unsubscribePosts) {
                     this.unsubscribePosts();
                 }
@@ -276,7 +279,6 @@
                         loadedPosts.push({ id: doc.id, ...doc.data() });
                     });
 
-                    // JS 메모리 상에서 정렬 로직 수행
                     loadedPosts.sort((a, b) => {
                         if (a.isMustRead && !b.isMustRead) return -1;
                         if (!a.isMustRead && b.isMustRead) return 1;
@@ -285,12 +287,17 @@
                         return timeB - timeA;
                     });
 
-                    // ===== 추가된 핵심 로직: 검색어로 접근 시 해당 공지사항 자동 열람 =====
+                    // ID 파라미터 체크 로직 개선 (검색어보다 우선)
                     const params = new URLSearchParams(window.location.search);
                     const keyword = params.get('search');
+                    let targetId = params.get('id');
                     
-                    if (keyword && state.isLoading) {
-                        // 제목이나 내용에 검색어가 포함된 첫 번째 게시글 찾기
+                    if (!targetId && window.location.hash) {
+                        targetId = window.location.hash.substring(1).replace(/^post-/, '');
+                    }
+                    
+                    // targetId(특정 게시물 열람)가 명시되지 않고, 검색어만 있을 경우에 한해서 상세 뷰 자동 오픈
+                    if (keyword && !targetId && state.isLoading) {
                         const matchedPost = loadedPosts.find(p => 
                             (p.title && p.title.includes(keyword)) || 
                             (p.content && p.content.includes(keyword))
@@ -301,7 +308,6 @@
                             state.viewMode = matchedPost.isArchived ? 'archived' : 'current';
                         }
                     }
-                    // ======================================================================
 
                     if (!state.isLoading && loadedPosts.length > state.posts.length) {
                         this.showToast("🔔 새로운 공지사항이 도착했습니다!");
@@ -324,7 +330,6 @@
                 if (loader) loader.classList.add('hidden');
             },
 
-            // --- 데이터 조작 ---
             submitPost: async function() {
                 const { addDoc, serverTimestamp } = window.firebaseModules;
                 
@@ -364,7 +369,6 @@
 
                 } catch (e) {
                     console.error(e);
-                    // 권한 부족(보안 규칙 위반) 에러 처리
                     if(e.code === 'permission-denied') {
                         this.showToast("권한이 없습니다. 관리자 로그인을 확인해주세요.", 'error');
                     } else {
@@ -405,7 +409,6 @@
                 }
             },
 
-            // --- 이미지 처리 로직 ---
             handleImageSelect: function(event) {
                 const file = event.target.files[0];
                 if (!file) return;
@@ -460,7 +463,6 @@
                 return diff < (3 * 24 * 60 * 60 * 1000); 
             },
 
-            // --- 렌더링 로직 ---
             init: function() {
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && state.modalType) this.closeModal();
@@ -598,8 +600,9 @@
                         const delayClass = index < 5 ? `animate-fade-in` : '';
                         const styleDelay = index < 5 ? `animation-delay: ${index * 0.05}s` : '';
                         
+                        // 변경사항: 각 목록 li 요소에 고유 id 속성 추가
                         html += `
-                            <li onclick="app.selectPost('${post.id}')" 
+                            <li id="post-${post.id}" onclick="app.selectPost('${post.id}')" 
                                 class="group bg-white rounded-2xl border-2 ${isHighlighted ? 'border-theme-color/40 bg-theme-light/10' : 'border-stone-100'} p-6 md:p-8 cursor-pointer shadow-sm hover:shadow-lg transition-all duration-300 hover:border-theme-color hover:-translate-y-1 relative overflow-hidden ${delayClass}" 
                                 style="${styleDelay}">
                                 
@@ -684,7 +687,6 @@
                 let html = '';
 
                 if (state.modalType === 'login') {
-                    // 이메일과 비밀번호를 모두 입력받도록 폼 수정
                     html = `
                         <div class="p-8 text-center font-sans bg-white relative">
                             <button onclick="app.closeModal()" class="absolute top-4 right-4 text-stone-400 hover:text-k-text"><i data-lucide="x" class="w-6 h-6"></i></button>
@@ -826,17 +828,14 @@
                 }, 4000); 
             },
 
-            // --- Action Handlers ---
             goHome: function() {
                 try {
-                    // Canvas 프리뷰(blob:) 환경에서는 상대 경로 이동 시 에러가 발생하므로 분기 처리합니다.
                     if (window.location.href.startsWith('blob:')) {
                         state.selectedPostId = null;
                         state.viewMode = 'current';
                         this.renderApp();
                         window.scrollTo({top: 0, behavior: 'smooth'});
                     } else {
-                        // 실제 깃허브 배포 환경에서는 index.html로 직접 이동합니다.
                         window.location.href = 'index.html';
                     }
                 } catch (e) {
@@ -894,7 +893,6 @@
                 this.renderApp();
             },
 
-            // 로그인 입력 방식 및 에러 핸들링 수정
             submitLogin: async function() {
                 const { signInWithEmailAndPassword } = window.firebaseModules;
                 
@@ -910,7 +908,6 @@
                 }
 
                 try {
-                    // Firebase Auth를 이용해 입력한 이메일과 비밀번호로 인증
                     await signInWithEmailAndPassword(state.auth, email, password);
                     
                     this.showToast("관리자 모드로 전환되었습니다.");
@@ -918,7 +915,6 @@
                 } catch (error) {
                     console.error("로그인 에러:", error);
                     
-                    // UI 흔들림 효과
                     const container = emailInput.parentElement.parentElement;
                     container.classList.remove('animate-shake');
                     void container.offsetWidth;
@@ -927,7 +923,6 @@
                     emailInput.classList.add('border-theme-color', 'text-theme-color');
                     pwInput.classList.add('border-theme-color', 'text-theme-color');
                     
-                    // Firebase Auth 상세 에러 메시지 분기
                     if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                         this.showToast("계정 정보가 일치하지 않습니다. Firebase 콘솔을 확인해주세요.", 'error');
                     } else if (error.code === 'auth/invalid-email') {
@@ -991,10 +986,39 @@
             applySearchHighlight: function() {
                 const params = new URLSearchParams(window.location.search);
                 const keyword = params.get('search');
+                let targetId = params.get('id');
                 
+                // 해시에서 특정 게시글 ID 추출 로직 (#post-아이디 또는 #아이디)
+                if (!targetId && window.location.hash) {
+                    targetId = window.location.hash.substring(1).replace(/^post-/, '');
+                }
+
+                let isScrolledByTarget = false;
+
+                // 1. 특정 게시글 ID가 있을 경우 해당 게시물로 먼저 스크롤 이동 및 테두리 효과
+                if (targetId && !state._initialScrollDone && !state.selectedPostId) {
+                    const targetElement = document.getElementById(`post-${targetId}`);
+                    if (targetElement) {
+                        setTimeout(() => {
+                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            
+                            // 시각적 강조 효과 클래스 추가
+                            targetElement.classList.add('highlight-target');
+                            
+                            // 2초 뒤 클래스 제거 (재사용 가능하도록)
+                            setTimeout(() => {
+                                targetElement.classList.remove('highlight-target');
+                            }, 2000);
+                        }, 100); // 렌더링 직후 이동 보장
+                        
+                        isScrolledByTarget = true;
+                        state._initialScrollDone = true; 
+                    }
+                }
+
+                // 2. 검색어 텍스트 매칭 및 하이라이트
                 if (!keyword) return;
 
-                // 상세 보기(post-content-area)가 있으면 상세에서, 없으면 전체 목록 뷰(main-content)에서 검색
                 const contentArea = document.getElementById('post-content-area') || document.getElementById('main-content');
                 if(!contentArea) return;
 
@@ -1003,7 +1027,6 @@
                 const textNodes = [];
                 
                 while (node = walk.nextNode()) {
-                    // SCRIPT, STYLE, MARK, TEXTAREA, INPUT, BUTTON 태그 제외
                     const parentName = node.parentNode.nodeName;
                     if (!['SCRIPT', 'STYLE', 'MARK', 'TEXTAREA', 'INPUT', 'BUTTON'].includes(parentName)) {
                         textNodes.push(node);
@@ -1021,12 +1044,13 @@
                     }
                 });
 
-                if (found) {
-                    // 화면 렌더링 후 스크롤 이동
+                // 특정 게시물로의 스크롤이 발생하지 않은 경우에만 검색어 스크롤 적용
+                if (found && !isScrolledByTarget && !state._initialScrollDone) {
                     setTimeout(() => {
                         const firstMark = document.querySelector('mark.search-highlight');
                         if (firstMark) {
                             firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            state._initialScrollDone = true; 
                         }
                     }, 50);
                 }
