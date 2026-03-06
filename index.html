@@ -301,8 +301,7 @@
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(text, 'text/html');
                     
-                    // 화면에 보이지 않아야 할 스타일, SVG 등만 삭제하고, 
-                    // 데이터가 들어있을 수 있는 script 태그는 지우지 않고 유지합니다.
+                    // 화면에 보이지 않아야 할 스타일, SVG 등만 삭제
                     const elementsToRemove = doc.querySelectorAll('style, svg, iframe, noscript');
                     elementsToRemove.forEach(el => el.remove());
 
@@ -310,13 +309,12 @@
                     let rawText = doc.documentElement.textContent || "";
                     
                     // JS 객체 형식이나 코드를 일반 문장처럼 깔끔하게 정제합니다.
-                    // 예: { time: "21:20", title: "혈압 체크" } -> 21:20 혈압 체크
                     let pureText = rawText
-                        .replace(/[{}[\]"']/g, ' ') // 괄호, 대괄호, 따옴표 제거
-                        .replace(/\b[a-zA-Z_]+\s*:/g, ' ') // 영문 속성명(예: title:, desc:, loc:) 제거
-                        .replace(/[=;,]/g, ' ') // 등호, 쉼표, 세미콜론 제거
-                        .replace(/\b(const|let|var|function|return|import|export|default|new|console|log)\b/g, ' ') // 기본 JS 예약어 제거
-                        .replace(/\s+/g, ' ') // 여러 공백을 하나로 압축
+                        .replace(/[{}[\]"']/g, ' ') 
+                        .replace(/\b[a-zA-Z_]+\s*:/g, ' ') 
+                        .replace(/[=;,]/g, ' ') 
+                        .replace(/\b(const|let|var|function|return|import|export|default|new|console|log)\b/g, ' ') 
+                        .replace(/\s+/g, ' ') 
                         .trim();
 
                     const index = pureText.indexOf(keyword);
@@ -329,6 +327,7 @@
                         snippet = snippet.replace(highlightKeyword, `<b class="text-theme-apricot bg-orange-50 px-1 rounded">${keyword}</b>`);
 
                         const pageName = pageTitles[page];
+                        // 정적 문서는 기존 텍스트 프래그먼트 방식 유지
                         const targetUrl = `${page}?search=${encodeURIComponent(keyword)}#:~:text=${encodeURIComponent(keyword)}`;
 
                         finalHTML += `
@@ -352,19 +351,21 @@
                 if (!cachedFirebasePosts) {
                     cachedFirebasePosts = [];
                     
-                    // 04.html 데이터 수집 (법식 안내)
+                    // 04.html 데이터 수집 (법식 안내) - doc.id 추가 저장
                     try {
                         const guideSnap = await getDocs(collection(guideDb, 'artifacts', 'tgd-guide-public', 'public', 'data', 'posts'));
                         guideSnap.docs.forEach(doc => {
-                            cachedFirebasePosts.push({ ...doc.data(), _sourceMeta: { pageTitle: '법식 안내', pageUrl: '04.html' } });
+                            // id 필드를 명시적으로 추가하여 저장합니다.
+                            cachedFirebasePosts.push({ id: doc.id, ...doc.data(), _sourceMeta: { pageTitle: '법식 안내', pageUrl: '04.html' } });
                         });
                     } catch (e) { console.warn('법식 안내 데이터를 가져오지 못했습니다.'); }
 
-                    // 03.html 데이터 수집 (공지사항 - 루트 posts 컬렉션 사용)
+                    // 03.html 데이터 수집 (공지사항 - 루트 posts 컬렉션 사용) - doc.id 추가 저장
                     try {
                         const noticeSnap = await getDocs(collection(noticeDb, 'posts'));
                         noticeSnap.docs.forEach(doc => {
-                            cachedFirebasePosts.push({ ...doc.data(), _sourceMeta: { pageTitle: '공지사항', pageUrl: '03.html' } });
+                            // id 필드를 명시적으로 추가하여 저장합니다.
+                            cachedFirebasePosts.push({ id: doc.id, ...doc.data(), _sourceMeta: { pageTitle: '공지사항', pageUrl: '03.html' } });
                         });
                     } catch (e) { console.warn('공지사항 데이터를 가져오지 못했습니다.'); }
                 }
@@ -381,7 +382,11 @@
                         snippet = snippet.replace(highlightKeyword, `<b class="text-theme-apricot bg-orange-50 px-1 rounded">${keyword}</b>`);
 
                         const pageName = `${post._sourceMeta.pageTitle} > ${post.category || '새소식'}`;
-                        const targetUrl = `${post._sourceMeta.pageUrl}?search=${encodeURIComponent(keyword)}#:~:text=${encodeURIComponent(keyword)}`;
+                        
+                        // 핵심 변경 사항: post.id가 있으면 해당 id를 앵커(#post-ID)로 사용하여 URL 생성
+                        const targetUrl = post.id 
+                            ? `${post._sourceMeta.pageUrl}?search=${encodeURIComponent(keyword)}#post-${post.id}`
+                            : `${post._sourceMeta.pageUrl}?search=${encodeURIComponent(keyword)}#:~:text=${encodeURIComponent(keyword)}`;
 
                         finalHTML += `
                             <div class="mb-3 p-4 bg-slate-50 border border-slate-100 rounded-xl hover:border-theme-navy transition-colors duration-300">
