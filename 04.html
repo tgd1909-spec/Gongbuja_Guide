@@ -145,7 +145,6 @@
                     
                     <div class="bg-stone-50 border border-stone-200 rounded-lg p-6 text-base text-k-text font-medium leading-loose">
                         <ul class="list-disc pl-5 space-y-3">
-                            <li><strong class="text-theme bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm">법방 앞 대기 예절</strong> 입실 대기 시 회원과 내수는 공부방 문 앞을 정면으로 가리고 서지 않도록 합니다.</li>
                             <li><strong class="text-theme-color bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm">과한 인사 지양</strong> 입실 후에는 과한 인사를 하지 않습니다. 좌배(坐拜)로 시작해서 좌배로 끝날 수 있도록 합니다.</li>
                             <li><strong class="text-theme-color bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm">회원에게 속도 맞춤</strong> 옆의 회원이 자리에 앉으면 행동을 정돈합니다. 모든 속도는 회원에게 맞춰야 합니다.</li>
                             <li><strong class="text-theme-color bg-white px-2 py-0.5 rounded border border-stone-200 shadow-sm">교대 시 거리 확보</strong> 회원과 내수가 뒤로 물러날 때, 다음 공부자가 지나갈 수 있는 충분한 거리를 확보해야 합니다.</li>
@@ -206,7 +205,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-stone-600 mb-2">내용</label>
-                    <textarea id="input-desc" rows="6" placeholder="상세 내용을 입력하세요." class="w-full bg-stone-50 border-2 border-stone-300 rounded-lg p-4 focus:border-theme-color outline-none"></textarea>
+                    <textarea id="input-desc" rows="6" placeholder="상세 내용을 입력하세요. 링크를 입력하면 자동으로 연결됩니다." class="w-full bg-stone-50 border-2 border-stone-300 rounded-lg p-4 focus:border-theme-color outline-none"></textarea>
                 </div>
                 <div class="p-4 bg-stone-50 rounded-lg border-2 border-stone-200">
                     <label class="block text-sm font-bold text-stone-600 mb-2">파일 첨부</label>
@@ -499,14 +498,12 @@
             }
         };
 
-        // 이미지 모달 열기/닫기 로직 (애니메이션 효과 포함)
+        // 이미지 모달 열기/닫기 로직
         window.openImageModal = (src) => {
             const modal = document.getElementById('image-modal');
             const modalImg = document.getElementById('modal-image');
             modalImg.src = src;
             modal.classList.remove('hidden');
-            
-            // 약간의 지연 후 opacity 및 scale 클래스를 변경해 부드럽게 나타나게 함
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modal.classList.add('opacity-100');
@@ -518,14 +515,10 @@
         window.closeImageModal = () => {
             const modal = document.getElementById('image-modal');
             const modalImg = document.getElementById('modal-image');
-            
-            // 축소되며 사라지는 효과
             modal.classList.remove('opacity-100');
             modal.classList.add('opacity-0');
             modalImg.classList.remove('scale-100');
             modalImg.classList.add('scale-95');
-            
-            // 애니메이션이 끝난 후 hidden 클래스 추가 및 이미지 초기화
             setTimeout(() => {
                 modal.classList.add('hidden');
                 modalImg.src = '';
@@ -541,7 +534,19 @@
             }
         };
 
-        // 검색어 하이라이트 적용 함수 (렌더링 직후 호출됨)
+        // 게시물 내용 중 URL을 클릭 가능한 링크로 변환하는 함수
+        function formatDescription(text) {
+            if (!text) return '';
+            const escapedText = text.replace(/[&<>"']/g, function(match) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
+            });
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return escapedText.replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline break-all font-bold transition-colors">${url}</a>`;
+            });
+        }
+
+        // 검색어 하이라이트 적용을 화면 렌더링에서 스크롤 분리
         window.applySearchHighlight = () => {
             const params = new URLSearchParams(window.location.search);
             const keyword = params.get('search');
@@ -555,29 +560,20 @@
             const textNodes = [];
             
             while (node = walk.nextNode()) {
-                if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE') {
+                if (node.parentNode.nodeName !== 'SCRIPT' && node.parentNode.nodeName !== 'STYLE' && node.parentNode.nodeName !== 'A') {
                     textNodes.push(node);
                 }
             }
             
-            let found = false;
             textNodes.forEach(textNode => {
                 if (textNode.nodeValue.includes(keyword)) {
                     const span = document.createElement('span');
                     const regex = new RegExp(`(${keyword})`, 'gi');
                     span.innerHTML = textNode.nodeValue.replace(regex, '<mark class="search-highlight" style="background-color: #fef08a; color: #1a1a1a; padding: 0 2px; border-radius: 2px; font-weight: bold;">$1</mark>');
                     textNode.parentNode.replaceChild(span, textNode);
-                    found = true;
                 }
             });
-
-            if (found) {
-                // 부드러운 스크롤 이동
-                const firstMark = document.querySelector('mark.search-highlight');
-                if (firstMark) {
-                    firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
+            // 스크롤 로직은 렌더링 직후 setTimeout 내에서 id 체크와 함께 처리함.
         };
 
         // 완전히 개선된 초기화 루틴
@@ -587,16 +583,13 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
                 
-                // 1. 상태 변화 리스너 등록 (가장 먼저 실행되어야 함)
                 onAuthStateChanged(auth, async (user) => {
                     currentUser = user;
                     
                     if (user) {
-                        // 사용자가 확인된 경우(익명/이메일 모두)에만 데이터를 요청합니다.
                         toggleAdminState(!user.isAnonymous);
                         subscribeToData();
                     } else {
-                        // 사용자가 없으면(로그아웃 상태) 익명 로그인을 시도합니다.
                         toggleAdminState(false);
                         try {
                             await signInAnonymously(auth);
@@ -607,7 +600,6 @@
                     }
                 });
 
-                // 2. 초기 상태 로드 대기
                 await auth.authStateReady();
 
             } catch (error) {
@@ -616,7 +608,6 @@
             simController.init();
         }
 
-        // 권한 에러 처리 전담 UI 함수
         function handlePermissionError(error) {
             if (error && error.code === 'permission-denied') {
                 const listEl = document.getElementById('content-list');
@@ -628,22 +619,8 @@
                             </div>
                             <h3 class="text-2xl font-bold text-red-600 mb-3 font-serif">데이터 접근 권한 거부</h3>
                             <p class="text-stone-700 font-medium leading-relaxed mb-6 break-keep px-6">
-                                Firebase Console에서 권한 설정이 완료되지 않아 데이터를 불러올 수 없습니다.<br>
-                                문제를 해결하려면 아래 <span class="text-red-500 font-bold">2가지 필수 설정</span>을 완료해 주세요.
+                                Firebase Console에서 권한 설정이 완료되지 않아 데이터를 불러올 수 없습니다.
                             </p>
-                            <div class="text-left bg-stone-50 p-5 rounded-lg inline-block text-sm border border-stone-200 text-stone-700 max-w-xl w-full break-all mx-6 shadow-inner">
-                                <p class="mb-3 font-bold text-base"><span class="text-theme-color">1.</span> Authentication > Sign-in method에서 <span class="text-red-500 underline decoration-red-200 underline-offset-4">'익명(Anonymous)'</span> 사용 설정 활성화</p>
-                                <p class="font-bold text-base mb-2"><span class="text-theme-color">2.</span> Firestore Database > Rules 탭의 기존 코드를 지우고 아래 규칙으로 덮어쓰기 후 게시(Publish):</p>
-                                <pre class="bg-[#1e1e1e] text-[#d4d4d4] p-4 rounded-md mt-2 overflow-x-auto text-xs font-mono leading-relaxed"><code>rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /artifacts/{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
-    }
-  }
-}</code></pre>
-                            </div>
                         </div>
                     `;
                     lucide.createIcons();
@@ -652,7 +629,6 @@ service cloud.firestore {
         }
 
         function subscribeToData() {
-            // 방어 코드: 인증된 유저 객체가 없으면 데이터 구독을 원천 차단합니다.
             if (!currentUser) return; 
 
             if (unsubscribePosts) unsubscribePosts();
@@ -715,13 +691,16 @@ service cloud.firestore {
             contentListEl.innerHTML = '';
             let filtered = window.currentCategory === '전체' ? [...localContents] : localContents.filter(item => item.category === window.currentCategory);
             
+            // [정렬 수정] FIX_ORDER 순서대로, 같은 카테고리 내에서는 작성한 순서(오름차순)대로 정렬
             filtered.sort((a, b) => {
-                if (window.currentCategory === '전체') {
-                    const idxA = FIX_ORDER.indexOf(a.category);
-                    const idxB = FIX_ORDER.indexOf(b.category);
-                    if (idxA !== idxB) return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+                const idxA = FIX_ORDER.indexOf(a.category);
+                const idxB = FIX_ORDER.indexOf(b.category);
+                
+                if (idxA !== idxB) {
+                    return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
                 }
-                return (b.createdAt || 0) - (a.createdAt || 0);
+                
+                return (a.createdAt || 0) - (b.createdAt || 0);
             });
 
             if (filtered.length === 0 && window.currentCategory !== '시뮬레이터') {
@@ -731,10 +710,11 @@ service cloud.firestore {
 
             filtered.forEach(item => {
                 const div = document.createElement('div');
+                // ID 추가하여 특정 게시글로 스크롤 가능하게 함
+                div.id = `post-${item.id}`;
                 div.className = 'p-6 sm:p-8 bg-white border-2 border-stone-200 rounded-xl shadow-card transition-all group relative mb-6 hover:border-theme-color';
                 const images = item.images || (item.image ? [item.image] : []);
                 
-                // [수정점] 이미지에 cursor-zoom-in 클래스와 onclick 이벤트를 추가했습니다.
                 let mediaHtml = images.length > 0 ? `<div class="mb-6"><img src="${images[0]}" class="w-full max-h-[500px] rounded-xl object-contain bg-stone-100 border border-stone-200 cursor-zoom-in hover:opacity-90 transition-opacity" onclick="window.openImageModal('${images[0]}')"></div>` : '';
                 
                 div.innerHTML = `
@@ -743,7 +723,7 @@ service cloud.firestore {
                         <span class="text-sm font-bold text-theme-color bg-theme-color/10 px-3 py-1 rounded-full border border-theme-color/20">${item.category}</span>
                     </div>
                     <h2 class="text-2xl sm:text-3xl font-serif font-bold mb-4 text-k-text group-hover:text-theme-color">${item.title}</h2>
-                    <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line">${item.desc}</p>
+                    <p class="text-stone-700 leading-loose text-base sm:text-lg font-medium whitespace-pre-line">${formatDescription(item.desc)}</p>
                     ${window.isAdminMode ? `
                         <div class="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onclick="window.editPost('${item.id}')" class="p-2 bg-white border-2 rounded-lg text-stone-500 hover:text-theme-color"><i data-lucide="edit-2" class="w-5 h-5"></i></button>
@@ -756,8 +736,33 @@ service cloud.firestore {
             
             lucide.createIcons();
             
-            // 데이터가 화면에 전부 그려진 후 검색어 하이라이트를 즉시 실행합니다.
             window.applySearchHighlight();
+
+            // 스크롤 이동 로직: 클릭한 특정 게시글(id)이 있으면 거기로 이동, 없으면 검색어 첫 위치로 이동
+            setTimeout(() => {
+                const params = new URLSearchParams(window.location.search);
+                const targetId = params.get('id') || window.location.hash.replace('#', '');
+                
+                let scrolled = false;
+                if (targetId) {
+                    const targetEl = document.getElementById(`post-${targetId}`) || document.getElementById(targetId);
+                    if (targetEl) {
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // 클릭한 게시물을 찾기 쉽게 2초간 살짝 빛나는 효과
+                        targetEl.classList.add('ring-4', 'ring-theme-color/30');
+                        setTimeout(() => targetEl.classList.remove('ring-4', 'ring-theme-color/30'), 2000);
+                        scrolled = true;
+                    }
+                }
+                
+                // 특정 ID를 클릭해서 온 것이 아닌, 순수 검색 결과인 경우 검색어 단어의 위치로 이동
+                if (!scrolled) {
+                    const firstMark = document.querySelector('mark.search-highlight');
+                    if (firstMark) {
+                        firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }, 100);
         }
 
         function renderCategorySelect() {
