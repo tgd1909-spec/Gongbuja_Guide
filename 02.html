@@ -894,9 +894,9 @@
             {
                 text: "1. 공부 진행 중 (현재 시간)",
                 setup: (s) => {
-                    s.p_oesu = {x: 200, y: 150, label: '현 외수', c: C_OESU};
-                    s.p_member = {x: 300, y: 150, label: '현 회원', c: C_MEMBER};
-                    s.p_naesu = {x: 400, y: 150, label: '현 내수', c: C_NAESU};
+                    s.p_oesu = {x: 200, y: 150, label: '현 외수', c: C_OESU, alpha: 1};
+                    s.p_member = {x: 300, y: 150, label: '현 회원', c: C_MEMBER, alpha: 1};
+                    s.p_naesu = {x: 400, y: 150, label: '현 내수', c: C_NAESU, alpha: 1};
                     s.n_oesu = {x: 40, y: 150, label: '다음 외수', c: C_OESU, alpha: 1};   
                     s.n_member = {x: 40, y: 200, label: '다음 회원', c: C_MEMBER, alpha: 1}; 
                     s.n_naesu = {x: 40, y: 320, label: '다음 내수', c: C_NAESU, alpha: 1};   
@@ -977,12 +977,41 @@
                 }
             },
             {
-                text: "완료: 공부 시작 / 퇴실",
-                desc: "새로운 조가 자리를 잡았습니다. 이전 조는 퇴실합니다.",
+                text: "6. 공부 시작 및 퇴실",
+                desc: "새로운 조가 자리를 잡았습니다. 이전 조는 외수, 회원, 내수 순으로 문을 통해 퇴실합니다.",
                 animate: (s, p) => {
-                    s.p_member.alpha = 1 - p;
-                    s.p_oesu.alpha = 1 - p;
-                    s.p_naesu.alpha = 1 - p;
+                    // 외수 퇴실 (가장 먼저)
+                    let p3 = Math.min(Math.max(p / 0.6, 0), 1);
+                    if (p3 < 0.5) {
+                        s.p_oesu.x = lerp(200, 150, p3 * 2);
+                        s.p_oesu.y = lerp(350, 250, p3 * 2);
+                    } else {
+                        s.p_oesu.x = lerp(150, -40, (p3 - 0.5) * 2);
+                        s.p_oesu.y = 250;
+                        s.p_oesu.alpha = 1 - (p3 - 0.5) * 2;
+                    }
+
+                    // 회원 퇴실 (외수 다음)
+                    let p1 = Math.min(Math.max((p - 0.2) / 0.6, 0), 1);
+                    if (p1 < 0.5) {
+                        s.p_member.x = lerp(300, 150, p1 * 2);
+                        s.p_member.y = lerp(350, 250, p1 * 2);
+                    } else {
+                        s.p_member.x = lerp(150, -40, (p1 - 0.5) * 2);
+                        s.p_member.y = 250;
+                        s.p_member.alpha = 1 - (p1 - 0.5) * 2;
+                    }
+
+                    // 내수 퇴실 (가장 나중)
+                    let p2 = Math.min(Math.max((p - 0.4) / 0.6, 0), 1);
+                    if (p2 < 0.5) {
+                        s.p_naesu.x = lerp(400, 150, p2 * 2);
+                        s.p_naesu.y = lerp(350, 250, p2 * 2);
+                    } else {
+                        s.p_naesu.x = lerp(150, -40, (p2 - 0.5) * 2);
+                        s.p_naesu.y = 250;
+                        s.p_naesu.alpha = 1 - (p2 - 0.5) * 2;
+                    }
                 }
             }
         ];
@@ -1080,7 +1109,7 @@
                 ctx.stroke();
                 
                 const drawBall = (obj) => {
-                    if (obj.alpha === 0) return;
+                    if (obj.alpha <= 0) return;
                     ctx.globalAlpha = obj.alpha !== undefined ? obj.alpha : 1;
                     ctx.fillStyle = obj.c;
                     ctx.beginPath();
