@@ -236,14 +236,19 @@
                     state.auth = auth;
                     state.db = getFirestore(firebaseApp);
 
-                    signInAnonymously(auth).catch((error) => {
-                        console.log("익명 로그인 안내 (Firebase 콘솔에서 활성화 필요 없음, 읽기 전용 작동):", error.message);
-                    });
-
+                    // 로그인 유지 기능 복구: 무조건 익명 로그인을 시도하지 않고, 현재 세션을 먼저 확인합니다.
                     onAuthStateChanged(auth, (user) => {
-                        state.user = user;
-                        state.isAdmin = !!user && !user.isAnonymous;
-                        this.subscribeToPosts();
+                        if (user) {
+                            // 이미 관리자거나 익명 유저로 로그인 되어있는 경우 상태를 복구합니다.
+                            state.user = user;
+                            state.isAdmin = !user.isAnonymous;
+                            this.subscribeToPosts();
+                        } else {
+                            // 로그인된 세션이 아예 없을 때만 익명(읽기 전용) 로그인을 시도합니다.
+                            signInAnonymously(auth).catch((error) => {
+                                console.log("익명 로그인 안내 (Firebase 콘솔에서 활성화 필요 없음, 읽기 전용 작동):", error.message);
+                            });
+                        }
                     });
 
                 } catch (error) {
@@ -359,8 +364,6 @@
                     const postsRef = this.getCollectionRef();
                     
                     // 새 글 등록 시 기본 정렬 순서를 가장 앞(0)으로 주기 위한 로직
-                    // 기존 데이터들의 order가 있다면 이를 1씩 미루는 것도 가능하지만, 
-                    // 단순화를 위해 새 글은 기본적으로 최상단으로 정렬되게끔 날짜에 맞춰 정렬하거나 초기 order를 부여.
                     const currentFiltered = state.posts.filter(p => !p.isArchived);
                     const newOrder = currentFiltered.length > 0 ? -1 : 0; // 최상단 배치 유도 (가장 작은 값)
 
@@ -617,7 +620,7 @@
                         const delayClass = index < 5 ? `animate-fade-in` : '';
                         const styleDelay = index < 5 ? `animation-delay: ${index * 0.05}s` : '';
                         
-                        // 추가: 관리자 모드일 경우 드래그 앤 드롭 속성 추가 (draggable은 핸들에서 동적 할당)
+                        // 관리자 모드일 경우 드래그 앤 드롭 속성 추가 (draggable은 핸들에서 동적 할당)
                         const dragAttributes = state.isAdmin ? `ondragstart="app.handleDragStart(event, '${post.id}')" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event, '${post.id}')" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondragend="app.handleDragEnd(event)"` : '';
                         
                         html += `
