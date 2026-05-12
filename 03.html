@@ -203,7 +203,8 @@
             auth: null,
             db: null,
             currentImageDataUrl: null,
-            _initialScrollDone: false // 최우선 스크롤을 1회만 동작시키기 위한 플래그
+            _initialScrollDone: false, // 최우선 스크롤을 1회만 동작시키기 위한 플래그
+            isDragging: false // 추가: 드래그 중 클릭 방지 플래그
         };
 
         /**
@@ -282,6 +283,15 @@
                     loadedPosts.sort((a, b) => {
                         if (a.isMustRead && !b.isMustRead) return -1;
                         if (!a.isMustRead && b.isMustRead) return 1;
+
+                        // 추가: order 필드가 있는 경우 (드래그앤드랍 정렬)
+                        if (a.order !== undefined && b.order !== undefined) {
+                            return a.order - b.order;
+                        }
+                        if (a.order !== undefined) return -1;
+                        if (b.order !== undefined) return 1;
+
+                        // 기본 폴백 정렬 (날짜 순)
                         const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (new Date(a.date).getTime() || 0);
                         const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (new Date(b.date).getTime() || 0);
                         return timeB - timeA;
@@ -348,13 +358,20 @@
                 try {
                     const postsRef = this.getCollectionRef();
                     
+                    // 새 글 등록 시 기본 정렬 순서를 가장 앞(0)으로 주기 위한 로직
+                    // 기존 데이터들의 order가 있다면 이를 1씩 미루는 것도 가능하지만, 
+                    // 단순화를 위해 새 글은 기본적으로 최상단으로 정렬되게끔 날짜에 맞춰 정렬하거나 초기 order를 부여.
+                    const currentFiltered = state.posts.filter(p => !p.isArchived);
+                    const newOrder = currentFiltered.length > 0 ? -1 : 0; // 최상단 배치 유도 (가장 작은 값)
+
                     const postData = {
                         title: title,
                         content: content,
                         date: dateString,
                         timestamp: serverTimestamp(),
                         isArchived: false,
-                        isMustRead: isMustRead
+                        isMustRead: isMustRead,
+                        order: newOrder
                     };
 
                     if (state.currentImageDataUrl) {
@@ -600,46 +617,61 @@
                         const delayClass = index < 5 ? `animate-fade-in` : '';
                         const styleDelay = index < 5 ? `animation-delay: ${index * 0.05}s` : '';
                         
-                        // 변경사항: 각 목록 li 요소에 고유 id 속성 추가
+                        // 추가: 관리자 모드일 경우 드래그 앤 드롭 속성 추가 (draggable은 핸들에서 동적 할당)
+                        const dragAttributes = state.isAdmin ? `ondragstart="app.handleDragStart(event, '${post.id}')" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event, '${post.id}')" ondragenter="app.handleDragEnter(event)" ondragleave="app.handleDragLeave(event)" ondragend="app.handleDragEnd(event)"` : '';
+                        
                         html += `
-                            <li id="post-${post.id}" onclick="app.selectPost('${post.id}')" 
-                                class="group bg-white rounded-2xl border-2 ${isHighlighted ? 'border-theme-color/40 bg-theme-light/10' : 'border-stone-100'} p-6 md:p-8 cursor-pointer shadow-sm hover:shadow-lg transition-all duration-300 hover:border-theme-color hover:-translate-y-1 relative overflow-hidden ${delayClass}" 
+                            <li id="post-${post.id}" ${dragAttributes}
+                                class="group bg-white rounded-2xl border-2 ${isHighlighted ? 'border-theme-color/40 bg-theme-light/10' : 'border-stone-100'} p-6 md:p-8 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-theme-color hover:-translate-y-1 relative overflow-hidden ${delayClass}" 
                                 style="${styleDelay}">
                                 
                                 ${isHighlighted ? `<div class="absolute left-0 top-0 bottom-0 w-2 bg-theme-color"></div>` : ''}
 
-                                <div class="flex flex-col md:flex-row gap-5 items-start md:items-center">
-                                    <div class="flex-shrink-0 pt-1">
-                                        <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-bold font-sans bg-stone-100 text-stone-500 group-hover:bg-theme-color group-hover:text-white transition-colors min-w-[100px]">
-                                            ${post.date}
-                                        </span>
-                                    </div>
-                                    
-                                    <div class="flex-grow min-w-0 w-full">
-                                        <div class="flex items-center gap-2 mb-2.5 flex-wrap">
-                                            ${isHighlighted ? 
-                                                `<span class="bg-theme-light text-theme-color text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 font-sans border border-theme-color/20">
-                                                    <i data-lucide="megaphone" class="w-3.5 h-3.5 fill-current"></i> 필독
-                                                 </span>` : ''}
-                                            
-                                            ${isNew && !post.isArchived ? 
-                                                `<span class="bg-theme-color text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse-custom shadow-sm font-sans">NEW</span>` : ''}
-                                                
-                                            ${hasImage ? 
-                                                `<span class="bg-stone-100 text-stone-600 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 font-sans">
-                                                    <i data-lucide="image" class="w-3.5 h-3.5"></i> 사진
-                                                 </span>` : ''}
+                                <div class="flex w-full items-center">
+                                    ${state.isAdmin ? `
+                                        <div class="flex-shrink-0 mr-4 md:mr-6 cursor-grab active:cursor-grabbing text-stone-300 hover:text-theme-color p-2 -ml-2 rounded-lg hover:bg-stone-50 transition-colors"
+                                             onmousedown="this.closest('li').setAttribute('draggable', 'true')"
+                                             onmouseup="this.closest('li').setAttribute('draggable', 'false')"
+                                             onmouseleave="this.closest('li').setAttribute('draggable', 'false')"
+                                             ontouchstart="this.closest('li').setAttribute('draggable', 'true')"
+                                             ontouchend="this.closest('li').setAttribute('draggable', 'false')">
+                                            <i data-lucide="grip-vertical" class="w-6 h-6"></i>
                                         </div>
-                                        <h3 class="text-xl md:text-2xl font-serif font-bold text-k-text group-hover:text-theme-color transition-colors break-keep leading-snug">
-                                            ${post.title}
-                                        </h3>
-                                        <p class="text-stone-500 font-sans text-base mt-3 line-clamp-1 group-hover:text-stone-700 transition-colors break-keep">
-                                            ${post.content}
-                                        </p>
-                                    </div>
+                                    ` : ''}
+                                    
+                                    <div class="flex-grow flex flex-col md:flex-row gap-5 items-start md:items-center cursor-pointer min-w-0" onclick="app.selectPost('${post.id}')">
+                                        <div class="flex-shrink-0 pt-1">
+                                            <span class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-bold font-sans bg-stone-100 text-stone-500 group-hover:bg-theme-color group-hover:text-white transition-colors min-w-[100px]">
+                                                ${post.date}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="flex-grow min-w-0 w-full">
+                                            <div class="flex items-center gap-2 mb-2.5 flex-wrap">
+                                                ${isHighlighted ? 
+                                                    `<span class="bg-theme-light text-theme-color text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 font-sans border border-theme-color/20">
+                                                        <i data-lucide="megaphone" class="w-3.5 h-3.5 fill-current"></i> 필독
+                                                     </span>` : ''}
+                                                
+                                                ${isNew && !post.isArchived ? 
+                                                    `<span class="bg-theme-color text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse-custom shadow-sm font-sans">NEW</span>` : ''}
+                                                
+                                                ${hasImage ? 
+                                                    `<span class="bg-stone-100 text-stone-600 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 font-sans">
+                                                        <i data-lucide="image" class="w-3.5 h-3.5"></i> 사진
+                                                     </span>` : ''}
+                                            </div>
+                                            <h3 class="text-xl md:text-2xl font-serif font-bold text-k-text group-hover:text-theme-color transition-colors break-keep leading-snug">
+                                                ${post.title}
+                                            </h3>
+                                            <p class="text-stone-500 font-sans text-base mt-3 line-clamp-1 group-hover:text-stone-700 transition-colors break-keep">
+                                                ${post.content}
+                                            </p>
+                                        </div>
 
-                                    <div class="hidden md:flex text-stone-300 group-hover:text-theme-color transition-colors transform group-hover:translate-x-1 duration-300">
-                                        <i data-lucide="chevron-right" class="w-8 h-8 stroke-[1.5]"></i>
+                                        <div class="hidden md:flex text-stone-300 group-hover:text-theme-color transition-colors transform group-hover:translate-x-1 duration-300 ml-auto">
+                                            <i data-lucide="chevron-right" class="w-8 h-8 stroke-[1.5]"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </li>
@@ -849,10 +881,117 @@
             },
 
             selectPost: function(id) {
+                // 추가: 드래그 중이 아닐 때만 클릭 허용
+                if (state.isDragging) return;
                 state.selectedPostId = id;
                 this.renderApp();
                 window.scrollTo({top: 0, behavior: 'smooth'});
             },
+
+            // ----------------------------------------------------------------
+            // 드래그 앤 드롭 정렬 핸들러 추가
+            // ----------------------------------------------------------------
+            draggedPostId: null,
+
+            handleDragStart: function(e, id) {
+                if (!state.isAdmin) return;
+                state.isDragging = true;
+                this.draggedPostId = id;
+                e.dataTransfer.effectAllowed = 'move';
+                // 시각적 효과를 위해 약간의 지연
+                setTimeout(() => {
+                    e.target.classList.add('opacity-50', 'scale-[0.98]');
+                }, 0);
+            },
+
+            handleDragOver: function(e) {
+                if (!state.isAdmin) return;
+                e.preventDefault(); // 드롭 허용
+                e.dataTransfer.dropEffect = 'move';
+            },
+
+            handleDragEnter: function(e) {
+                if (!state.isAdmin) return;
+                e.preventDefault();
+                const li = e.target.closest('li');
+                if (li && li.id !== `post-${this.draggedPostId}`) {
+                    li.classList.add('border-theme-color', 'border-dashed', 'bg-theme-light/20');
+                }
+            },
+
+            handleDragLeave: function(e) {
+                if (!state.isAdmin) return;
+                const li = e.target.closest('li');
+                if (li) {
+                    li.classList.remove('border-theme-color', 'border-dashed', 'bg-theme-light/20');
+                }
+            },
+
+            handleDrop: function(e, targetId) {
+                if (!state.isAdmin) return;
+                e.preventDefault();
+                e.stopPropagation();
+
+                const li = e.target.closest('li');
+                if (li) {
+                    li.classList.remove('border-theme-color', 'border-dashed', 'bg-theme-light/20');
+                }
+
+                if (this.draggedPostId === targetId || !this.draggedPostId) return;
+
+                this.reorderPosts(this.draggedPostId, targetId);
+            },
+
+            handleDragEnd: function(e) {
+                if (!state.isAdmin) return;
+                e.target.classList.remove('opacity-50', 'scale-[0.98]');
+                e.target.setAttribute('draggable', 'false');
+                this.draggedPostId = null;
+                // 클릭 이벤트 방지를 위해 약간의 지연 후 false 처리
+                setTimeout(() => {
+                    state.isDragging = false;
+                }, 100);
+            },
+
+            reorderPosts: async function(draggedId, targetId) {
+                // 현재 화면에 표시된 리스트 기준
+                const filteredPosts = state.posts.filter(p => state.viewMode === 'current' ? !p.isArchived : p.isArchived);
+
+                const draggedIdx = filteredPosts.findIndex(p => p.id === draggedId);
+                const targetIdx = filteredPosts.findIndex(p => p.id === targetId);
+
+                if (draggedIdx === -1 || targetIdx === -1) return;
+
+                // 배열에서 드래그한 항목을 빼서 새 위치에 삽입
+                const [draggedItem] = filteredPosts.splice(draggedIdx, 1);
+                filteredPosts.splice(targetIdx, 0, draggedItem);
+
+                const { updateDoc } = window.firebaseModules;
+
+                // 1. 낙관적 UI 업데이트 (화면 먼저 갱신)
+                state.posts = state.posts.map(p => {
+                    const fItem = filteredPosts.find(fp => fp.id === p.id);
+                    if (fItem) {
+                        p.order = filteredPosts.indexOf(fItem);
+                    }
+                    return p;
+                });
+                this.renderApp();
+
+                // 2. 파이어베이스 백그라운드 업데이트
+                try {
+                    // 변경된 순서 전체를 저장 (현재 뷰의 아이템들에 대해 0부터 index 부여)
+                    const updatePromises = filteredPosts.map((post, idx) => {
+                        const postRef = this.getDocRef(post.id);
+                        return updateDoc(postRef, { order: idx });
+                    });
+                    await Promise.all(updatePromises);
+                } catch (e) {
+                    console.error("순서 업데이트 실패", e);
+                    this.showToast("순서 변경 실패: 권한을 확인해주세요.", 'error');
+                }
+            },
+            // ----------------------------------------------------------------
 
             changeViewMode: function(mode) {
                 state.viewMode = mode;
