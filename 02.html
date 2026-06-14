@@ -470,8 +470,8 @@
         const weekdayItems = [
             // --- 입실 당일 (전날 저녁) ---
             { time: "20:00", title: "사수 교대", loc: "별관", note: "소감 발표", role: "sasu" },
-            { time: "20:00", title: "공부 준비", loc: "-", note: "혹은 일대일 만남", role: "learner_only" },
-            { time: "20:30", title: "공지사항 및 주문 연습", loc: "별관 회의실", note: "21:10까지 진행", role: "all" },
+            { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "learner_only" },
+            { time: "20:30", title: "공지사항 및 명상", loc: "대강전 2층", note: "21:10까지 진행", role: "all" },
             { time: "21:30", title: "점호", loc: "대강전 1층", note: "점호 전까지 혈압 체크 완료하기", role: "all" },
             { time: "22:30", title: "드는 봉심", loc: "대강전 2층 승정문 앞", note: "22:20까지 시립", role: "all" },
             { time: "23:30", title: "퇴배 봉심", loc: "대강전 2층 승정문", note: "23:20까지 정렬, 하루 일과 마무리", role: "all" },
@@ -503,8 +503,8 @@
             { time: "19:50", title: "체조", loc: "대강전 1층", note: "20:00까지", role: "all" },
             // --- 공부 당일 저녁 (추가됨) ---
             { time: "20:00", title: "사수 교대", loc: "별관", note: "소감 발표", role: "sasu" },
-            { time: "20:00", title: "공부 준비", loc: "-", note: "혹은 일대일 만남", role: "learner_only" },
-            { time: "20:30", title: "주문 연습 혹은 명상", loc: "별관 회의실/대강전 2층", note: "21:10까지 진행", role: "all" },
+            { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "learner_only" },
+            { time: "20:30", title: "명상", loc: "대강전 2층", note: "21:10까지 진행", role: "all" },
             { time: "21:30", title: "점호", loc: "대강전 1층", note: "점호 전까지 혈압 체크 완료하기", role: "all" },
             { time: "22:30", title: "드는 봉심", loc: "대강전 2층 승정문 앞", note: "22:20까지 시립", role: "all" },
             { time: "23:30", title: "퇴배 봉심", loc: "대강전 2층 승정문", note: "23:20까지 정렬, 하루 일과 마무리", role: "all" },
@@ -514,9 +514,10 @@
         // Data - Sunday Schedule
         const sundayItems = [
             // --- 입실 당일 (주일 전날 저녁) ---
-            { time: "20:00", title: "공부 준비", loc: "-", note: "혹은 일대일 만남", role: "all" },
+            { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "all" },
             { time: "20:00", title: "사수 교대", loc: "별관 1층", note: "사수 필수 참석", role: "sasu" },
-            { time: "20:30", title: "공지사항 및 주문 연습", loc: "별관 회의실", note: "들어온 공부자만 21:00까지 진행", role: "all" },
+            { time: "20:30", title: "공지사항", loc: "별관 1층", note: "들어온 공부자만 21:00까지 진행", role: "all" },
+            { time: "20:30", title: "명상", loc: "대강전 2층", note: "21:10까지 진행", role: "all" },
             { time: "21:30", title: "점호", loc: "대강전 1층", note: "21:20분까지 대기. 점호 전까지 혈압 체크 완료하기", role: "all" },
             { time: "22:30", title: "드는 봉심", loc: "대강전 2층", note: "22:20까지 승정문 앞 대기", role: "all" },
             { time: "23:30", title: "자시 기도", loc: "대강전 1층", note: "주일 드는 날, 23:20까지 대기 및 명상", role: "all" },
@@ -548,9 +549,9 @@
             { time: "19:30", title: "술시 기도", loc: "대강전 1층", note: "19:20까지 대기 및 명상", role: "all" },
             { time: "19:50", title: "체조", loc: "대강전 1층", note: "20:00까지", role: "all" },
             // --- 공부 당일 저녁 (추가됨) ---
-            { time: "20:00", title: "공부 준비", loc: "-", note: "혹은 일대일 만남", role: "all" },
+            { time: "20:00", title: "자유시간", loc: "-", note: "혹은 일대일 만남", role: "all" },
             { time: "20:00", title: "사수 교대", loc: "별관 1층", note: "사수 필수 참석", role: "sasu" },
-            { time: "20:30", title: "주문 연습 혹은 명상", loc: "별관 회의실/대강전 2층", note: "21:10까지 진행", role: "all" },
+            { time: "20:30", title: "명상", loc: "대강전 2층", note: "21:10까지 진행", role: "all" },
             { time: "21:30", title: "점호", loc: "대강전 1층", note: "21:20분까지 대기. 점호 전까지 혈압 체크 완료하기", role: "all" },
             { time: "22:30", title: "드는 봉심", loc: "대강전 2층", note: "22:20까지 승정문 앞 대기", role: "all" },
             { time: "23:30", title: "퇴배 봉심", loc: "대강전 2층", note: "23:20까지 승정문 앞 대기", role: "all" }
@@ -773,16 +774,16 @@
                     title: "공부방 입실", 
                     desc: "종이 울리면 방으로 들어갑니다. (회원을 중심으로)", 
                     roleInfo: { 
-                        member: "1번 입장. 향 불 붙이기. 좌배 주도.", 
-                        oesu: "3번 입장. 소독/청소. 걸레 뒷사람 전달.", 
-                        naesu: "2번 입장. 외곽 이동. 소독/청소. 걸레 뒷사람 전달." 
+                        member: "1번 입장. 부복 후 향 불 붙이기. 좌배주도.", 
+                        oesu: "3번 입장. 부복 후 회원에 맞춰 좌배.", 
+                        naesu: "2번 입장. 부복 후 회원에 맞춰 좌배." 
                     } 
                 },
                 { 
                     time: addMin(88), 
                     title: "퇴실 준비", 
                     desc: "다음 타임 교대 및 퇴실 (28분경). <br><span class='text-theme font-bold'>눈을 뜨고 주성 속도를 조절</span>합니다. 심고할 때도 눈을 뜨고 회원의 동작에 맞춥니다.", 
-                    roleInfo: { member: "좌배. 먼저 뒤로 이동.", oesu: "나중 이동.", naesu: "먼저 이동." } 
+                    roleInfo: { member: "먼저 뒤로 이동. 좌배 주도", oesu: "나중 이동. 회원에 맞춰 좌배.", naesu: "먼저 이동. 회원에 맞춰 좌배." } 
                 },
                 { time: addMin(90), title: "종료 및 해산", desc: "문단속 후 1층에서 인사 (30분).", roleInfo: { member: "1층 이동.", oesu: "★ 바깥 문 닫기", naesu: "★ 안쪽 문 닫기" } }
             ];
@@ -832,6 +833,16 @@
                 });
             }
             
+            // --- 주일 2시 공부자 예외 처리 ---
+            if (isGlobalSundayMode && h === 2) {
+                const enterStep = rawSteps.find(step => step.title === "공부방 입실");
+                if (enterStep) {
+                    enterStep.roleInfo.member = "1번 입장. 기도상/향로 청소. 부복 후 향 불 붙이기. 좌배주도.";
+                    enterStep.roleInfo.oesu = "3번 입장. 소독/청소. 부복 후 회원에 맞춰 좌배.";
+                    enterStep.roleInfo.naesu = "2번 입장. 외곽 이동. 소독/청소. 부복 후 회원에 맞춰 좌배.";
+                }
+            }
+
             rawSteps.sort((a,b) => a.time.localeCompare(b.time));
 
             const container = document.getElementById('ritual-steps');
@@ -893,9 +904,9 @@
             {
                 text: "1. 공부 진행 중 (현재 시간)",
                 setup: (s) => {
-                    s.p_oesu = {x: 200, y: 150, label: '현 외수', c: C_OESU, alpha: 1};
-                    s.p_member = {x: 300, y: 150, label: '현 회원', c: C_MEMBER, alpha: 1};
-                    s.p_naesu = {x: 400, y: 150, label: '현 내수', c: C_NAESU, alpha: 1};
+                    s.p_oesu = {x: 200, y: 150, label: '현 외수', c: C_OESU};
+                    s.p_member = {x: 300, y: 150, label: '현 회원', c: C_MEMBER};
+                    s.p_naesu = {x: 400, y: 150, label: '현 내수', c: C_NAESU};
                     s.n_oesu = {x: 40, y: 150, label: '다음 외수', c: C_OESU, alpha: 1};   
                     s.n_member = {x: 40, y: 200, label: '다음 회원', c: C_MEMBER, alpha: 1}; 
                     s.n_naesu = {x: 40, y: 320, label: '다음 내수', c: C_NAESU, alpha: 1};   
@@ -976,41 +987,12 @@
                 }
             },
             {
-                text: "6. 공부 시작 및 퇴실",
-                desc: "새로운 조가 자리를 잡았습니다. 이전 조는 외수, 회원, 내수 순으로 문을 통해 퇴실합니다.",
+                text: "완료: 공부 시작 / 퇴실",
+                desc: "새로운 조가 자리를 잡았습니다. 이전 조는 퇴실합니다.",
                 animate: (s, p) => {
-                    // 외수 퇴실 (가장 먼저)
-                    let p3 = Math.min(Math.max(p / 0.6, 0), 1);
-                    if (p3 < 0.5) {
-                        s.p_oesu.x = lerp(200, 150, p3 * 2);
-                        s.p_oesu.y = lerp(350, 250, p3 * 2);
-                    } else {
-                        s.p_oesu.x = lerp(150, -40, (p3 - 0.5) * 2);
-                        s.p_oesu.y = 250;
-                        s.p_oesu.alpha = 1 - (p3 - 0.5) * 2;
-                    }
-
-                    // 회원 퇴실 (외수 다음)
-                    let p1 = Math.min(Math.max((p - 0.2) / 0.6, 0), 1);
-                    if (p1 < 0.5) {
-                        s.p_member.x = lerp(300, 150, p1 * 2);
-                        s.p_member.y = lerp(350, 250, p1 * 2);
-                    } else {
-                        s.p_member.x = lerp(150, -40, (p1 - 0.5) * 2);
-                        s.p_member.y = 250;
-                        s.p_member.alpha = 1 - (p1 - 0.5) * 2;
-                    }
-
-                    // 내수 퇴실 (가장 나중)
-                    let p2 = Math.min(Math.max((p - 0.4) / 0.6, 0), 1);
-                    if (p2 < 0.5) {
-                        s.p_naesu.x = lerp(400, 150, p2 * 2);
-                        s.p_naesu.y = lerp(350, 250, p2 * 2);
-                    } else {
-                        s.p_naesu.x = lerp(150, -40, (p2 - 0.5) * 2);
-                        s.p_naesu.y = 250;
-                        s.p_naesu.alpha = 1 - (p2 - 0.5) * 2;
-                    }
+                    s.p_member.alpha = 1 - p;
+                    s.p_oesu.alpha = 1 - p;
+                    s.p_naesu.alpha = 1 - p;
                 }
             }
         ];
@@ -1108,7 +1090,7 @@
                 ctx.stroke();
                 
                 const drawBall = (obj) => {
-                    if (obj.alpha <= 0) return;
+                    if (obj.alpha === 0) return;
                     ctx.globalAlpha = obj.alpha !== undefined ? obj.alpha : 1;
                     ctx.fillStyle = obj.c;
                     ctx.beginPath();
