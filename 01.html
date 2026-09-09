@@ -123,20 +123,7 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* 탭 활성화 스타일 */
-        .tab-btn.active {
-            background-color: #d97706;
-            color: white;
-            font-weight: 700;
-            border-color: #d97706;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.4s ease-out;
-        }
+        /* 페이드인 애니메이션 (유지) */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -600,34 +587,32 @@
             return html;
         }
 
-        // 봉심 단계 탭 UI 생성
+        // 봉심 단계 수직 스크롤 UI 생성 (기존 탭 방식 대체)
         function renderBongsimTabs(phase) {
-            let tabsHtml = `<div class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">`;
+            let html = `<div class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm flex flex-col">`;
             
-            // 탭 헤더
-            tabsHtml += `<div class="flex border-b border-stone-200">`;
             phase.tabs.forEach((tab, idx) => {
-                const isActive = idx === 0 ? 'active' : '';
-                tabsHtml += `
-                    <button class="tab-btn flex-1 py-4 text-center font-medium text-stone-500 hover:bg-stone-50 transition-colors border-b-2 border-transparent ${isActive}" data-tab="${tab.id}">
-                        ${tab.label}
-                    </button>
-                `;
-            });
-            tabsHtml += `</div>`;
-
-            // 탭 내용
-            tabsHtml += `<div class="p-5 md:p-8 bg-white min-h-[300px]">`;
-            phase.tabs.forEach((tab, idx) => {
-                const isActive = idx === 0 ? 'active' : '';
-                tabsHtml += `
-                    <div id="tab-${tab.id}" class="tab-content ${isActive}">
-                        ${phase.content[tab.id]}
+                const isLast = idx === phase.tabs.length - 1;
+                const borderBottom = isLast ? '' : 'border-b-8 border-stone-100';
+                
+                html += `
+                    <div id="section-${tab.id}" class="w-full ${borderBottom}">
+                        <!-- 섹션 헤더 -->
+                        <div class="bg-theme-soft/30 px-5 py-4 border-b border-stone-200">
+                            <h3 class="text-xl font-serif font-bold text-theme-color">
+                                ${tab.label}
+                            </h3>
+                        </div>
+                        <!-- 섹션 내용 -->
+                        <div class="p-5 md:p-8 bg-white">
+                            ${phase.content[tab.id]}
+                        </div>
                     </div>
                 `;
             });
-            tabsHtml += `</div></div>`;
-            return tabsHtml;
+            
+            html += `</div>`;
+            return html;
         }
 
         // 시뮬레이터 생성 확인용 플래그
@@ -940,7 +925,7 @@
                     </div>
 
                     <!-- 법단 (우측) -->
-                    <div class="absolute right-0 top-0 h-full w-8 md:w-10 bg-stone-50 border-l border-stone-200 flex flex-col items-center justify-center z-20">
+                    <div class="absolute right-0 top-0 h-full w-8 md:h-10 bg-stone-50 border-l border-stone-200 flex flex-col items-center justify-center z-20">
                         <span class="writing-vertical text-theme-color font-serif font-bold text-sm tracking-widest">법단</span>
                     </div>
 
@@ -1133,14 +1118,6 @@ document.addEventListener("DOMContentLoaded", function() {
                             detailsParent.setAttribute('open', '');
                         }
                         
-                        // 2. 숨겨진 탭 안에 있다면 해당 탭 클릭해서 열어주기
-                        const tabParent = firstMark.closest('.tab-content');
-                        if (tabParent) {
-                            const tabId = tabParent.id.replace('tab-', '');
-                            const tabBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-                            if (tabBtn) tabBtn.click();
-                        }
-
                         // 3. 해당 위치로 부드럽게 스크롤
                         firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
