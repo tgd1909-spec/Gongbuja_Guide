@@ -32,7 +32,7 @@
                         'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
                     },
                     animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -123,7 +123,7 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* 페이드인 애니메이션 (유지) */
+        /* 페이드인 애니메이션 */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -145,7 +145,6 @@
                 <div class="w-full h-1 bg-theme-color mt-1 rounded-full opacity-80"></div>
             </div>
 
-            <!-- 홈버튼 수정됨 -->
             <a href="index.html" class="flex items-center gap-2 px-4 py-2 bg-stone-50 hover:bg-stone-100 text-k-text font-bold rounded-full border border-stone-200 transition-colors shadow-sm group">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-stone-400 group-hover:text-theme-color transition-colors">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
@@ -199,13 +198,11 @@
 
     <!-- 플로팅 버튼 (우측 하단 고정) -->
     <div class="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
-        <!-- Top Scroll -->
         <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-lg text-theme-color hover:bg-theme-color hover:text-white hover:border-theme-color transition-all duration-300 group" aria-label="맨 위로">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
             </svg>
         </button>
-        <!-- Bottom Scroll -->
         <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-lg text-theme-color hover:bg-theme-color hover:text-white hover:border-theme-color transition-all duration-300 group" aria-label="맨 아래로">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
@@ -243,7 +240,7 @@
                 title: "드는 봉심",
                 timeRange: "22:20 ~ 종료",
                 description: "공부의 시작을 알리는 가장 중요한 의식입니다. 복잡한 이동과 예법이 있으니 주의 깊게 확인하세요.",
-                isBongsim: true, // 플래그: 봉심 단계는 탭 UI 사용
+                isBongsim: true, // 플래그: 봉심 단계는 수직 UI 사용
                 tabs: [
                     { id: 'enter', label: '1. 입장' },
                     { id: 'bow', label: '2. 봉심' },
@@ -252,7 +249,6 @@
                 content: {
                     'enter': `
                         <div class="space-y-6">
-                            <!-- 중요 수칙 강조 박스 (애니메이션 제거됨) -->
                             <div class="bg-red-50 border-l-4 border-red-500 p-5 rounded-r-lg shadow-sm">
                                 <h4 class="flex items-center gap-2 text-red-700 font-bold text-lg mb-3">
                                     <span class="text-2xl">⚠️</span> [필독] 입장 시 절대 수칙
@@ -273,7 +269,6 @@
                                 </ul>
                             </div>
 
-                            <!-- 절차 리스트 -->
                             <div class="space-y-4">
                                 <div class="bg-white p-5 rounded-xl border border-stone-200">
                                     <div class="flex items-center justify-between mb-2">
@@ -311,7 +306,6 @@
                                     <p class="text-stone-700 mb-2"><strong>행동:</strong> 전원 국궁 자세 취함 → 회원 줄부터 대동문 통과 → 영대 진입</p>
                                     <p class="text-stone-600 bg-theme-soft/50 p-2 rounded text-sm mb-4">📍 <strong>위치:</strong> 영대 앞 다다미 1장에 2명씩 정렬</p>
                                     
-                                    <!-- 신발 배치도 시뮬레이터 -->
                                     <div class="mt-4 border-t border-stone-100 pt-5">
                                         <h5 class="text-lg font-bold text-theme-color mb-3 flex items-center gap-2">
                                             <span>👞 신발 배치도</span>
@@ -333,7 +327,6 @@
                                 <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm space-y-4">
                                     <p class="text-stone-600 mb-2">시학원의 <strong class="text-theme-color">"일동 배례"</strong> 구령에 맞춥니다.</p>
                                     
-                                    <!-- 배례 스텝 시각화 -->
                                     <div class="space-y-3">
                                         <div class="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
                                             <span class="font-bold text-stone-500 w-16">기본</span>
@@ -396,7 +389,7 @@
                                             <li class="text-stone-500 text-sm mt-1 list-none pl-4">💡 (홀수 번호는 제자리에서 우향우, 짝수 번호는 앞사람 우측으로 이동)</li>
                                         </ul>
                                     </div>
-                                    <div id="simulation-placeholder"></div> <!-- 시뮬레이터 주입 위치 -->
+                                    <div id="simulation-placeholder"></div>
                                 </div>
                             </div>
 
@@ -470,7 +463,6 @@
                                 </div>
                             </div>
                             
-                            <!-- 퇴장 시뮬레이터가 삽입될 영역 -->
                             <div class="mt-6 border-t border-stone-200 pt-6">
                                 <h5 class="text-lg font-bold text-theme-color mb-3 flex items-center gap-2">
                                     <span>🏃 퇴장 순서 시뮬레이터</span>
@@ -496,7 +488,6 @@
             return phases[index].timeRange || "";
         }
 
-        // 전체 단계 렌더링
         function renderAllSteps() {
             const container = document.getElementById('steps-container');
             let html = '';
@@ -535,7 +526,6 @@
                                 ${phase.description}
                             </p>
                             
-                            <!-- 분기 처리: 일반 스텝 vs 봉심 탭 -->
                             ${phase.isBongsim ? renderBongsimTabs(phase) : getPhaseContentHTML(phase)}
                         </div>
                     </details>
@@ -544,10 +534,8 @@
 
             container.innerHTML = html;
             
-            // 시뮬레이터 초기화 (탭 안에 주입)
             attachTabEvents();
             
-            // 아코디언 상호작용
             const phaseDetails = container.querySelectorAll('.phase-details');
             phaseDetails.forEach((targetDetail) => {
                 targetDetail.addEventListener('click', (e) => {
@@ -561,7 +549,6 @@
             });
         }
 
-        // 일반 단계 내용 생성
         function getPhaseContentHTML(phase) {
             let html = '<div class="space-y-4">';
             if (phase.steps && phase.steps.length > 0) {
@@ -587,7 +574,7 @@
             return html;
         }
 
-        // 봉심 단계 수직 스크롤 UI 생성 (기존 탭 방식 대체)
+        // 수직 배치 탭 렌더링
         function renderBongsimTabs(phase) {
             let html = `<div class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm flex flex-col">`;
             
@@ -597,13 +584,11 @@
                 
                 html += `
                     <div id="section-${tab.id}" class="w-full ${borderBottom}">
-                        <!-- 섹션 헤더 -->
                         <div class="bg-theme-soft/30 px-5 py-4 border-b border-stone-200">
                             <h3 class="text-xl font-serif font-bold text-theme-color">
                                 ${tab.label}
                             </h3>
                         </div>
-                        <!-- 섹션 내용 -->
                         <div class="p-5 md:p-8 bg-white">
                             ${phase.content[tab.id]}
                         </div>
@@ -615,17 +600,11 @@
             return html;
         }
 
-        // 시뮬레이터 생성 확인용 플래그
         let isEnterSimInitialized = false;
         let isSimInitialized = false;
         let isExitSimInitialized = false;
 
-        // 탭 이벤트 및 시뮬레이터 주입
         function attachTabEvents() {
-            const buttons = document.querySelectorAll('.tab-btn');
-            const contents = document.querySelectorAll('.tab-content');
-
-            // 0. 입장 시뮬레이터 주입
             const enterSimContainer = document.getElementById('enter-simulation-placeholder');
             if (enterSimContainer) {
                 enterSimContainer.innerHTML = renderEnterSimulationUI();
@@ -633,7 +612,6 @@
                 setTimeout(() => updateEnterSim(), 100);
             }
 
-            // 1. 대형 전환 시뮬레이터 주입
             const simContainer = document.getElementById('simulation-placeholder');
             if (simContainer) {
                 simContainer.innerHTML = renderSimulationUI();
@@ -641,51 +619,24 @@
                 setTimeout(() => updateSim('initial'), 100);
             }
 
-            // 2. 퇴장 시뮬레이터 주입
             const exitSimContainer = document.getElementById('exit-simulation-placeholder');
             if (exitSimContainer) {
                 exitSimContainer.innerHTML = renderExitSimulationUI();
                 isExitSimInitialized = false;
                 setTimeout(() => updateExitSim('initial'), 100);
             }
-
-            // 3. 탭 클릭 이벤트
-            buttons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const targetId = btn.getAttribute('data-tab');
-
-                    // 버튼 활성화 처리
-                    buttons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-
-                    // 내용 전환
-                    contents.forEach(c => c.classList.remove('active'));
-                    document.getElementById(`tab-${targetId}`).classList.add('active');
-                });
-            });
         }
 
-        /* -----------------------------------------------------------------
-           0. 입장 대기 시뮬레이터 관련 로직
-           ----------------------------------------------------------------- */
         function renderEnterSimulationUI() {
             return `
                 <div class="bg-white border border-stone-200 rounded-xl mx-auto w-full relative h-[350px] md:h-[400px] overflow-hidden shadow-inner" style="background-image: linear-gradient(#f5f5f4 1px, transparent 1px), linear-gradient(90deg, #f5f5f4 1px, transparent 1px); background-size: 40px 40px;">
-                    
-                    <!-- 가로로 긴 직사각형 발판 -->
                     <div class="absolute border-2 border-stone-300 bg-stone-50/50" style="top: 15%; left: 10%; width: 60%; height: 50%;"></div>
-                    
-                    <!-- 입구 (윗변 위쪽 중앙) -->
                     <div class="absolute bg-stone-100 flex items-center justify-center border-x-2 border-t-2 border-stone-400 rounded-t-lg z-10" style="bottom: 85%; left: 40%; width: 12%; height: 8%; transform: translateX(-50%);">
                         <span class="text-stone-600 font-bold text-xs tracking-wider">입구</span>
                     </div>
-
-                    <!-- 안내 라벨 -->
                     <div class="absolute text-yellow-600 font-bold text-xs" style="top: 10%; left: 74%;">회원 신발</div>
                     <div class="absolute text-blue-600 font-bold text-xs" style="top: calc(75% - 8px); left: 3%;">외수</div>
                     <div class="absolute text-red-600 font-bold text-xs" style="top: calc(86% - 8px); left: 3%;">내수</div>
-
-                    <!-- 애니메이션 노드 영역 -->
                     <div id="enter-nodes-area" class="relative w-full h-full"></div>
                 </div>
             `;
@@ -717,42 +668,35 @@
         function updateEnterSim() {
             if (!isEnterSimInitialized) initEnterSimNodes();
 
-            // 1. 회원 신발 (오른쪽 변 바깥, 2줄)
-            // 왼쪽 줄: 위에서 아래로 1~6번
-            // 오른쪽 줄: 아래에서 위로 7~12번
             for (let i = 1; i <= 12; i++) {
                 let node = document.getElementById(`enter-node-member-${i}`);
                 if (!node) continue;
                 
-                let col = i <= 6 ? 0 : 1; // 0: 왼쪽 줄, 1: 오른쪽 줄
-                let row = i <= 6 ? (i - 1) : (12 - i); // 0 ~ 5 (상단부터 0번째)
+                let col = i <= 6 ? 0 : 1; 
+                let row = i <= 6 ? (i - 1) : (12 - i); 
                 
-                let left = 74 + col * 8; // X 좌표: 74%, 82%
-                let top = 15 + row * 10; // Y 좌표: 15% ~ 65%
+                let left = 74 + col * 8; 
+                let top = 15 + row * 10; 
 
                 node.style.left = `calc(${left}% - 12px)`;
                 node.style.top = `calc(${top}% - 12px)`;
             }
 
-            // 2. 외수 및 내수 신발 (아랫변 바깥, 가로 배열)
-            // 배열 순서: 오른쪽부터 11, 12, 1, 2, ..., 10
             const sequence = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
             
             sequence.forEach((num, j) => {
-                // 외수 신발 (직사각형 바로 아래)
                 let nodeO = document.getElementById(`enter-node-oesu-${num}`);
                 if (nodeO) {
-                    let left = 68 - j * 5.2; // 68%부터 왼쪽으로 5.2% 간격
-                    let top = 75; // 아랫변 바로 밑
+                    let left = 68 - j * 5.2; 
+                    let top = 75; 
                     nodeO.style.left = `calc(${left}% - 12px)`;
                     nodeO.style.top = `calc(${top}% - 12px)`;
                 }
 
-                // 내수 신발 (외수 아래)
                 let nodeN = document.getElementById(`enter-node-naesu-${num}`);
                 if (nodeN) {
                     let left = 68 - j * 5.2;
-                    let top = 86; // 외수보다 조금 더 아래
+                    let top = 86; 
                     nodeN.style.left = `calc(${left}% - 12px)`;
                     nodeN.style.top = `calc(${top}% - 12px)`;
                 }
@@ -760,13 +704,17 @@
         }
 
 
-        /* -----------------------------------------------------------------
-           1. 봉심 대형 전환 시뮬레이터 관련 로직
-           ----------------------------------------------------------------- */
-        // 시뮬레이터 기본 껍데기 UI
+        // ★ 대형 전환 시뮬레이터 렌더링
         function renderSimulationUI() {
             return `
                 <div class="mt-2 border-t border-stone-200 pt-4">
+                    <!-- 💡 추가된 안내 멘트 -->
+                    <div class="text-center mb-3">
+                        <span class="inline-flex items-center gap-1 text-sm font-bold text-theme-color bg-theme-soft px-3 py-1.5 rounded-full border border-theme-color/20 shadow-sm animate-pulse-slow">
+                            👆 아래 버튼을 순서대로 눌러보세요
+                        </span>
+                    </div>
+                    
                     <div class="flex gap-2 mb-4 justify-center">
                         <button onclick="updateSim('initial')" class="flex-1 px-4 py-3 bg-white text-k-text font-bold rounded-lg border border-stone-300 shadow-sm text-sm active:bg-stone-100 hover:bg-stone-50 transition-colors">초기 정렬 (3열)</button>
                         <button onclick="updateSim('final')" class="flex-1 px-4 py-3 bg-theme-color text-white font-bold rounded-lg shadow-md text-sm active:bg-[#b45309] hover:bg-[#c26a05] transition-colors">6열 전환</button>
@@ -782,7 +730,6 @@
                             <span class="text-theme-color font-serif font-bold text-sm tracking-widest pr-8 md:pr-10">영대</span>
                         </div>
                         
-                        <!-- 애니메이션 요소들이 올라갈 바탕 -->
                         <div id="nodes-area" class="relative w-full h-full"></div>
                     </div>
                 </div>
@@ -897,9 +844,8 @@
             });
         }
 
-        /* -----------------------------------------------------------------
-           2. 퇴장 (3. 퇴장) 시뮬레이터 관련 로직
-           ----------------------------------------------------------------- */
+
+        // ★ 퇴장 시뮬레이터 렌더링
         let exitTimeouts = [];
 
         function clearExitTimeouts() {
@@ -909,6 +855,13 @@
 
         function renderExitSimulationUI() {
             return `
+                <!-- 💡 추가된 안내 멘트 -->
+                <div class="text-center mb-3">
+                    <span class="inline-flex items-center gap-1 text-sm font-bold text-theme-color bg-theme-soft px-3 py-1.5 rounded-full border border-theme-color/20 shadow-sm animate-pulse-slow">
+                        👆 번호 순서대로 버튼을 눌러보세요
+                    </span>
+                </div>
+                
                 <div class="flex flex-wrap gap-2 mb-4 justify-center">
                     <button onclick="updateExitSim('initial')" class="px-3 py-2 bg-white text-k-text font-bold rounded-lg border border-stone-300 shadow-sm text-sm hover:bg-stone-50 transition-colors">1. 초기 정렬</button>
                     <button onclick="updateExitSim('shift')" class="px-3 py-2 bg-stone-100 text-k-text font-bold rounded-lg border border-stone-300 shadow-sm text-sm hover:bg-stone-200 transition-colors">2. 좌측 이동</button>
@@ -918,23 +871,18 @@
                 </div>
 
                 <div class="bg-white border border-stone-200 rounded-xl mx-auto w-full relative h-[420px] md:h-[450px] overflow-hidden shadow-inner" style="background-image: linear-gradient(#f5f5f4 1px, transparent 1px), linear-gradient(90deg, #f5f5f4 1px, transparent 1px); background-size: 40px 40px;">
-                    
-                    <!-- 영대 (상단) -->
                     <div class="absolute top-0 left-0 w-full h-8 md:h-10 bg-stone-50 border-b border-stone-200 flex items-center justify-center z-20">
                         <span class="text-theme-color font-serif font-bold text-sm tracking-widest pr-8 md:pr-10">영대</span>
                     </div>
 
-                    <!-- 법단 (우측) -->
                     <div class="absolute right-0 top-0 h-full w-8 md:h-10 bg-stone-50 border-l border-stone-200 flex flex-col items-center justify-center z-20">
                         <span class="writing-vertical text-theme-color font-serif font-bold text-sm tracking-widest">법단</span>
                     </div>
 
-                    <!-- 출구 (하단 좌측 치우침) -->
                     <div class="absolute bottom-0 left-[34%] w-[12%] h-8 bg-[#e5e5e5] border-t-2 border-x-2 border-stone-300 rounded-t-lg flex items-center justify-center z-20 shadow-sm">
                         <span class="text-stone-600 font-bold text-xs tracking-wider">출구</span>
                     </div>
                     
-                    <!-- 애니메이션 노드 영역 -->
                     <div id="exit-nodes-area" class="relative w-full h-full"></div>
                 </div>
             `;
@@ -951,8 +899,8 @@
                 { name: 'naesu', colorClass: 'bg-red-100 text-red-900 border border-red-400' }
             ];
 
-            const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; // 회원 (오른쪽부터 1~12)
-            const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // 외수/내수 (오른쪽부터 11,12,1~10)
+            const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; 
+            const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; 
 
             roles.forEach((role, rIndex) => {
                 const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
@@ -960,7 +908,6 @@
                     const num = currentLabels[i];
                     const node = document.createElement('div');
                     node.id = `exit-node-${role.name}-${num}`;
-                    // 원활한 이동을 위해 transition 클래스 추가
                     node.className = `exit-node absolute w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md z-10 ${role.colorClass}`;
                     node.innerText = num;
                     area.appendChild(node);
@@ -971,7 +918,7 @@
 
         function updateExitSim(state) {
             if (!isExitSimInitialized) initExitSimNodes();
-            clearExitTimeouts(); // 새 버튼 클릭 시 기존 애니메이션 초기화
+            clearExitTimeouts(); 
             
             const roles = ['member', 'oesu', 'naesu'];
             const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -979,12 +926,11 @@
             
             const baseLeft = 85; 
             const spacing = 6.2; 
-            const shiftOffset = 11; // 중앙 쌍(인덱스 5,6)이 문(40%)에 오도록 좌측 이동 
-            const rowTops = [20, 45, 70]; // 회원, 외수, 내수 Y 좌표 (영대에서 먼 순)
+            const shiftOffset = 11; 
+            const rowTops = [20, 45, 70]; 
             
-            const doorTop = 90; // 문 위치 Y
+            const doorTop = 90; 
 
-            // 1. 모든 사람 위치 및 상태 초기 설정
             roles.forEach((roleName, rIndex) => {
                 const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
                 
@@ -1005,15 +951,13 @@
                     }
 
                     if (isExited) {
-                        // 이미 퇴장한 줄은 즉시 사라지게 처리
                         node.style.transition = 'none';
                         node.style.opacity = '0';
                         node.style.transform = 'scale(0.5)';
                         node.style.top = `${doorTop}%`;
-                        void node.offsetWidth; // Force Reflow
+                        void node.offsetWidth; 
                         node.style.transition = 'all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1)';
                     } else {
-                        // 대기 또는 전체 좌측 이동 세팅
                         node.style.left = `${left}%`;
                         node.style.top = `${rowTops[rIndex]}%`;
                         node.style.opacity = '1';
@@ -1022,30 +966,23 @@
                 }
             });
 
-            // 2. 선택된 줄의 순차적 퇴장 + 보충 시퀀스 시작
             if (state.startsWith('exit')) {
                 let roleIndex = state === 'exitMember' ? 0 : (state === 'exitOesu' ? 1 : 2);
                 let roleName = roles[roleIndex];
                 const currentLabels = (roleIndex === 0) ? labelsRow1 : labelsRow23;
                 
-                // 퇴장하는 짝의 인덱스 배열 (중앙에서 양 끝으로)
                 const pairs = [[6, 5], [7, 4], [8, 3], [9, 2], [10, 1], [11, 0]];
-                
-                // 좌측 이동(shift)이 먼저 끝나도록 800ms 대기 후 시퀀스 시작
                 const seqDelay = 800; 
 
                 pairs.forEach((pair, step) => {
-                    // ① 중앙 짝 아래로 수직 이동 (직각 하강)
                     let t1 = setTimeout(() => {
                         const leftNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[0]]}`);
                         const rightNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[1]]}`);
                         
-                        // left값은 그대로 유지하고 top만 바꾸어 완벽한 수직(직각) 움직임 구현
                         if (leftNode) leftNode.style.top = `${doorTop}%`;
                         if (rightNode) rightNode.style.top = `${doorTop}%`;
                     }, seqDelay + step * 2000);
                     
-                    // ② 문 도착 즈음 페이드아웃 처리
                     let t2 = setTimeout(() => {
                         const leftNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[0]]}`);
                         const rightNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[1]]}`);
@@ -1054,9 +991,7 @@
                         if (rightNode) { rightNode.style.opacity = '0'; rightNode.style.transform = 'scale(0.5)'; }
                     }, seqDelay + step * 2000 + 700);
                     
-                    // ③ 남아 있는 도인들 중앙 빈자리로 수평 이동 (수직 이동 끝난 뒤 시작하여 직각 형태 보장)
                     let t3 = setTimeout(() => {
-                        // 왼쪽 남은 사람들 (우측으로 1칸 수평 이동)
                         for (let i = pair[0] + 1; i <= 11; i++) {
                             const node = document.getElementById(`exit-node-${roleName}-${currentLabels[i]}`);
                             if (node) {
@@ -1064,7 +999,6 @@
                                 node.style.left = `${currentLeft + spacing}%`;
                             }
                         }
-                        // 오른쪽 남은 사람들 (좌측으로 1칸 수평 이동)
                         for (let i = pair[1] - 1; i >= 0; i--) {
                             const node = document.getElementById(`exit-node-${roleName}-${currentLabels[i]}`);
                             if (node) {
@@ -1079,14 +1013,12 @@
             }
         }
     </script>
-<!-- 검색어 형광펜 및 자동 스크롤 기능 (수정됨) -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const params = new URLSearchParams(window.location.search);
     const keyword = params.get('search');
     
     if (keyword) {
-        // 본문이 자바스크립트로 생성될 시간을 벌어주기 위해 0.5초 대기합니다.
         setTimeout(() => {
             const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
             let node;
@@ -1112,18 +1044,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 setTimeout(() => {
                     const firstMark = document.querySelector('mark.search-highlight');
                     if (firstMark) {
-                        // 1. 숨겨진 아코디언(리스트) 안에 있다면 자동으로 열어주기
                         const detailsParent = firstMark.closest('details');
                         if (detailsParent) {
                             detailsParent.setAttribute('open', '');
                         }
-                        
-                        // 3. 해당 위치로 부드럽게 스크롤
                         firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }, 100);
             }
-        }, 500); // 0.5초(500ms) 대기 후 실행
+        }, 500);
     }
 });
 </script>
