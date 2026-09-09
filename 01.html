@@ -708,7 +708,6 @@
         function renderSimulationUI() {
             return `
                 <div class="mt-2 border-t border-stone-200 pt-4">
-                    <!-- 💡 추가된 안내 멘트 -->
                     <div class="text-center mb-3">
                         <span class="inline-flex items-center gap-1 text-sm font-bold text-theme-color bg-theme-soft px-3 py-1.5 rounded-full border border-theme-color/20 shadow-sm animate-pulse-slow">
                             👆 아래 버튼을 순서대로 눌러보세요
@@ -855,7 +854,6 @@
 
         function renderExitSimulationUI() {
             return `
-                <!-- 💡 추가된 안내 멘트 -->
                 <div class="text-center mb-3">
                     <span class="inline-flex items-center gap-1 text-sm font-bold text-theme-color bg-theme-soft px-3 py-1.5 rounded-full border border-theme-color/20 shadow-sm animate-pulse-slow">
                         👆 번호 순서대로 버튼을 눌러보세요
@@ -872,14 +870,12 @@
 
                 <div class="bg-white border border-stone-200 rounded-xl mx-auto w-full relative h-[420px] md:h-[450px] overflow-hidden shadow-inner" style="background-image: linear-gradient(#f5f5f4 1px, transparent 1px), linear-gradient(90deg, #f5f5f4 1px, transparent 1px); background-size: 40px 40px;">
                     
-                    <!-- 💡 영대 위치를 이미지와 동일하게 수정 (전체 상단 가로줄) -->
-                    <div class="absolute top-0 left-0 w-full h-8 md:h-10 bg-stone-50 border-b border-stone-200 flex items-center justify-center z-20">
-                        <span class="text-theme-color font-serif font-bold text-sm tracking-widest pr-8 md:pr-10">영대</span>
-                    </div>
-
-                    <!-- 💡 법단 위치를 이미지와 동일하게 수정 (우측 끝 상단 일부) -->
+                    <!-- 💡 대형 전환 시뮬레이터와 완전히 동일한 영대/법단 레이아웃 복사 적용 -->
                     <div class="absolute right-0 top-0 h-full w-8 md:w-10 bg-stone-50 border-l border-stone-200 flex flex-col items-center justify-center z-20">
                         <span class="writing-vertical text-theme-color font-serif font-bold text-sm tracking-widest">법단</span>
+                    </div>
+                    <div class="absolute top-0 left-0 w-full h-8 md:h-10 bg-stone-50 border-b border-stone-200 flex items-center justify-center z-20">
+                        <span class="text-theme-color font-serif font-bold text-sm tracking-widest pr-8 md:pr-10">영대</span>
                     </div>
 
                     <!-- 출구 (하단 중앙) -->
@@ -912,7 +908,6 @@
                     const num = currentLabels[i];
                     const node = document.createElement('div');
                     node.id = `exit-node-${role.name}-${num}`;
-                    // 원활한 이동을 위해 transition 클래스 추가
                     node.className = `exit-node absolute w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md z-10 ${role.colorClass}`;
                     node.innerText = num;
                     area.appendChild(node);
@@ -931,11 +926,11 @@
             
             const baseLeft = 76; 
             const spacing = 6.2; 
-            const shiftOffset = 15; // 💡 중앙 위치를 맞추기 위해 이동 거리 조정
+            const shiftOffset = 15; 
             const rowTops = [20, 45, 70]; 
             
             const doorTop = 90; 
-            const doorCenterLeft = 50; // 💡 문이 정중앙(50%)에 위치함
+            const doorCenterLeft = 50; 
 
             roles.forEach((roleName, rIndex) => {
                 const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
@@ -960,12 +955,13 @@
                         node.style.transition = 'none';
                         node.style.opacity = '0';
                         node.style.transform = 'scale(0.5)';
-                        // 💡 이미 퇴장한 인원들이 출구 중앙으로 모이도록 수정
+                        // 💡 정중앙으로 나가도록 너비의 절반(16px)을 빼줍니다.
                         node.style.left = `calc(${doorCenterLeft}% - 16px)`; 
                         node.style.top = `${doorTop}%`;
                         void node.offsetWidth; 
                         node.style.transition = 'all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1)';
                     } else {
+                        // 💡 모든 노드 배치 시에도 기준점을 동일하게 맞춥니다.
                         node.style.left = `calc(${left}% - 16px)`;
                         node.style.top = `${rowTops[rIndex]}%`;
                         node.style.opacity = '1';
@@ -987,7 +983,7 @@
                         const leftNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[0]]}`);
                         const rightNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[1]]}`);
                         
-                        // 💡 출구가 중앙이므로 양쪽에서 중앙으로 모이며 내려가도록 수정
+                        // 💡 중앙선(50%)을 기준으로 좌우로 2% 간격을 두어 나란히 퇴장하도록 합니다. (원의 너비 16px도 보정)
                         if (leftNode) {
                             leftNode.style.top = `${doorTop}%`;
                             leftNode.style.left = `calc(${doorCenterLeft - 2}% - 16px)`; 
@@ -1073,5 +1069,484 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 </body>
 </html>
+```eof
 
-반영이 완벽합니다! 그럼 이제 05.html 개발과 index.html 연동작업을 해봅시다. 코딩을 못하니 아주 상세히 그리고 코드를 중간에 끊지말고 하나씩 보내주세요
+이제 모든 준비가 완료된 것 같네요! 이어서 바로 `05.html` 생성과 `index.html` 연동 작업을 파일 생성 툴을 통해 깔끔하게 진행하겠습니다.
+
+```html:05.html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>동선 시뮬레이터 | 공부자 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'k-bg': '#fdfbf7',
+                        'k-text': '#1a1a1a',
+                        'theme-color': '#0f766e', // 훈련 도구 느낌을 주는 청자색(Teal) 테마
+                        'theme-soft': '#f0fdfa',
+                        'theme-navy': '#2c3e50',
+                    },
+                    fontFamily: {
+                        serif: ['"Noto Serif KR"', 'serif'],
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'hanji-pattern': 'radial-gradient(#e6e2d3 1px, transparent 1px)',
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-size: 24px 24px;
+            word-break: keep-all;
+        }
+        
+        /* 시뮬레이터 노드 애니메이션 */
+        .formation-node, .exit-node {
+            transition: all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1);
+        }
+
+        /* 화살표 모양 및 세로 쓰기 */
+        .writing-vertical {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+        
+        .arrow-path::after {
+            content: ''; position: absolute; right: -6px; bottom: -5px; width: 0; height: 0; 
+            border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 10px solid #0f766e; 
+        }
+        .arrow-path::before {
+            content: ''; position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; 
+            background-color: #0f766e; border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="font-sans text-k-text antialiased bg-k-bg bg-hanji-pattern min-h-screen">
+
+    <!-- 헤더 -->
+    <header class="sticky top-0 z-50 w-full bg-white/95 border-b border-stone-200 shadow-sm h-20">
+        <div class="max-w-4xl mx-auto px-6 h-full flex items-center justify-between">
+            <div class="flex flex-col justify-center h-full pt-1">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="monitor-play" class="w-6 h-6 text-theme-color"></i>
+                    <h1 class="text-2xl font-serif font-bold tracking-tight text-k-text">동선 시뮬레이터</h1>
+                </div>
+                <div class="w-full h-1 bg-theme-color mt-1 rounded-full opacity-80"></div>
+            </div>
+
+            <a href="index.html" class="flex items-center gap-2 px-4 py-2 bg-stone-50 hover:bg-stone-100 text-k-text font-bold rounded-full border border-stone-200 transition-colors shadow-sm group">
+                <i data-lucide="home" class="w-4 h-4 text-stone-400 group-hover:text-theme-color transition-colors"></i>
+                <span class="font-serif text-sm">홈으로</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto mt-6 mb-16 px-4 md:px-6 py-8">
+        
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-serif font-bold text-k-text mb-3">직접 조작해보는 동선 연습</h2>
+            <p class="text-stone-600 font-medium">눈으로 읽는 것보다 한 번 눌러보는 것이 훨씬 이해하기 쉽습니다.<br>헷갈리기 쉬운 대형 전환과 퇴장 순서를 여기서 확실히 익혀보세요.</p>
+        </div>
+
+        <!-- 1. 대형 전환 시뮬레이터 -->
+        <section class="mb-12 bg-white/90 backdrop-blur-sm p-6 md:p-8 rounded-2xl shadow-lg border border-stone-200">
+            <div class="flex items-center gap-3 mb-6 border-b border-stone-100 pb-4">
+                <span class="bg-theme-soft text-theme-color font-bold px-3 py-1 rounded-full text-sm border border-theme-color/20">시뮬레이터 01</span>
+                <h3 class="text-2xl font-serif font-bold text-theme-navy">대형 전환 (3열 횡대 → 6열 종대)</h3>
+            </div>
+            
+            <div class="text-center mb-4">
+                <span class="inline-flex items-center gap-2 text-sm font-bold text-theme-color bg-theme-soft px-4 py-2 rounded-full border border-theme-color/20 shadow-sm animate-pulse-slow">
+                    <i data-lucide="mouse-pointer-click" class="w-4 h-4"></i> 아래 버튼을 눌러보세요
+                </span>
+            </div>
+            
+            <div class="flex gap-2 mb-6 justify-center">
+                <button onclick="updateSim('initial')" class="flex-1 px-4 py-3 bg-white text-k-text font-bold rounded-xl border-2 border-stone-200 shadow-sm hover:border-theme-color hover:bg-stone-50 transition-colors">1. 초기 정렬 (3열)</button>
+                <button onclick="updateSim('final')" class="flex-1 px-4 py-3 bg-theme-color text-white font-bold rounded-xl border-2 border-theme-color shadow-md hover:bg-teal-700 transition-colors">2. 6열로 우향우</button>
+            </div>
+
+            <div id="sim-container" class="bg-white border-2 border-stone-200 rounded-xl mx-auto w-full relative h-[350px] overflow-hidden shadow-inner">
+                <div class="absolute inset-0 pointer-events-none opacity-10" style="background-image: linear-gradient(#1a1a1a 1px, transparent 1px), linear-gradient(90deg, #1a1a1a 1px, transparent 1px); background-size: 40px 40px;"></div>
+                
+                <div class="absolute right-0 top-0 h-full w-8 md:w-10 bg-stone-50 border-l-2 border-stone-200 flex flex-col items-center justify-center z-20">
+                    <span class="writing-vertical text-theme-navy font-serif font-bold text-sm tracking-widest">법단</span>
+                </div>
+                <div class="absolute top-0 left-0 w-full h-8 md:h-10 bg-stone-50 border-b-2 border-stone-200 flex items-center justify-center z-20">
+                    <span class="text-theme-navy font-serif font-bold text-sm tracking-widest pr-8 md:pr-10">영대</span>
+                </div>
+                
+                <div id="nodes-area" class="relative w-full h-full"></div>
+            </div>
+        </section>
+
+        <!-- 2. 퇴장 시뮬레이터 -->
+        <section class="bg-white/90 backdrop-blur-sm p-6 md:p-8 rounded-2xl shadow-lg border border-stone-200">
+            <div class="flex items-center gap-3 mb-6 border-b border-stone-100 pb-4">
+                <span class="bg-theme-soft text-theme-color font-bold px-3 py-1 rounded-full text-sm border border-theme-color/20">시뮬레이터 02</span>
+                <h3 class="text-2xl font-serif font-bold text-theme-navy">퇴장 순서 (출구 이동)</h3>
+            </div>
+
+            <div class="text-center mb-4">
+                <span class="inline-flex items-center gap-2 text-sm font-bold text-theme-color bg-theme-soft px-4 py-2 rounded-full border border-theme-color/20 shadow-sm animate-pulse-slow">
+                    <i data-lucide="list-ordered" class="w-4 h-4"></i> 번호 순서대로 클릭하여 흐름을 확인하세요
+                </span>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 mb-6 justify-center">
+                <button onclick="updateExitSim('initial')" class="px-3 py-2 bg-white text-k-text font-bold rounded-lg border-2 border-stone-200 shadow-sm hover:border-theme-color hover:bg-stone-50 transition-colors">1. 초기</button>
+                <button onclick="updateExitSim('shift')" class="px-3 py-2 bg-stone-100 text-k-text font-bold rounded-lg border border-stone-200 shadow-sm hover:bg-stone-200 transition-colors">2. 좌향좌/전진</button>
+                <button onclick="updateExitSim('exitNaesu')" class="px-3 py-2 bg-red-50 text-red-700 font-bold rounded-lg border border-red-200 shadow-sm hover:bg-red-100 transition-colors">3. 내수 퇴장</button>
+                <button onclick="updateExitSim('exitOesu')" class="px-3 py-2 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-200 shadow-sm hover:bg-blue-100 transition-colors">4. 외수 퇴장</button>
+                <button onclick="updateExitSim('exitMember')" class="px-3 py-2 bg-yellow-50 text-yellow-700 font-bold rounded-lg border border-yellow-300 shadow-sm hover:bg-yellow-100 transition-colors">5. 회원 퇴장</button>
+            </div>
+
+            <div class="bg-white border-2 border-stone-200 rounded-xl mx-auto w-full relative h-[420px] md:h-[450px] overflow-hidden shadow-inner" style="background-image: linear-gradient(#f5f5f4 1px, transparent 1px), linear-gradient(90deg, #f5f5f4 1px, transparent 1px); background-size: 40px 40px;">
+                <!-- 영대 -->
+                <div class="absolute top-0 left-0 w-full h-8 md:h-10 bg-stone-50 border-b-2 border-stone-200 flex items-center justify-center z-20">
+                    <span class="text-theme-navy font-serif font-bold text-sm tracking-widest pr-8 md:pr-10">영대</span>
+                </div>
+                <!-- 법단 -->
+                <div class="absolute right-0 top-0 h-full w-8 md:h-10 bg-stone-50 border-l-2 border-stone-200 flex flex-col items-center justify-center z-20">
+                    <span class="writing-vertical text-theme-navy font-serif font-bold text-sm tracking-widest">법단</span>
+                </div>
+                <!-- 출구 -->
+                <div class="absolute bottom-0 left-[50%] w-[15%] h-8 bg-[#e5e5e5] border-t-4 border-x-4 border-stone-400 rounded-t-lg flex items-center justify-center z-20 shadow-md transform -translate-x-1/2">
+                    <span class="text-stone-700 font-bold text-xs tracking-wider">출구</span>
+                </div>
+                
+                <div id="exit-nodes-area" class="relative w-full h-full"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        /* 공통 역할 색상 정의 */
+        const roleColors = {
+            member: 'bg-yellow-100 text-yellow-900 border-2 border-yellow-400',
+            oesu: 'bg-blue-100 text-blue-900 border-2 border-blue-400',
+            naesu: 'bg-red-100 text-red-900 border-2 border-red-400'
+        };
+
+        const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+        const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        const roles = ['member', 'oesu', 'naesu'];
+
+        /* -------------------------------------------
+           1. 대형 전환 시뮬레이터 로직
+           ------------------------------------------- */
+        let isSimInitialized = false;
+
+        function initSimNodes() {
+            const area = document.getElementById('nodes-area');
+            if (!area) return;
+            area.innerHTML = '';
+
+            roles.forEach((roleName, rIndex) => {
+                const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
+                for (let i = 0; i < 12; i++) {
+                    const num = currentLabels[i]; 
+
+                    // 짝수 번호 이동 경로 궤적
+                    if (num % 2 === 0) {
+                        const path = document.createElement('div');
+                        path.id = `path-${roleName}-${num}`;
+                        path.className = 'absolute z-0 arrow-path transition-opacity duration-700 opacity-0';
+                        area.appendChild(path);
+                    }
+
+                    // 도인 노드 생성
+                    const node = document.createElement('div');
+                    node.id = `node-${roleName}-${num}`;
+                    node.className = `formation-node absolute w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md z-10 ${roleColors[roleName]}`;
+                    node.innerText = num;
+                    if (num % 2 === 0) {
+                        node.style.boxShadow = 'inset 0 0 0 2px rgba(255,255,255,0.7)'; 
+                    }
+                    area.appendChild(node);
+                }
+            });
+            isSimInitialized = true;
+        }
+
+        function updateSim(state) {
+            if (!isSimInitialized) initSimNodes();
+
+            const startLeft = 76; 
+            const horizontalSpacing = 6.2; 
+
+            roles.forEach((roleName, rIndex) => {
+                const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
+
+                for (let i = 0; i < 12; i++) {
+                    const colIndexFromRight = i; 
+                    const num = currentLabels[i]; 
+                    
+                    let effectiveColIndex = colIndexFromRight;
+                    if (state === 'final' && num % 2 === 0) {
+                        effectiveColIndex = colIndexFromRight - 1; 
+                    }
+                    
+                    let leftVal = (startLeft - (colIndexFromRight * horizontalSpacing)); 
+                    let finalLeftVal = (startLeft - (effectiveColIndex * horizontalSpacing)); 
+                    
+                    let left = (state === 'final') ? finalLeftVal + '%' : leftVal + '%';
+                    const rowBaseTop = 15 + (rIndex * 26); 
+                    let top = rowBaseTop + '%';
+
+                    const node = document.getElementById(`node-${roleName}-${num}`);
+                    if (node) {
+                        if (state === 'final') {
+                            node.style.transform = 'rotate(90deg)'; 
+                            if (num % 2 === 0) {
+                                top = (rowBaseTop + 12) + '%';
+                            }
+                        } else {
+                            node.style.transform = 'rotate(0deg)';
+                        }
+                        node.style.left = left;
+                        node.style.top = top;
+                    }
+
+                    if (num % 2 === 0) {
+                        const path = document.getElementById(`path-${roleName}-${num}`);
+                        if (path) {
+                            const offset = 2.5;
+                            path.style.left = (leftVal + offset) + '%';
+                            path.style.top = (rowBaseTop + offset) + '%';
+                            path.style.width = ((finalLeftVal - leftVal)) + '%';
+                            path.style.height = '12%'; 
+                            path.style.borderLeft = '2px dotted #0f766e'; 
+                            path.style.borderBottom = '2px dotted #0f766e';
+                            path.style.borderBottomLeftRadius = '12px'; 
+
+                            if (state === 'final') {
+                                setTimeout(() => { path.style.opacity = '1'; }, 300);
+                            } else {
+                                path.style.opacity = '0';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        /* -------------------------------------------
+           2. 퇴장 시뮬레이터 로직
+           ------------------------------------------- */
+        let isExitSimInitialized = false;
+        let exitTimeouts = [];
+
+        function clearExitTimeouts() {
+            exitTimeouts.forEach(clearTimeout);
+            exitTimeouts = [];
+        }
+
+        function initExitSimNodes() {
+            const area = document.getElementById('exit-nodes-area');
+            if (!area) return;
+            area.innerHTML = '';
+            
+            roles.forEach((roleName, rIndex) => {
+                const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
+                for (let i = 0; i < 12; i++) {
+                    const num = currentLabels[i];
+                    const node = document.createElement('div');
+                    node.id = `exit-node-${roleName}-${num}`;
+                    node.className = `exit-node absolute w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md z-10 ${roleColors[roleName]}`;
+                    node.innerText = num;
+                    area.appendChild(node);
+                }
+            });
+            isExitSimInitialized = true;
+        }
+
+        function updateExitSim(state) {
+            if (!isExitSimInitialized) initExitSimNodes();
+            clearExitTimeouts(); 
+            
+            const baseLeft = 76; 
+            const spacing = 6.2; 
+            const shiftOffset = 15; 
+            const rowTops = [20, 45, 70]; 
+            const doorTop = 90; 
+            const doorCenterLeft = 50; 
+
+            roles.forEach((roleName, rIndex) => {
+                const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
+                
+                let isExited = false;
+                if (state === 'exitOesu' && roleName === 'naesu') isExited = true;
+                if (state === 'exitMember' && (roleName === 'naesu' || roleName === 'oesu')) isExited = true;
+
+                for (let i = 0; i < 12; i++) {
+                    const num = currentLabels[i];
+                    const node = document.getElementById(`exit-node-${roleName}-${num}`);
+                    if (!node) continue;
+                    
+                    node.style.transition = 'all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1)';
+                    
+                    let left = baseLeft - (i * spacing);
+                    if (state === 'shift' || state.startsWith('exit')) {
+                        left -= shiftOffset;
+                    }
+
+                    if (isExited) {
+                        node.style.transition = 'none';
+                        node.style.opacity = '0';
+                        node.style.transform = 'scale(0.5)';
+                        node.style.left = `calc(${doorCenterLeft}% - 16px)`; 
+                        node.style.top = `${doorTop}%`;
+                        void node.offsetWidth; 
+                        node.style.transition = 'all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1)';
+                    } else {
+                        node.style.left = `calc(${left}% - 16px)`;
+                        node.style.top = `${rowTops[rIndex]}%`;
+                        node.style.opacity = '1';
+                        node.style.transform = 'scale(1)';
+                    }
+                }
+            });
+
+            if (state.startsWith('exit')) {
+                let roleIndex = state === 'exitMember' ? 0 : (state === 'exitOesu' ? 1 : 2);
+                let roleName = roles[roleIndex];
+                const currentLabels = (roleIndex === 0) ? labelsRow1 : labelsRow23;
+                
+                const pairs = [[6, 5], [7, 4], [8, 3], [9, 2], [10, 1], [11, 0]];
+                const seqDelay = 800; 
+
+                pairs.forEach((pair, step) => {
+                    let t1 = setTimeout(() => {
+                        const leftNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[0]]}`);
+                        const rightNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[1]]}`);
+                        
+                        if (leftNode) {
+                            leftNode.style.top = `${doorTop}%`;
+                            leftNode.style.left = `calc(${doorCenterLeft - 2}% - 16px)`; 
+                        }
+                        if (rightNode) {
+                            rightNode.style.top = `${doorTop}%`;
+                            rightNode.style.left = `calc(${doorCenterLeft + 2}% - 16px)`;
+                        }
+                    }, seqDelay + step * 2000);
+                    
+                    let t2 = setTimeout(() => {
+                        const leftNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[0]]}`);
+                        const rightNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[1]]}`);
+                        
+                        if (leftNode) { leftNode.style.opacity = '0'; leftNode.style.transform = 'scale(0.5)'; }
+                        if (rightNode) { rightNode.style.opacity = '0'; rightNode.style.transform = 'scale(0.5)'; }
+                    }, seqDelay + step * 2000 + 700);
+                    
+                    let t3 = setTimeout(() => {
+                        for (let i = pair[0] + 1; i <= 11; i++) {
+                            const node = document.getElementById(`exit-node-${roleName}-${currentLabels[i]}`);
+                            if (node) {
+                                let currentLeft = baseLeft - i * spacing - shiftOffset + (step * spacing);
+                                node.style.left = `calc(${currentLeft + spacing}% - 16px)`;
+                            }
+                        }
+                        for (let i = pair[1] - 1; i >= 0; i--) {
+                            const node = document.getElementById(`exit-node-${roleName}-${currentLabels[i]}`);
+                            if (node) {
+                                let currentLeft = baseLeft - i * spacing - shiftOffset - (step * spacing);
+                                node.style.left = `calc(${currentLeft - spacing}% - 16px)`;
+                            }
+                        }
+                    }, seqDelay + step * 2000 + 1000);
+
+                    exitTimeouts.push(t1, t2, t3);
+                });
+            }
+        }
+
+        window.onload = () => {
+            updateSim('initial');
+            updateExitSim('initial');
+        };
+    </script>
+</body>
+</html>
+```eof
+
+```html:index.html
+<!-- ... existing code ... -->
+        <nav class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full mx-auto">
+            
+            <!-- 1. 법식 안내 -->
+<!-- ... existing code ... -->
+                        <p class="text-stone-600 text-sm md:text-base leading-relaxed keep-all group-hover:text-stone-800">
+                            도장의 <strong class="text-theme-crimson font-bold">수도 방향</strong>, 공부자의 <strong class="text-theme-crimson font-bold">마음 가짐</strong>을 전해드립니다.
+                        </p>
+                    </div>
+                </div>
+            </a>
+
+        </nav>
+
+        <!-- 💡 5. 시뮬레이터 전용 버튼 (여기를 추가합니다) -->
+        <div class="mt-8 w-full animate-fade-in relative z-20">
+            <a href="05.html" class="group relative flex items-center justify-between bg-theme-navy text-white rounded-2xl p-6 md:p-8 shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-theme-apricot">
+                <!-- 배경 효과 -->
+                <div class="absolute right-0 top-0 w-64 h-64 bg-white opacity-5 rounded-full transform translate-x-1/3 -translate-y-1/3 group-hover:scale-110 transition-transform duration-500 pointer-events-none"></div>
+                
+                <div class="flex items-center gap-5 relative z-10">
+                    <div class="shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/10 flex items-center justify-center text-white backdrop-blur-sm border border-white/20 group-hover:bg-theme-apricot group-hover:border-theme-apricot transition-colors duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                            <polygon points="10 7 15 10 10 13 10 7"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-bold text-white bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur-sm tracking-wider">추천 기능</span>
+                            <span class="relative flex h-2.5 w-2.5">
+                              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-apricot opacity-75"></span>
+                              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-apricot"></span>
+                            </span>
+                        </div>
+                        <h2 class="font-serif text-2xl md:text-3xl font-bold tracking-tight mb-1 group-hover:text-theme-apricot transition-colors text-left">동선 시뮬레이터 모음</h2>
+                        <p class="text-stone-300 text-sm md:text-base font-medium break-keep text-left">대형 전환과 퇴장 순서를 직접 조작하며 익혀보세요.</p>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex shrink-0 text-white/50 group-hover:text-theme-apricot transition-colors duration-300 transform group-hover:translate-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+
+        <!-- 푸터 -->
+        <footer class="mt-12 md:mt-16 text-center border-t border-stone-200 pt-8">
+<!-- ... existing code ... -->
+```eof
