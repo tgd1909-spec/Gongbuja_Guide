@@ -871,19 +871,15 @@
                 </div>
 
                 <div class="bg-white border border-stone-200 rounded-xl mx-auto w-full relative h-[420px] md:h-[450px] overflow-hidden shadow-inner" style="background-image: linear-gradient(#f5f5f4 1px, transparent 1px), linear-gradient(90deg, #f5f5f4 1px, transparent 1px); background-size: 40px 40px;">
-                    
-                    <!-- 💡 영대 위치를 이미지와 동일하게 수정 (전체 상단 가로줄) -->
                     <div class="absolute top-0 left-0 w-full h-8 md:h-10 bg-stone-50 border-b border-stone-200 flex items-center justify-center z-20">
                         <span class="text-theme-color font-serif font-bold text-sm tracking-widest pr-8 md:pr-10">영대</span>
                     </div>
 
-                    <!-- 💡 법단 위치를 이미지와 동일하게 수정 (우측 끝 상단 일부) -->
-                    <div class="absolute right-0 top-0 h-8 md:h-10 w-8 md:w-10 bg-white border-l border-b border-stone-200 flex flex-col items-center justify-center z-30">
-                        <span class="writing-vertical text-theme-color font-serif font-bold text-xs md:text-sm tracking-widest">법단</span>
+                    <div class="absolute right-0 top-0 h-full w-8 md:h-10 bg-stone-50 border-l border-stone-200 flex flex-col items-center justify-center z-20">
+                        <span class="writing-vertical text-theme-color font-serif font-bold text-sm tracking-widest">법단</span>
                     </div>
 
-                    <!-- 출구 (하단 중앙) -->
-                    <div class="absolute bottom-0 left-[50%] w-[12%] h-8 bg-[#e5e5e5] border-t-2 border-x-2 border-stone-300 rounded-t-lg flex items-center justify-center z-20 shadow-sm transform -translate-x-1/2">
+                    <div class="absolute bottom-0 left-[34%] w-[12%] h-8 bg-[#e5e5e5] border-t-2 border-x-2 border-stone-300 rounded-t-lg flex items-center justify-center z-20 shadow-sm">
                         <span class="text-stone-600 font-bold text-xs tracking-wider">출구</span>
                     </div>
                     
@@ -912,7 +908,6 @@
                     const num = currentLabels[i];
                     const node = document.createElement('div');
                     node.id = `exit-node-${role.name}-${num}`;
-                    // 원활한 이동을 위해 transition 클래스 추가
                     node.className = `exit-node absolute w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs md:text-sm font-bold shadow-md z-10 ${role.colorClass}`;
                     node.innerText = num;
                     area.appendChild(node);
@@ -929,13 +924,12 @@
             const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
             const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
             
-            const baseLeft = 76; 
+            const baseLeft = 85; 
             const spacing = 6.2; 
-            const shiftOffset = 15; // 💡 중앙 위치를 맞추기 위해 이동 거리 조정
+            const shiftOffset = 11; 
             const rowTops = [20, 45, 70]; 
             
             const doorTop = 90; 
-            const doorCenterLeft = 50; // 💡 문이 정중앙(50%)에 위치함
 
             roles.forEach((roleName, rIndex) => {
                 const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
@@ -960,13 +954,11 @@
                         node.style.transition = 'none';
                         node.style.opacity = '0';
                         node.style.transform = 'scale(0.5)';
-                        // 💡 이미 퇴장한 인원들이 출구 중앙으로 모이도록 수정
-                        node.style.left = `calc(${doorCenterLeft}% - 16px)`; 
                         node.style.top = `${doorTop}%`;
                         void node.offsetWidth; 
                         node.style.transition = 'all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1)';
                     } else {
-                        node.style.left = `calc(${left}% - 16px)`;
+                        node.style.left = `${left}%`;
                         node.style.top = `${rowTops[rIndex]}%`;
                         node.style.opacity = '1';
                         node.style.transform = 'scale(1)';
@@ -987,15 +979,8 @@
                         const leftNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[0]]}`);
                         const rightNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[1]]}`);
                         
-                        // 💡 출구가 중앙이므로 양쪽에서 중앙으로 모이며 내려가도록 수정
-                        if (leftNode) {
-                            leftNode.style.top = `${doorTop}%`;
-                            leftNode.style.left = `calc(${doorCenterLeft - 2}% - 16px)`; 
-                        }
-                        if (rightNode) {
-                            rightNode.style.top = `${doorTop}%`;
-                            rightNode.style.left = `calc(${doorCenterLeft + 2}% - 16px)`;
-                        }
+                        if (leftNode) leftNode.style.top = `${doorTop}%`;
+                        if (rightNode) rightNode.style.top = `${doorTop}%`;
                     }, seqDelay + step * 2000);
                     
                     let t2 = setTimeout(() => {
@@ -1011,14 +996,14 @@
                             const node = document.getElementById(`exit-node-${roleName}-${currentLabels[i]}`);
                             if (node) {
                                 let currentLeft = baseLeft - i * spacing - shiftOffset + (step * spacing);
-                                node.style.left = `calc(${currentLeft + spacing}% - 16px)`;
+                                node.style.left = `${currentLeft + spacing}%`;
                             }
                         }
                         for (let i = pair[1] - 1; i >= 0; i--) {
                             const node = document.getElementById(`exit-node-${roleName}-${currentLabels[i]}`);
                             if (node) {
                                 let currentLeft = baseLeft - i * spacing - shiftOffset - (step * spacing);
-                                node.style.left = `calc(${currentLeft - spacing}% - 16px)`;
+                                node.style.left = `${currentLeft - spacing}%`;
                             }
                         }
                     }, seqDelay + step * 2000 + 1000);
@@ -1073,4 +1058,3 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 </body>
 </html>
-
