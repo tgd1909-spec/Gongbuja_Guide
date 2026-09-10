@@ -32,6 +32,7 @@
                         'theme-apricot': '#d97706',
                         'theme-teal': '#0f766e',
                         'theme-crimson': '#be123c',
+                        'theme-blue': '#1e3a8a', /* 새롭게 추가된 5번째 컬러 (청금색) */
                     },
                     fontFamily: {
                         serif: ['"Noto Serif KR"', 'serif'],
@@ -218,6 +219,27 @@
                 </div>
             </a>
 
+            <!-- 5. 시뮬레이터 모음 (가로 2칸 차지) -->
+            <a href="05.html" class="md:col-span-2 group relative flex flex-col bg-white rounded-xl border-2 border-stone-100 hover:border-theme-blue transition-all duration-300 shadow-sm hover:shadow-xl transform hover:-translate-y-1 overflow-hidden">
+                <div class="h-1.5 w-full bg-theme-blue opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                <div class="p-5 md:p-8 flex items-center gap-4 md:gap-6">
+                    <div class="shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-theme-blue group-hover:bg-theme-blue group-hover:text-white transition-colors duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <div class="title-container mb-2">
+                            <span class="whitespace-nowrap text-[10px] md:text-xs font-bold text-theme-blue bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">스페셜</span>
+                            <h2 class="font-serif text-xl md:text-2xl font-bold text-k-text group-hover:text-theme-blue transition-colors">시뮬레이터 모음</h2>
+                        </div>
+                        <p class="text-stone-600 text-sm md:text-base leading-relaxed keep-all group-hover:text-stone-800">
+                            영대 입장부터 퇴장까지, 복잡한 동선을 <strong class="text-theme-blue font-bold">시각적인 시뮬레이션</strong>으로 생생하게 체험합니다.
+                        </p>
+                    </div>
+                </div>
+            </a>
+
         </nav>
 
         <!-- 푸터 -->
@@ -278,12 +300,13 @@
             resultsDiv.innerHTML = "<p class='text-center text-stone-500 bg-slate-50 p-3 rounded-lg animate-pulse'>🔍 문서를 검색 중입니다...</p>";
             let finalHTML = "";
 
-            // --- 1. 정적 문서 검색 (01.html, 02.html) ---
-            const staticPages = ['01.html', '02.html'];
-            const pageTitles = { '01.html': '공부 드는 준비', '02.html': '일과표' };
+            // --- 1. 정적 문서 검색 (01.html, 02.html, 05.html 포함) ---
+            const staticPages = ['01.html', '02.html', '05.html'];
+            const pageTitles = { '01.html': '공부 드는 준비', '02.html': '일과표', '05.html': '시뮬레이터 모음' };
             const mockDataForPreview = {
                 '01.html': '도장에 들어서기 전 갖추어야 할 단정한 복장과 마음가짐 예시를 확인합니다.',
-                '02.html': '도인으로서 하루의 시작과 끝, 지켜야 할 예절과 일과 예시입니다.'
+                '02.html': '도인으로서 하루의 시작과 끝, 지켜야 할 예절과 일과 예시입니다.',
+                '05.html': '영대 입장부터 대형 전환, 퇴장까지 복잡한 동선을 시각적인 시뮬레이션으로 체험합니다.'
             };
 
             for (let page of staticPages) {
@@ -355,16 +378,14 @@
                     try {
                         const guideSnap = await getDocs(collection(guideDb, 'artifacts', 'tgd-guide-public', 'public', 'data', 'posts'));
                         guideSnap.docs.forEach(doc => {
-                            // id 필드를 명시적으로 추가하여 저장합니다.
                             cachedFirebasePosts.push({ id: doc.id, ...doc.data(), _sourceMeta: { pageTitle: '법식 안내', pageUrl: '04.html' } });
                         });
                     } catch (e) { console.warn('법식 안내 데이터를 가져오지 못했습니다.'); }
 
-                    // 03.html 데이터 수집 (공지사항 - 루트 posts 컬렉션 사용) - doc.id 추가 저장
+                    // 03.html 데이터 수집 (공지사항)
                     try {
                         const noticeSnap = await getDocs(collection(noticeDb, 'posts'));
                         noticeSnap.docs.forEach(doc => {
-                            // id 필드를 명시적으로 추가하여 저장합니다.
                             cachedFirebasePosts.push({ id: doc.id, ...doc.data(), _sourceMeta: { pageTitle: '공지사항', pageUrl: '03.html' } });
                         });
                     } catch (e) { console.warn('공지사항 데이터를 가져오지 못했습니다.'); }
@@ -383,7 +404,6 @@
 
                         const pageName = `${post._sourceMeta.pageTitle} > ${post.category || '새소식'}`;
                         
-                        // 핵심 변경 사항: post.id가 있으면 해당 id를 앵커(#post-ID)로 사용하여 URL 생성
                         const targetUrl = post.id 
                             ? `${post._sourceMeta.pageUrl}?search=${encodeURIComponent(keyword)}#post-${post.id}`
                             : `${post._sourceMeta.pageUrl}?search=${encodeURIComponent(keyword)}#:~:text=${encodeURIComponent(keyword)}`;
