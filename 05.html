@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시뮬레이터 모음 | 태극도 공부 길라잡이</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'k-bg': '#fdfbf7',
+                        'k-text': '#1a1a1a',
+                        'theme-color': '#1e3a8a', // 청금색 (Deep Blue) - 5번째 테마 컬러
+                        'theme-soft': '#eff6ff',  // 연한 파란색
+                        
+                        // 역할별 색상 유지
+                        'c-member': '#d97706',
+                        'c-oesu': '#2563eb',
+                        'c-naesu': '#dc2626',
+                    },
+                    fontFamily: {
+                        serif: ['"Noto Serif KR"', 'serif'],
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'hanji-pattern': 'radial-gradient(#e6e2d3 1px, transparent 1px)',
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.4s ease-out forwards',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-size: 24px 24px; word-break: keep-all; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+        
+        /* 공통 시뮬레이터 노드 애니메이션 */
+        .formation-node, .exit-node, .enter-node {
+            transition: all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1);
+        }
+        
+        .writing-vertical {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        /* 화살표 패스 */
+        .arrow-path::after {
+            content: ''; position: absolute; right: -6px; bottom: -5px; width: 0; height: 0; 
+            border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 10px solid #d97706; 
+        }
+        .arrow-path::before {
+            content: ''; position: absolute; left: -4px; top: -4px; width: 8px; height: 8px;
+            background-color: #d97706; border-radius: 50%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 탭 액티브 상태 스타일 */
+        .tab-active {
+            background-color: #1e3a8a !important; /* theme-color */
+            color: white !important;
+            border-color: #1e3a8a !important;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+        }
+        .tab-inactive {
+            background-color: white;
+            color: #78716c;
+            border-color: #e5e7eb;
+        }
+        .tab-inactive:hover {
+            border-color: #1e3a8a;
+            color: #1e3a8a;
+        }
+    </style>
+</head>
+<body class="font-sans text-k-text antialiased text-lg bg-k-bg bg-hanji-pattern relative min-h-screen flex flex-col">
+
+    <!-- 헤더 -->
+    <header class="sticky top-0 z-50 w-full bg-white/95 border-b border-stone-200 shadow-sm h-20" id="main-header">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
+            <div class="flex flex-col justify-center h-full pt-1">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="play-circle" class="w-6 h-6 text-theme-color"></i>
+                    <h1 class="text-xl sm:text-2xl font-serif font-bold tracking-tight text-k-text">시뮬레이터 모음</h1>
+                </div>
+                <div class="w-full h-1 bg-theme-color mt-1 rounded-full opacity-80"></div>
+            </div>
+
+            <a href="index.html" class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-stone-50 hover:bg-stone-100 text-k-text font-bold rounded-full border border-stone-200 transition-colors shadow-sm group">
+                <i data-lucide="home" class="w-5 h-5 text-stone-400 group-hover:text-theme-color transition-colors"></i>
+                <span class="font-serif text-sm hidden sm:inline">홈으로</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <main class="flex-grow w-full max-w-4xl mx-auto p-4 sm:p-6 md:p-8">
+        
+        <!-- 인트로 및 2x2 네비게이션 그리드 -->
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-sm mb-6 sm:mb-8">
+            <p class="text-stone-600 font-medium mb-4 text-center text-sm sm:text-base break-keep">
+                복잡한 동선을 시각적으로 연습해보세요.<br class="hidden sm:block">
+                아래 버튼을 눌러 원하는 시뮬레이터를 체험할 수 있습니다.
+            </p>
+            
+            <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                <button onclick="app.switchTab(1)" id="tab-btn-1" class="tab-btn tab-active flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 gap-1 sm:gap-2">
+                    <i data-lucide="footprints" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+                    <span class="font-bold text-xs sm:text-sm">1. 영대 입장</span>
+                </button>
+                <button onclick="app.switchTab(2)" id="tab-btn-2" class="tab-btn tab-inactive flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 gap-1 sm:gap-2">
+                    <i data-lucide="users" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+                    <span class="font-bold text-xs sm:text-sm">2. 대형 전환</span>
+                </button>
+                <button onclick="app.switchTab(3)" id="tab-btn-3" class="tab-btn tab-inactive flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 gap-1 sm:gap-2">
+                    <i data-lucide="log-out" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+                    <span class="font-bold text-xs sm:text-sm">3. 퇴장 순서</span>
+                </button>
+                <button onclick="app.switchTab(4)" id="tab-btn-4" class="tab-btn tab-inactive flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 transition-all duration-300 gap-1 sm:gap-2">
+                    <i data-lucide="door-open" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+                    <span class="font-bold text-xs sm:text-sm">4. 방 입실 (교대)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 뷰 영역 컨테이너 -->
+        <div class="bg-white p-4 sm:p-6 md:p-8 rounded-2xl border border-stone-200 shadow-sm relative min-h-[500px]">
+            
+            <!-- SECTION 1: 영대 입장 (신발 배치) -->
+            <section id="view-1" class="sim-view space-y-4 animate-fade-in">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="bg-theme-soft text-theme-color text-xs font-bold px-2 py-1 rounded border border-theme-color/20">Step 1</span>
+                    <h2 class="text-xl sm:text-2xl font-serif font-bold text-k-text">영대 입장 (신발 배치도)</h2>
+                </div>
+                <p class="text-stone-600 text-sm sm:text-base mb-4 break-keep">
+                    회원부터 대동문을 통과하여 영대 앞 다다미에 정렬합니다. 
+                </p>
+                <div id="sim1-placeholder"></div>
+                
+                <button onclick="app.switchTab(2)" class="w-full mt-6 bg-stone-50 hover:bg-theme-soft text-theme-color border border-theme-color/30 font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 group shadow-sm text-sm sm:text-base">
+                    <span>다음: 대형 전환 연습하기</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </section>
+
+            <!-- SECTION 2: 대형 전환 -->
+            <section id="view-2" class="sim-view hidden space-y-4 animate-fade-in">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="bg-theme-soft text-theme-color text-xs font-bold px-2 py-1 rounded border border-theme-color/20">Step 2</span>
+                    <h2 class="text-xl sm:text-2xl font-serif font-bold text-k-text">대형 전환 (3열 → 6열)</h2>
+                </div>
+                <p class="text-stone-600 text-sm sm:text-base mb-4 break-keep">
+                    구령 <strong class="text-theme-color">"6열로 우향우"</strong>에 맞춰 행동합니다. 홀수 번호는 제자리에서 우향우, 짝수 번호는 앞사람 우측으로 이동합니다.
+                </p>
+                <div id="sim2-placeholder"></div>
+                
+                <button onclick="app.switchTab(3)" class="w-full mt-6 bg-stone-50 hover:bg-theme-soft text-theme-color border border-theme-color/30 font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 group shadow-sm text-sm sm:text-base">
+                    <span>다음: 퇴장 순서 연습하기</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </section>
+
+            <!-- SECTION 3: 퇴장 순서 -->
+            <section id="view-3" class="sim-view hidden space-y-4 animate-fade-in">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="bg-theme-soft text-theme-color text-xs font-bold px-2 py-1 rounded border border-theme-color/20">Step 3</span>
+                    <h2 class="text-xl sm:text-2xl font-serif font-bold text-k-text">퇴장 순서</h2>
+                </div>
+                <p class="text-stone-600 text-sm sm:text-base mb-4 break-keep">
+                    가장 안쪽 줄인 <strong>내수(여성)</strong> 줄부터 중앙 2명을 선두로 짝지어 퇴장합니다.<br>
+                    <span class="text-red-600 text-sm">⚠️ 문턱은 반드시 '왼발'부터 넘습니다!</span>
+                </p>
+                <div id="sim3-placeholder"></div>
+                
+                <button onclick="app.switchTab(4)" class="w-full mt-6 bg-stone-50 hover:bg-theme-soft text-theme-color border border-theme-color/30 font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 group shadow-sm text-sm sm:text-base">
+                    <span>다음: 공부방 입실 연습하기</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4 transform group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </section>
+
+            <!-- SECTION 4: 공부방 입실 (캔버스) -->
+            <section id="view-4" class="sim-view hidden space-y-4 animate-fade-in">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="bg-theme-soft text-theme-color text-xs font-bold px-2 py-1 rounded border border-theme-color/20">Step 4</span>
+                    <h2 class="text-xl sm:text-2xl font-serif font-bold text-k-text">공부방 입실 (교대)</h2>
+                </div>
+                <p class="text-stone-600 text-sm sm:text-base mb-4 break-keep">
+                    회원과 내수는 뒤로 물러나고, 들어오는 사람은 기존 사람들의 뒤로 돌아갑니다.<br>
+                    모든 속도는 회원에게 맞춰야 합니다.
+                </p>
+                <div class="flex flex-col items-center">
+                    <div class="-mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full max-w-[500px] aspect-square bg-[#F5F5DC] border-y sm:border-4 border-[#8D6E63] sm:rounded-lg mb-6 overflow-hidden shadow-inner relative">
+                        <!-- Table -->
+                        <div class="absolute top-0 left-[60%] -translate-x-1/2 w-1/3 h-3 bg-[#5D4037] rounded-b-md shadow-sm"></div>
+                        <div class="absolute top-4 left-[60%] -translate-x-1/2 text-[#5D4037] text-[10px] sm:text-sm font-bold bg-[#F5F5DC]/80 px-2 rounded">향 탁자 (앞)</div>
+                        <div class="absolute top-1/2 left-0 -translate-y-1/2 w-3 h-20 bg-[#3E2723] rounded-r shadow-md"></div>
+                        <div class="absolute top-1/2 left-4 -translate-y-1/2 text-[#3E2723] text-[10px] sm:text-sm font-bold -rotate-90">출입문</div>
+                        <canvas id="simCanvas" width="500" height="500" class="w-full h-full"></canvas>
+                    </div>
+
+                    <div class="w-full max-w-[500px] flex flex-col gap-3 sm:gap-4">
+                        <div class="bg-stone-50 p-4 sm:p-6 rounded-xl border border-stone-200 min-h-[100px] flex items-center justify-center text-center shadow-sm">
+                            <p id="canvas-step-desc" class="text-sm sm:text-lg font-bold text-k-text transition-all break-keep leading-relaxed">아래 재생 버튼을 누르세요.</p>
+                        </div>
+                        <div class="flex justify-between gap-2 sm:gap-3">
+                            <button onclick="canvasSim.prev()" class="flex-1 py-3 text-sm sm:text-lg text-k-text rounded-lg font-bold border-2 border-stone-200 hover:border-theme-color hover:bg-theme-soft transition">◀ 이전</button>
+                            <button onclick="canvasSim.play()" class="flex-1 py-3 text-sm sm:text-lg text-white rounded-lg font-bold bg-theme-color hover:opacity-90 shadow-md transition">▶ 재생/정지</button>
+                            <button onclick="canvasSim.next()" class="flex-1 py-3 text-sm sm:text-lg text-k-text rounded-lg font-bold border-2 border-stone-200 hover:border-theme-color hover:bg-theme-soft transition">다음 ▶</button>
+                        </div>
+                        <button onclick="canvasSim.reset()" class="w-full py-2 text-stone-400 hover:text-theme-color text-xs sm:text-sm underline underline-offset-4 transition">↺ 처음으로 리셋</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="text-center py-8 text-stone-400 text-sm font-medium">
+        &copy; Gongbu Guide. All rights reserved.
+    </footer>
+
+    <!-- 플로팅 탑 버튼 -->
+    <div class="fixed bottom-8 right-6 sm:right-8 z-50">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-3 bg-white border-2 border-stone-200 rounded-full shadow-lg text-theme-color hover:bg-theme-color hover:text-white hover:border-theme-color transition-all duration-300 group" aria-label="맨 위로">
+            <i data-lucide="arrow-up" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+        </button>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // 전역 객체
+        window.app = {
+            currentTab: 1,
+            
+            switchTab: function(tabId) {
+                // UI 업데이트
+                for(let i=1; i<=4; i++) {
+                    const btn = document.getElementById(`tab-btn-${i}`);
+                    const view = document.getElementById(`view-${i}`);
+                    
+                    if(i === tabId) {
+                        btn.classList.remove('tab-inactive');
+                        btn.classList.add('tab-active');
+                        view.classList.remove('hidden');
+                    } else {
+                        btn.classList.remove('tab-active');
+                        btn.classList.add('tab-inactive');
+                        view.classList.add('hidden');
+                    }
+                }
+                
+                this.currentTab = tabId;
+                
+                // 각 시뮬레이터 초기화 호출
+                if(tabId === 1) setTimeout(() => enterSim.update(), 50);
+                if(tabId === 2) setTimeout(() => formSim.update('initial'), 50);
+                if(tabId === 3) setTimeout(() => exitSim.update('initial'), 50);
+                if(tabId === 4) setTimeout(() => canvasSim.init(), 50);
+
+                window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+        };
+
+        // DOM 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            // 모든 DOM 컨테이너 초기 세팅
+            document.getElementById('sim1-placeholder').innerHTML = enterSim.renderUI();
+            document.getElementById('sim2-placeholder').innerHTML = formSim.renderUI();
+            document.getElementById('sim3-placeholder').innerHTML = exitSim.renderUI();
+            
+            // 첫번째 탭 실행
+            app.switchTab(1);
+        });
+
+        // ==========================================
+        // SIM 1: 영대 입장 (신발)
+        // ==========================================
+        const enterSim = {
+            isInit: false,
+            renderUI: function() {
+                return `
+                    <div class="-mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full bg-white border-y sm:border border-stone-200 sm:rounded-xl relative h-[350px] md:h-[400px] overflow-hidden shadow-inner" style="background-image: linear-gradient(#f5f5f4 1px, transparent 1px), linear-gradient(90deg, #f5f5f4 1px, transparent 1px); background-size: 40px 40px;">
+                        <div class="absolute border-2 border-stone-300 bg-stone-50/50" style="top: 15%; left: 10%; width: 60%; height: 50%;"></div>
+                        <div class="absolute bg-stone-100 flex items-center justify-center border-x-2 border-t-2 border-stone-400 rounded-t-lg z-10" style="bottom: 85%; left: 40%; width: 12%; height: 8%; transform: translateX(-50%);">
+                            <span class="text-stone-600 font-bold text-[10px] sm:text-xs tracking-wider">입구</span>
+                        </div>
+                        <div class="absolute text-yellow-600 font-bold text-[10px] sm:text-xs z-30 bg-white/80 px-2 py-0.5 rounded-full shadow-sm" style="top: 4%; left: 78%; transform: translateX(-50%); border: 1px solid rgba(202, 138, 4, 0.2);">회원 신발</div>
+                        <div class="absolute text-blue-600 font-bold text-[10px] sm:text-xs" style="top: calc(75% - 8px); left: 3%;">외수</div>
+                        <div class="absolute text-red-600 font-bold text-[10px] sm:text-xs" style="top: calc(86% - 8px); left: 3%;">내수</div>
+                        <div id="enter-nodes-area" class="relative w-full h-full"></div>
+                    </div>
+                `;
+            },
+            initNodes: function() {
+                const area = document.getElementById('enter-nodes-area');
+                if (!area) return;
+                area.innerHTML = '';
+                const roles = [
+                    { name: 'member', colorClass: 'bg-yellow-100 text-yellow-900 border border-yellow-400' },
+                    { name: 'oesu', colorClass: 'bg-blue-100 text-blue-900 border border-blue-400' },
+                    { name: 'naesu', colorClass: 'bg-red-100 text-red-900 border border-red-400' }
+                ];
+                for (let i = 1; i <= 12; i++) {
+                    roles.forEach((role) => {
+                        const node = document.createElement('div');
+                        node.id = `enter-node-${role.name}-${i}`;
+                        node.className = `enter-node absolute w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs md:text-sm font-bold shadow-md z-20 ${role.colorClass}`;
+                        node.innerText = i;
+                        area.appendChild(node);
+                    });
+                }
+                this.isInit = true;
+            },
+            update: function() {
+                if (!this.isInit) this.initNodes();
+                const isSmall = window.innerWidth < 640;
+                const offset = isSmall ? 10 : 12; 
+
+                for (let i = 1; i <= 12; i++) {
+                    let node = document.getElementById(`enter-node-member-${i}`);
+                    if (!node) continue;
+                    let col = i <= 6 ? 0 : 1; 
+                    let row = i <= 6 ? (i - 1) : (12 - i); 
+                    let left = 74 + col * 8; 
+                    let top = 15 + row * 10; 
+                    node.style.left = `calc(${left}% - ${offset}px)`;
+                    node.style.top = `calc(${top}% - ${offset}px)`;
+                }
+
+                const sequence = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                sequence.forEach((num, j) => {
+                    let nodeO = document.getElementById(`enter-node-oesu-${num}`);
+                    if (nodeO) {
+                        let left = 68 - j * 5.2; 
+                        let top = 75; 
+                        nodeO.style.left = `calc(${left}% - ${offset}px)`;
+                        nodeO.style.top = `calc(${top}% - ${offset}px)`;
+                    }
+                    let nodeN = document.getElementById(`enter-node-naesu-${num}`);
+                    if (nodeN) {
+                        let left = 68 - j * 5.2;
+                        let top = 86; 
+                        nodeN.style.left = `calc(${left}% - ${offset}px)`;
+                        nodeN.style.top = `calc(${top}% - ${offset}px)`;
+                    }
+                });
+            }
+        };
+
+        // ==========================================
+        // SIM 2: 대형 전환 (3열 -> 6열)
+        // ==========================================
+        const formSim = {
+            isInit: false,
+            renderUI: function() {
+                return `
+                    <div class="text-center mb-3">
+                        <span class="inline-flex items-center gap-1 text-[11px] sm:text-sm font-bold text-theme-color bg-theme-soft px-3 py-1.5 rounded-full border border-theme-color/20 shadow-sm">
+                            👆 아래 버튼을 순서대로 눌러보세요
+                        </span>
+                    </div>
+                    <div class="flex gap-2 mb-4 justify-center">
+                        <button onclick="formSim.update('initial')" class="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-white text-k-text font-bold rounded-lg border border-stone-300 shadow-sm text-xs sm:text-sm active:bg-stone-100 hover:bg-stone-50 transition-colors">초기 정렬 (3열)</button>
+                        <button onclick="formSim.update('final')" class="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-theme-color text-white font-bold rounded-lg shadow-md text-xs sm:text-sm hover:opacity-90 transition-colors">6열 전환</button>
+                    </div>
+                    <div class="-mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full bg-white border-y sm:border border-stone-200 sm:rounded-xl relative h-[350px] overflow-hidden shadow-inner" style="background-image: linear-gradient(#f5f5f4 1px, transparent 1px), linear-gradient(90deg, #f5f5f4 1px, transparent 1px); background-size: 40px 40px;">
+                        <div class="absolute right-0 top-0 h-full w-8 md:w-10 bg-stone-50 border-l border-stone-200 flex flex-col items-center justify-center z-20">
+                            <span class="writing-vertical text-theme-color font-serif font-bold text-[10px] sm:text-sm tracking-widest">법단</span>
+                        </div>
+                        <div class="absolute top-0 left-0 w-full h-8 md:h-10 bg-stone-50 border-b border-stone-200 flex items-center justify-center z-20">
+                            <span class="text-theme-color font-serif font-bold text-[10px] sm:text-sm tracking-widest pr-8 md:pr-10">영대</span>
+                        </div>
+                        <div id="form-nodes-area" class="relative w-full h-full"></div>
+                    </div>
+                `;
+            },
+            initNodes: function() {
+                const area = document.getElementById('form-nodes-area');
+                if (!area) return;
+                area.innerHTML = '';
+                
+                const roles = [
+                    { name: 'member', colorClass: 'bg-yellow-100 text-yellow-900 border border-yellow-400' },
+                    { name: 'oesu', colorClass: 'bg-blue-100 text-blue-900 border border-blue-400' },
+                    { name: 'naesu', colorClass: 'bg-red-100 text-red-900 border border-red-400' }
+                ];
+                const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+                const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+                roles.forEach((role, rIndex) => {
+                    const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
+                    for (let i = 0; i < 12; i++) {
+                        const num = currentLabels[i]; 
+                        if (num % 2 === 0) {
+                            const path = document.createElement('div');
+                            path.id = `form-path-${role.name}-${num}`;
+                            path.className = 'absolute z-0 arrow-path transition-opacity duration-700 opacity-0';
+                            area.appendChild(path);
+                        }
+                        const node = document.createElement('div');
+                        node.id = `form-node-${role.name}-${num}`;
+                        node.className = `formation-node absolute w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs md:text-sm font-bold shadow-md z-10 ${role.colorClass}`;
+                        node.innerText = num;
+                        if (num % 2 === 0) {
+                            node.style.boxShadow = 'inset 0 0 0 2px rgba(255,255,255,0.7)'; 
+                        }
+                        area.appendChild(node);
+                    }
+                });
+                this.isInit = true;
+            },
+            update: function(state) {
+                if (!this.isInit) this.initNodes();
+
+                const isSmall = window.innerWidth < 640;
+                const offset = isSmall ? 10 : 12;
+
+                const roles = ['member', 'oesu', 'naesu'];
+                const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+                const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+                const startLeft = 76; 
+                const horizontalSpacing = 6.2; 
+
+                roles.forEach((roleName, rIndex) => {
+                    const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
+
+                    for (let i = 0; i < 12; i++) {
+                        const colIndexFromRight = i; 
+                        const num = currentLabels[i]; 
+                        
+                        let effectiveColIndex = colIndexFromRight;
+                        if (state === 'final' && num % 2 === 0) {
+                            effectiveColIndex = colIndexFromRight - 1; 
+                        }
+                        
+                        let leftVal = (startLeft - (colIndexFromRight * horizontalSpacing)); 
+                        let finalLeftVal = (startLeft - (effectiveColIndex * horizontalSpacing)); 
+                        
+                        let left = (state === 'final') ? finalLeftVal : leftVal;
+                        const rowBaseTop = 15 + (rIndex * 26); 
+                        let top = rowBaseTop;
+
+                        const node = document.getElementById(`form-node-${roleName}-${num}`);
+                        if (node) {
+                            if (state === 'final') {
+                                node.style.transform = 'rotate(90deg)'; 
+                                if (num % 2 === 0) top = rowBaseTop + 12;
+                            } else {
+                                node.style.transform = 'rotate(0deg)';
+                            }
+                            node.style.left = `calc(${left}% - ${offset}px)`;
+                            node.style.top = `${top}%`;
+                        }
+
+                        if (num % 2 === 0) {
+                            const path = document.getElementById(`form-path-${roleName}-${num}`);
+                            if (path) {
+                                const pOffset = 2.5;
+                                path.style.left = `calc(${leftVal + pOffset}% - ${offset}px)`;
+                                path.style.top = `${rowBaseTop + pOffset}%`;
+                                path.style.width = ((finalLeftVal - leftVal)) + '%';
+                                path.style.height = '12%'; 
+                                path.style.borderLeft = '2px dotted #1e3a8a'; 
+                                path.style.borderBottom = '2px dotted #1e3a8a';
+                                path.style.borderBottomLeftRadius = '12px'; 
+
+                                if (state === 'final') {
+                                    setTimeout(() => { path.style.opacity = '1'; }, 300);
+                                } else {
+                                    path.style.opacity = '0';
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        };
+
+        // ==========================================
+        // SIM 3: 퇴장 순서
+        // ==========================================
+        const exitSim = {
+            isInit: false,
+            timeouts: [],
+            renderUI: function() {
+                return `
+                    <div class="text-center mb-3">
+                        <span class="inline-flex items-center gap-1 text-[11px] sm:text-sm font-bold text-theme-color bg-theme-soft px-3 py-1.5 rounded-full border border-theme-color/20 shadow-sm">
+                            👆 번호 순서대로 버튼을 눌러보세요
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4 justify-center">
+                        <button onclick="exitSim.update('initial')" class="px-2.5 py-1.5 bg-white text-k-text font-bold rounded-lg border border-stone-300 shadow-sm text-xs sm:text-sm hover:bg-stone-50 transition-colors">1. 초기 정렬</button>
+                        <button onclick="exitSim.update('shift')" class="px-2.5 py-1.5 bg-stone-100 text-k-text font-bold rounded-lg border border-stone-300 shadow-sm text-xs sm:text-sm hover:bg-stone-200 transition-colors">2. 좌측 이동</button>
+                        <button onclick="exitSim.update('exitNaesu')" class="px-2.5 py-1.5 bg-red-50 text-red-900 font-bold rounded-lg border border-red-300 shadow-sm text-xs sm:text-sm hover:bg-red-100 transition-colors">3. 내수 퇴장</button>
+                        <button onclick="exitSim.update('exitOesu')" class="px-2.5 py-1.5 bg-blue-50 text-blue-900 font-bold rounded-lg border border-blue-300 shadow-sm text-xs sm:text-sm hover:bg-blue-100 transition-colors">4. 외수 퇴장</button>
+                        <button onclick="exitSim.update('exitMember')" class="px-2.5 py-1.5 bg-yellow-50 text-yellow-900 font-bold rounded-lg border border-yellow-400 shadow-sm text-xs sm:text-sm hover:bg-yellow-100 transition-colors">5. 회원 퇴장</button>
+                    </div>
+                    <div class="-mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full bg-white border-y sm:border border-stone-200 sm:rounded-xl relative h-[420px] md:h-[450px] overflow-hidden shadow-inner" style="background-image: linear-gradient(#f5f5f4 1px, transparent 1px), linear-gradient(90deg, #f5f5f4 1px, transparent 1px); background-size: 40px 40px;">
+                        <div class="absolute top-0 left-0 w-full h-8 md:h-10 bg-stone-50 border-b border-stone-200 flex items-center justify-center z-20">
+                            <span class="text-theme-color font-serif font-bold text-[10px] sm:text-sm tracking-widest pr-8 md:pr-10">영대</span>
+                        </div>
+                        <div class="absolute right-0 top-0 h-full w-8 md:w-10 bg-stone-50 border-l border-stone-200 flex flex-col items-center justify-center z-20">
+                            <span class="writing-vertical text-theme-color font-serif font-bold text-[10px] sm:text-sm tracking-widest">법단</span>
+                        </div>
+                        
+                        <!-- 💡 완벽하게 조정된 출구 위치 (left: 40%, width: 24%/20%) -->
+                        <div class="absolute bottom-0 left-[40%] -translate-x-1/2 w-[24%] md:w-[20%] h-8 bg-[#e5e5e5] border-t-2 border-x-2 border-stone-300 rounded-t-lg flex items-center justify-center z-20 shadow-sm">
+                            <span class="text-stone-600 font-bold text-xs tracking-wider">출구</span>
+                        </div>
+                        <div id="exit-nodes-area" class="relative w-full h-full"></div>
+                    </div>
+                `;
+            },
+            initNodes: function() {
+                const area = document.getElementById('exit-nodes-area');
+                if (!area) return;
+                area.innerHTML = '';
+                
+                const roles = [
+                    { name: 'member', colorClass: 'bg-yellow-100 text-yellow-900 border border-yellow-400' },
+                    { name: 'oesu', colorClass: 'bg-blue-100 text-blue-900 border border-blue-400' },
+                    { name: 'naesu', colorClass: 'bg-red-100 text-red-900 border border-red-400' }
+                ];
+                const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; 
+                const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; 
+
+                roles.forEach((role, rIndex) => {
+                    const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
+                    for (let i = 0; i < 12; i++) {
+                        const num = currentLabels[i];
+                        const node = document.createElement('div');
+                        node.id = `exit-node-${role.name}-${num}`;
+                        node.className = `exit-node absolute w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs md:text-sm font-bold shadow-md z-10 ${role.colorClass}`;
+                        node.innerText = num;
+                        area.appendChild(node);
+                    }
+                });
+                this.isInit = true;
+            },
+            clearTimeouts: function() {
+                this.timeouts.forEach(clearTimeout);
+                this.timeouts = [];
+            },
+            update: function(state) {
+                if (!this.isInit) this.initNodes();
+                this.clearTimeouts(); 
+                
+                const isSmall = window.innerWidth < 640;
+                const offset = isSmall ? 10 : 12; 
+
+                const roles = ['member', 'oesu', 'naesu'];
+                const labelsRow1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+                const labelsRow23 = [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                
+                const baseLeft = 85; 
+                const spacing = 6.2; 
+                const shiftOffset = 11; 
+                const rowTops = [20, 45, 70]; 
+                const doorTop = 90; 
+
+                roles.forEach((roleName, rIndex) => {
+                    const currentLabels = (rIndex === 0) ? labelsRow1 : labelsRow23;
+                    
+                    let isExited = false;
+                    if (state === 'exitOesu' && roleName === 'naesu') isExited = true;
+                    if (state === 'exitMember' && (roleName === 'naesu' || roleName === 'oesu')) isExited = true;
+
+                    for (let i = 0; i < 12; i++) {
+                        const num = currentLabels[i];
+                        const node = document.getElementById(`exit-node-${roleName}-${num}`);
+                        if (!node) continue;
+                        
+                        node.style.transition = 'all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1)';
+                        
+                        let left = baseLeft - (i * spacing);
+                        if (state === 'shift' || state.startsWith('exit')) {
+                            left -= shiftOffset;
+                        }
+
+                        if (isExited) {
+                            node.style.transition = 'none';
+                            node.style.opacity = '0';
+                            node.style.transform = 'scale(0.5)';
+                            node.style.top = `${doorTop}%`;
+                            void node.offsetWidth; 
+                            node.style.transition = 'all 0.8s cubic-bezier(0.34, 1.1, 0.64, 1)';
+                        } else {
+                            node.style.left = `calc(${left}% - ${offset}px)`;
+                            node.style.top = `${rowTops[rIndex]}%`;
+                            node.style.opacity = '1';
+                            node.style.transform = 'scale(1)';
+                        }
+                    }
+                });
+
+                if (state.startsWith('exit')) {
+                    let roleIndex = state === 'exitMember' ? 0 : (state === 'exitOesu' ? 1 : 2);
+                    let roleName = roles[roleIndex];
+                    const currentLabels = (roleIndex === 0) ? labelsRow1 : labelsRow23;
+                    
+                    const pairs = [[6, 5], [7, 4], [8, 3], [9, 2], [10, 1], [11, 0]];
+                    const seqDelay = 800; 
+
+                    pairs.forEach((pair, step) => {
+                        let t1 = setTimeout(() => {
+                            const leftNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[0]]}`);
+                            const rightNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[1]]}`);
+                            if (leftNode) leftNode.style.top = `${doorTop}%`;
+                            if (rightNode) rightNode.style.top = `${doorTop}%`;
+                        }, seqDelay + step * 2000);
+                        
+                        let t2 = setTimeout(() => {
+                            const leftNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[0]]}`);
+                            const rightNode = document.getElementById(`exit-node-${roleName}-${currentLabels[pair[1]]}`);
+                            if (leftNode) { leftNode.style.opacity = '0'; leftNode.style.transform = 'scale(0.5)'; }
+                            if (rightNode) { rightNode.style.opacity = '0'; rightNode.style.transform = 'scale(0.5)'; }
+                        }, seqDelay + step * 2000 + 700);
+                        
+                        let t3 = setTimeout(() => {
+                            for (let i = pair[0] + 1; i <= 11; i++) {
+                                const node = document.getElementById(`exit-node-${roleName}-${currentLabels[i]}`);
+                                if (node) {
+                                    let currentLeft = baseLeft - i * spacing - shiftOffset + (step * spacing);
+                                    node.style.left = `calc(${currentLeft + spacing}% - ${offset}px)`;
+                                }
+                            }
+                            for (let i = pair[1] - 1; i >= 0; i--) {
+                                const node = document.getElementById(`exit-node-${roleName}-${currentLabels[i]}`);
+                                if (node) {
+                                    let currentLeft = baseLeft - i * spacing - shiftOffset - (step * spacing);
+                                    node.style.left = `calc(${currentLeft - spacing}% - ${offset}px)`;
+                                }
+                            }
+                        }, seqDelay + step * 2000 + 1000);
+
+                        this.timeouts.push(t1, t2, t3);
+                    });
+                }
+            }
+        };
+
+        // ==========================================
+        // SIM 4: 공부방 입실 (Canvas)
+        // ==========================================
+        function lerp(start, end, t) { return start * (1 - t) + end * t; }
+        
+        const C_MEMBER = '#d97706';
+        const C_OESU = '#2563eb';
+        const C_NAESU = '#dc2626';
+
+        const canvasSimSteps = [
+            {
+                text: "공부 진행 중 (현재 시간)",
+                desc: "현재 공부 중인 사람들의 대형입니다.",
+                setup: (s) => {
+                    s.p_oesu = {x: 200, y: 150, label: '현 외수', c: C_OESU};
+                    s.p_member = {x: 300, y: 150, label: '현 회원', c: C_MEMBER};
+                    s.p_naesu = {x: 400, y: 150, label: '현 내수', c: C_NAESU};
+                    s.n_oesu = {x: 40, y: 150, label: '다음 외수', c: C_OESU, alpha: 1};   
+                    s.n_member = {x: 40, y: 200, label: '다음 회원', c: C_MEMBER, alpha: 1}; 
+                    s.n_naesu = {x: 40, y: 320, label: '다음 내수', c: C_NAESU, alpha: 1};   
+                }
+            },
+            {
+                text: "교대 준비 (후퇴)",
+                desc: "종이 울리면 회원과 내수는 뒤로 물러나 앞자리를 비웁니다.",
+                animate: (s, p) => {
+                    s.p_member.y = lerp(150, 350, p);
+                    s.p_naesu.y = lerp(150, 350, p);
+                }
+            },
+            {
+                text: "다음 회원 입장",
+                desc: "다음 회원이 들어와 외수 뒤를 돌아 중앙 자리로 갑니다.",
+                animate: (s, p) => {
+                    if(p < 0.2) {
+                        const lp = p / 0.2;
+                        s.n_member.x = lerp(40, 120, lp);
+                        s.n_member.y = lerp(200, 250, lp);
+                    } else if (p < 0.5) {
+                        const lp = (p - 0.2) / 0.3;
+                        s.n_member.x = lerp(120, 300, lp);
+                        s.n_member.y = 250;
+                    } else {
+                        const lp = (p - 0.5) / 0.5;
+                        s.n_member.x = 300;
+                        s.n_member.y = lerp(250, 150, lp);
+                    }
+                }
+            },
+            {
+                text: "다음 내수 입장",
+                desc: "다음 내수가 들어와 기존 인원들의 등 뒤를 지나 크게 돌아 자리로 갑니다.",
+                animate: (s, p) => {
+                    if(p < 0.15) {
+                        const lp = p / 0.15;
+                        s.n_naesu.x = lerp(40, 120, lp);
+                        s.n_naesu.y = lerp(320, 250, lp);
+                    } else if (p < 0.35) {
+                        const lp = (p - 0.15) / 0.2;
+                        s.n_naesu.x = lerp(120, 180, lp);
+                        s.n_naesu.y = lerp(250, 450, lp); 
+                    } else if (p < 0.65) {
+                        const lp = (p - 0.35) / 0.3;
+                        s.n_naesu.x = lerp(180, 460, lp);
+                        s.n_naesu.y = 450;
+                    } else if (p < 0.85) {
+                        const lp = (p - 0.65) / 0.2;
+                        s.n_naesu.x = 460;
+                        s.n_naesu.y = lerp(450, 150, lp);
+                    } else {
+                        const lp = (p - 0.85) / 0.15;
+                        s.n_naesu.x = lerp(460, 400, lp);
+                        s.n_naesu.y = 150;
+                    }
+                }
+            },
+            {
+                text: "외수 교대",
+                desc: "이전 외수가 뒤로 물러나고, 다음 외수가 문을 닫으며 들어옵니다.",
+                animate: (s, p) => {
+                    if(p < 0.3) {
+                        const lp = p / 0.3;
+                        s.p_oesu.y = lerp(150, 350, lp);
+                    } else {
+                        s.p_oesu.y = 350;
+                        const lp = (p - 0.3) / 0.7;
+                        if(lp < 0.3) {
+                            s.n_oesu.x = lerp(40, 120, lp/0.3);
+                            s.n_oesu.y = lerp(150, 250, lp/0.3);
+                        } else {
+                            s.n_oesu.x = lerp(120, 200, (lp-0.3)/0.7);
+                            s.n_oesu.y = lerp(250, 150, (lp-0.3)/0.7);
+                        }
+                    }
+                }
+            },
+            {
+                text: "공부 시작 및 퇴실",
+                desc: "이전 조는 좌배 후 외수, 회원, 내수 순으로 퇴실합니다.",
+                animate: (s, p) => {
+                    let p3 = Math.min(Math.max(p / 0.6, 0), 1);
+                    if (p3 < 0.5) {
+                        s.p_oesu.x = lerp(200, 150, p3 * 2);
+                        s.p_oesu.y = lerp(350, 250, p3 * 2);
+                    } else {
+                        s.p_oesu.x = lerp(150, -40, (p3 - 0.5) * 2);
+                        s.p_oesu.y = 250;
+                        s.p_oesu.alpha = 1 - (p3 - 0.5) * 2;
+                    }
+
+                    let p1 = Math.min(Math.max((p - 0.2) / 0.6, 0), 1);
+                    if (p1 < 0.5) {
+                        s.p_member.x = lerp(300, 150, p1 * 2);
+                        s.p_member.y = lerp(350, 250, p1 * 2);
+                    } else {
+                        s.p_member.x = lerp(150, -40, (p1 - 0.5) * 2);
+                        s.p_member.y = 250;
+                        s.p_member.alpha = 1 - (p1 - 0.5) * 2;
+                    }
+
+                    let p2 = Math.min(Math.max((p - 0.4) / 0.6, 0), 1);
+                    if (p2 < 0.5) {
+                        s.p_naesu.x = lerp(400, 150, p2 * 2);
+                        s.p_naesu.y = lerp(350, 250, p2 * 2);
+                    } else {
+                        s.p_naesu.x = lerp(150, -40, (p2 - 0.5) * 2);
+                        s.p_naesu.y = 250;
+                        s.p_naesu.alpha = 1 - (p2 - 0.5) * 2;
+                    }
+                }
+            }
+        ];
+
+        window.canvasSim = {
+            stepIndex: 0, progress: 0, isPlaying: false, lastTime: 0, state: {},
+            ctx: null, reqId: null,
+            init: function() {
+                const canvas = document.getElementById('simCanvas');
+                if(!canvas) return;
+                this.ctx = canvas.getContext('2d');
+                this.reset();
+                if(this.reqId) cancelAnimationFrame(this.reqId);
+                this.reqId = requestAnimationFrame((t) => this.loop(t));
+            },
+            reset: function() {
+                this.stepIndex = 0; this.progress = 0; this.isPlaying = false;
+                canvasSimSteps[0].setup(this.state);
+                this.draw(); this.updateText();
+            },
+            next: function() {
+                if (this.stepIndex < canvasSimSteps.length - 1) {
+                    if(canvasSimSteps[this.stepIndex].animate) canvasSimSteps[this.stepIndex].animate(this.state, 1.0);
+                    this.stepIndex++; this.progress = 0;
+                    this.updateText(); this.draw();
+                }
+            },
+            prev: function() {
+                if (this.stepIndex > 0) {
+                    this.stepIndex--; this.progress = 0;
+                    canvasSimSteps[0].setup(this.state);
+                    for(let i=1; i<this.stepIndex; i++) {
+                        if(canvasSimSteps[i].animate) canvasSimSteps[i].animate(this.state, 1.0);
+                    }
+                    this.updateText(); this.draw();
+                }
+            },
+            play: function() { this.isPlaying = !this.isPlaying; },
+            updateText: function() {
+                const el = document.getElementById('canvas-step-desc');
+                const step = canvasSimSteps[this.stepIndex];
+                el.innerHTML = `<span class="block text-xs sm:text-sm text-theme-color font-bold mb-2 uppercase">Step ${this.stepIndex + 1}</span>${step.text}<br><span class="text-xs sm:text-sm font-normal text-stone-500">${step.desc || ''}</span>`;
+            },
+            loop: function(timestamp) {
+                const dt = timestamp - this.lastTime;
+                this.lastTime = timestamp;
+                if (this.isPlaying && app.currentTab === 4) {
+                    this.progress += dt * 0.0005;
+                    if (this.progress >= 1) {
+                        this.progress = 1;
+                        if(this.stepIndex < canvasSimSteps.length - 1) { this.next(); } 
+                        else { this.isPlaying = false; }
+                    }
+                    if(canvasSimSteps[this.stepIndex].animate) {
+                        canvasSimSteps[this.stepIndex].animate(this.state, this.progress);
+                    }
+                    this.draw();
+                }
+                this.reqId = requestAnimationFrame((t) => this.loop(t));
+            },
+            draw: function() {
+                if(!this.ctx) return;
+                const ctx = this.ctx;
+                ctx.clearRect(0, 0, 500, 500);
+                
+                ctx.fillStyle = '#f5f5f4'; ctx.fillRect(0, 0, 100, 500);
+                ctx.strokeStyle = '#e7e5e4'; ctx.lineWidth = 1; ctx.beginPath();
+                for(let i=100; i<500; i+=50) { ctx.moveTo(i, 0); ctx.lineTo(i, 500); }
+                for(let i=0; i<500; i+=50) { ctx.moveTo(100, i); ctx.lineTo(500, i); }
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#57534e'; ctx.lineWidth = 4; ctx.beginPath();
+                ctx.moveTo(100, 0); ctx.lineTo(100, 230); ctx.moveTo(100, 270); ctx.lineTo(100, 500);
+                ctx.stroke();
+                
+                const drawBall = (obj) => {
+                    if (!obj || obj.alpha <= 0) return;
+                    ctx.globalAlpha = obj.alpha !== undefined ? obj.alpha : 1;
+                    ctx.fillStyle = obj.c;
+                    ctx.beginPath(); ctx.arc(obj.x, obj.y, 22, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.stroke();
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 11px Noto Sans KR'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    let short = obj.label.includes('회원') ? '회' : (obj.label.includes('외수') ? '외' : '내');
+                    ctx.fillText(obj.label.includes('다음') ? '다음' : '기존', obj.x, obj.y - 9);
+                    ctx.fillText(short, obj.x, obj.y + 7);
+                    ctx.globalAlpha = 1;
+                };
+                drawBall(this.state.p_oesu); drawBall(this.state.p_member); drawBall(this.state.p_naesu);
+                drawBall(this.state.n_member); drawBall(this.state.n_naesu); drawBall(this.state.n_oesu);
+            }
+        };
+    </script>
+</body>
+</html>
